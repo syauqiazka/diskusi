@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+@theme {
+  --color-night: #0b0d12;
+  --color-fluor: #e9f2e3;
+  --color-caution: #f2c200;
+  --color-neon-cyan: #5ce1ff;
+  --color-neon-pink: #ff5c93;
+  --color-alert: #e0412f;
+  --color-ok: #4fd08a;
+
+  --font-hud: var(--font-vt323), monospace;
+  --font-sign: var(--font-anton), sans-serif;
+  --font-body: var(--font-instrument-sans), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
+}
+
+:root {
+  --night: #0b0d12;
+  --fluor: #e9f2e3;
+  --caution: #f2c200;
+  --neon-cyan: #5ce1ff;
+  --neon-pink: #ff5c93;
+  --alert: #e0412f;
+  --ok: #4fd08a;
+}
+
+body {
+  background-color: var(--night);
+  color: var(--fluor);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}

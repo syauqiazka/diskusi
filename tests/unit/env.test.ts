@@ -48,3 +48,4 @@ describe("Validasi Environment (Zod)", () => {
     expect(() => validateEnv(invalidEnv)).toThrowError(/harus berupa URL valid/);
   });
 });
+
