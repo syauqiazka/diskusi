@@ -57,3 +57,4 @@ describe("Aturan Pengiriman Pesan Langsung (DM)", () => {
     expect(result.reason).toMatch(/ke diri sendiri/);
   });
 });
+
