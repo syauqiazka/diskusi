@@ -6,6 +6,9 @@ import { prisma } from "@/lib/db";
 import {
   sortUserIds,
   verifyClassMembershipForChat,
+  formatConversationListItem,
+  type FormattedConversationListItem,
+  type RawConversationData,
 } from "./chat-utils";
 import {
   sendMessageSchema,
@@ -31,12 +34,30 @@ export interface ChatMessageItem {
 export interface ConversationDetail {
   id: string;
   classId: string;
+  className?: string;
+  classCode?: string;
   otherUser: {
     id: string;
     name: string;
+    displayName?: string;
+    username?: string;
     image: string | null;
+    seatIndex?: number | null;
+    role?: string;
   };
   messages: ChatMessageItem[];
+}
+
+export interface ClassmateOption {
+  userId: string;
+  name: string;
+  displayName: string;
+  username: string;
+  classId: string;
+  className: string;
+  classCode: string;
+  seatIndex: number | null;
+  role: string;
 }
 
 /**
@@ -84,8 +105,33 @@ export async function getOrCreateConversation(
       },
     },
     include: {
-      user1: { select: { id: true, name: true, image: true } },
-      user2: { select: { id: true, name: true, image: true } },
+      class: { select: { id: true, name: true, code: true } },
+      user1: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          username: true,
+          image: true,
+          memberships: {
+            where: { classId },
+            select: { seatIndex: true, role: true },
+          },
+        },
+      },
+      user2: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          username: true,
+          image: true,
+          memberships: {
+            where: { classId },
+            select: { seatIndex: true, role: true },
+          },
+        },
+      },
       messages: {
         orderBy: { createdAt: "asc" },
         include: {
@@ -103,8 +149,33 @@ export async function getOrCreateConversation(
         user2Id,
       },
       include: {
-        user1: { select: { id: true, name: true, image: true } },
-        user2: { select: { id: true, name: true, image: true } },
+        class: { select: { id: true, name: true, code: true } },
+        user1: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            username: true,
+            image: true,
+            memberships: {
+              where: { classId },
+              select: { seatIndex: true, role: true },
+            },
+          },
+        },
+        user2: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            username: true,
+            image: true,
+            memberships: {
+              where: { classId },
+              select: { seatIndex: true, role: true },
+            },
+          },
+        },
         messages: {
           orderBy: { createdAt: "asc" },
           include: {
@@ -115,8 +186,18 @@ export async function getOrCreateConversation(
     });
   }
 
-  const otherUser =
+  const rawOther =
     conversation.user1Id === currentUserId ? conversation.user2 : conversation.user1;
+
+  const otherUser = {
+    id: rawOther.id,
+    name: rawOther.name,
+    displayName: rawOther.displayName || rawOther.name,
+    username: rawOther.username || "siswa",
+    image: rawOther.image,
+    seatIndex: rawOther.memberships[0]?.seatIndex ?? null,
+    role: rawOther.memberships[0]?.role ?? "STUDENT",
+  };
 
   const messages: ChatMessageItem[] = conversation.messages.map((m) => ({
     id: m.id,
@@ -132,6 +213,8 @@ export async function getOrCreateConversation(
     conversation: {
       id: conversation.id,
       classId: conversation.classId,
+      className: conversation.class.name,
+      classCode: conversation.class.code,
       otherUser,
       messages,
     },
@@ -269,3 +352,121 @@ export async function getConversationMessages(
   return { success: true, messages };
 }
 
+/**
+ * Mengambil daftar seluruh percakapan aktif yang diikuti pengguna aktif (Inbox Mode Cepat 2D)
+ */
+export async function getUserConversations(): Promise<FormattedConversationListItem[]> {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return [];
+  }
+
+  const currentUserId = session.user.id;
+
+  const conversations = await prisma.conversation.findMany({
+    where: {
+      OR: [{ user1Id: currentUserId }, { user2Id: currentUserId }],
+    },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      class: {
+        select: { id: true, name: true, code: true },
+      },
+      user1: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          username: true,
+          image: true,
+          memberships: {
+            select: { classId: true, seatIndex: true, role: true },
+          },
+        },
+      },
+      user2: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          username: true,
+          image: true,
+          memberships: {
+            select: { classId: true, seatIndex: true, role: true },
+          },
+        },
+      },
+      messages: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          id: true,
+          senderId: true,
+          content: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  return conversations.map((conv) =>
+    formatConversationListItem(conv as unknown as RawConversationData, currentUserId)
+  );
+}
+
+/**
+ * Mengambil daftar rekan sekelas dari seluruh kelas yang diikuti pengguna aktif,
+ * untuk opsi memulai percakapan baru di dialog inbox.
+ */
+export async function getClassmatesForDm(): Promise<ClassmateOption[]> {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return [];
+  }
+
+  const currentUserId = session.user.id;
+
+  // Cari seluruh kelas yang diikuti pengguna aktif
+  const myMemberships = await prisma.classMember.findMany({
+    where: { userId: currentUserId },
+    select: { classId: true },
+  });
+
+  if (myMemberships.length === 0) {
+    return [];
+  }
+
+  const myClassIds = myMemberships.map((m) => m.classId);
+
+  // Cari seluruh anggota di kelas-kelas tersebut (kecuali diri sendiri)
+  const classmates = await prisma.classMember.findMany({
+    where: {
+      classId: { in: myClassIds },
+      userId: { not: currentUserId },
+    },
+    include: {
+      class: { select: { id: true, name: true, code: true } },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          username: true,
+        },
+      },
+    },
+    orderBy: [{ classId: "asc" }, { seatIndex: "asc" }],
+  });
+
+  return classmates.map((m) => ({
+    userId: m.user.id,
+    name: m.user.name,
+    displayName: m.user.displayName || m.user.name,
+    username: m.user.username || "siswa",
+    classId: m.class.id,
+    className: m.class.name,
+    classCode: m.class.code,
+    seatIndex: m.seatIndex,
+    role: m.role,
+  }));
+}
