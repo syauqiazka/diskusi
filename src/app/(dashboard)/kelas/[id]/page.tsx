@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import { getClassDetails, getCurrentSession } from "@/lib/classroom/actions";
@@ -6,12 +7,7 @@ import type { ClassroomDetail } from "@/lib/classroom/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-export default async function RuangKelasPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+async function ClassroomContent({ id }: { id: string }) {
   const session = await getCurrentSession();
   const result = await getClassDetails(id);
 
@@ -84,5 +80,25 @@ export default async function RuangKelasPage({
         currentUserId={session?.user?.id || ""}
       />
     </div>
+  );
+}
+
+export default async function RuangKelasPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 border border-fluor/30 bg-night text-center font-mono text-xs text-caution">
+          MEMUAT DATA RUANG KELAS...
+        </div>
+      }
+    >
+      <ClassroomContent id={id} />
+    </Suspense>
   );
 }

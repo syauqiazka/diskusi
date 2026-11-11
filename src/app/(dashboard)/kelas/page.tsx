@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { GraduationCap, Users, ArrowRight, ShieldAlert } from "lucide-react";
 import { getMyClasses, getCurrentSession } from "@/lib/classroom/actions";
@@ -5,7 +6,7 @@ import { JoinClassForm } from "@/components/classroom/join-class-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-export default async function KelasIndexPage() {
+async function KelasContent() {
   const session = await getCurrentSession();
   const classes = await getMyClasses();
 
@@ -127,5 +128,19 @@ export default async function KelasIndexPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function KelasIndexPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 border border-fluor/30 bg-night text-center font-mono text-xs text-caution">
+          MEMUAT DAFTAR KELAS...
+        </div>
+      }
+    >
+      <KelasContent />
+    </Suspense>
   );
 }
