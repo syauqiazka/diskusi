@@ -2,12 +2,17 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, GraduationCap, LayoutGrid, User, LogOut } from "lucide-react";
+import { BookOpen, GraduationCap, LayoutGrid, User, LogOut, Compass } from "lucide-react";
 import { authClient, signOut } from "@/lib/auth/auth-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
+  {
+    label: "[00] DUNIA 3D (LORONG)",
+    href: "/dunia",
+    icon: Compass,
+  },
   {
     label: "[01] KELAS SAYA",
     href: "/kelas",

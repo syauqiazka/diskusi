@@ -33,12 +33,18 @@ export function HudHeader() {
 
         {/* Tengah: Nama Kawasan / Sistem */}
         <div className="hidden md:flex items-center space-x-2">
-          <span className="font-hud text-lg tracking-widest text-fluor/80">
-            SEKOLAH TENGAH MALAM
-          </span>
-          <span className="text-neon-cyan font-mono text-xs px-1.5 py-0.5 border border-neon-cyan/40">
-            MODE CEPAT
-          </span>
+          <Link
+            href="/dunia"
+            className="font-hud text-lg tracking-widest text-fluor/80 hover:text-caution transition-colors"
+          >
+            SEKOLAH TENGAH MALAM [3D]
+          </Link>
+          <Link
+            href="/kelas"
+            className="text-neon-cyan hover:bg-neon-cyan/10 font-mono text-xs px-1.5 py-0.5 border border-neon-cyan/40 transition-colors"
+          >
+            MODE CEPAT (2D)
+          </Link>
         </div>
 
         {/* Sisi Kanan: Penghitung Waktu & Aksi Autentikasi */}

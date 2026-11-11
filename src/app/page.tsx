@@ -49,15 +49,20 @@ export default function HomePage() {
             </div>
 
             <div className="flex flex-wrap gap-3 pt-2">
-              <Link href="/masuk">
+              <Link href="/dunia">
                 <Button variant="default" size="lg" className="space-x-2">
-                  <span className="font-hud text-lg tracking-wider">[E] MASUK KE KELAS</span>
+                  <span className="font-hud text-lg tracking-wider">[E] JELAJAHI DUNIA 3D</span>
                   <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link href="/masuk">
+                <Button variant="outline" size="lg">
+                  MASUK (MODE CEPAT)
                 </Button>
               </Link>
               <Link href="/daftar">
                 <Button variant="outline" size="lg">
-                  DAFTAR SISWA BARU
+                  DAFTAR SISWA
                 </Button>
               </Link>
             </div>
