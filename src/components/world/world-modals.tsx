@@ -315,18 +315,34 @@ export function WorldModals() {
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   {doorData.isMember ? (
-                    <Button
-                      variant="default"
-                      size="lg"
-                      className="flex-1 space-x-2"
-                      onClick={() => {
-                        closePanel();
-                        router.push(doorData.classId ? `/kelas/${doorData.classId}` : "/kelas");
-                      }}
-                    >
-                      <span className="font-hud text-lg tracking-wider">[E] MASUK KE DALAM KELAS</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
+                    <>
+                      <Button
+                        variant="default"
+                        size="lg"
+                        className="flex-1 space-x-2"
+                        onClick={() => {
+                          closePanel();
+                          router.push(
+                            doorData.classId ? `/dunia/kelas/${doorData.classId}` : "/dunia"
+                          );
+                        }}
+                      >
+                        <span className="font-hud text-lg tracking-wider">[E] MASUK KE KELAS 3D</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={() => {
+                          closePanel();
+                          router.push(
+                            doorData.classId ? `/kelas/${doorData.classId}` : "/kelas"
+                          );
+                        }}
+                      >
+                        <span>MODE CEPAT (2D)</span>
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       variant="outline"

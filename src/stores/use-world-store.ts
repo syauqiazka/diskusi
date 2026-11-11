@@ -4,7 +4,18 @@ export const STANDING_HEIGHT = 1.6;
 export const CROUCHING_HEIGHT = 0.9;
 export const MAX_INTERACTION_DISTANCE = 2.5;
 
-export type InteractableType = "door" | "mading" | "library" | "locker" | "mirror";
+export type InteractableType =
+  | "door"
+  | "mading"
+  | "library"
+  | "locker"
+  | "mirror"
+  | "classroom-desk"
+  | "classroom-blackboard"
+  | "classroom-discussion"
+  | "classroom-materials"
+  | "classroom-exit"
+  | "classroom-teacher";
 
 export interface InteractableItem {
   id: string;

@@ -23,7 +23,15 @@ interface KeyState {
   crouch: boolean;
 }
 
-export function PlayerController() {
+export interface PlayerControllerProps {
+  initialPosition?: [number, number, number];
+  bounds?: { minX: number; maxX: number; minZ: number; maxZ: number };
+}
+
+export function PlayerController({
+  initialPosition = [0, STANDING_HEIGHT, 5],
+  bounds,
+}: PlayerControllerProps = {}) {
   const { camera, gl } = useThree();
   const keys = React.useRef<KeyState>({
     forward: false,
@@ -57,9 +65,9 @@ export function PlayerController() {
 
   React.useEffect(() => {
     // Set posisi awal kamera
-    camera.position.set(0, STANDING_HEIGHT, 5);
+    camera.position.set(initialPosition[0], initialPosition[1], initialPosition[2]);
     camera.rotation.set(0, 0, 0);
-  }, [camera]);
+  }, [camera, initialPosition]);
 
   React.useEffect(() => {
     const canvas = gl.domElement;
@@ -228,8 +236,8 @@ export function PlayerController() {
       activeCam.position.add(velocity.current);
     }
 
-    // Terapkan batasan dinding lorong (boundary collision clamp)
-    const clamped = clampPosition(activeCam.position.x, activeCam.position.z);
+    // Terapkan batasan dinding (boundary collision clamp)
+    const clamped = clampPosition(activeCam.position.x, activeCam.position.z, bounds);
     activeCam.position.x = clamped.x;
     activeCam.position.z = clamped.z;
 
