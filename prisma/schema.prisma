@@ -1,0 +1,171 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum PlatformRole {
+  MEMBER
+  MODERATOR
+  ADMIN
+}
+
+enum ClassRole {
+  STUDENT
+  TEACHER
+  ASSISTANT
+}
+
+// ---------------------------------------------------------
+// MODEL PENGGUNA & AUTENTIKASI (Better Auth + Custom Profile)
+// ---------------------------------------------------------
+
+model User {
+  id            String       @id @default(cuid())
+  name          String
+  email         String       @unique
+  emailVerified Boolean      @default(false)
+  image         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Field Tambahan Profil (Sekolah Tengah Malam)
+  username      String?      @unique
+  displayName   String?
+  bio           String?
+  bannerUrl     String?
+  role          PlatformRole @default(MEMBER)
+
+  // Pengaturan Preferensi Visual Dunia (WORLD.md)
+  worldSettings Json         @default("{\"graphicsQuality\":\"medium\",\"fastMode\":false,\"nightMode\":true,\"sound\":false}")
+
+  // Kosmetik Profil Katalog (DESIGN.md)
+  activeFrameId  String?
+  activeEffectId String?
+  activeFrame    AvatarFrame?   @relation(fields: [activeFrameId], references: [id])
+  activeEffect   ProfileEffect? @relation(fields: [activeEffectId], references: [id])
+
+  // Relasi Autentikasi Better Auth
+  sessions      Session[]
+  accounts      Account[]
+
+  // Relasi Kelas
+  memberships    ClassMember[]
+  createdClasses Class[]       @relation("CreatedClasses")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?   // Hashing bawaan Better Auth untuk email & password
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
+}
+
+// ---------------------------------------------------------
+// MODEL KATALOG KOSMETIK (DESIGN.md)
+// ---------------------------------------------------------
+
+model AvatarFrame {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  assetUrl    String
+  users       User[]
+  createdAt   DateTime @default(now())
+
+  @@map("avatar_frame")
+}
+
+model ProfileEffect {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  configKey   String   // Kunci pemetaan ke komponen GSAP
+  users       User[]
+  createdAt   DateTime @default(now())
+
+  @@map("profile_effect")
+}
+
+// ---------------------------------------------------------
+// MODEL KELAS & ANGGOTA (WORLD.md)
+// ---------------------------------------------------------
+
+model Class {
+  id          String        @id @default(cuid())
+  name        String
+  code        String        @unique // Kode masuk kelas (misal: "MAT-02AM")
+  description String?
+  roomLayout  String        @default("standard-30") // Kunci layout ruang 3D (WORLD.md)
+  
+  createdById String
+  createdBy   User          @relation("CreatedClasses", fields: [createdById], references: [id])
+  
+  members     ClassMember[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("class")
+}
+
+model ClassMember {
+  id        String    @id @default(cuid())
+  userId    String
+  classId   String
+  role      ClassRole @default(STUDENT)
+  seatIndex Int?      // Nullable: hanya STUDENT yang diberi nomor meja
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  joinedAt  DateTime  @default(now())
+
+  @@unique([userId, classId])
+  // Di PostgreSQL standar, multiple NULL di unique constraint tidak saling bentrok,
+  // sehingga pengajar/asisten (seatIndex: null) tidak akan melanggar constraint ini.
+  @@unique([classId, seatIndex])
+  @@map("class_member")
+}

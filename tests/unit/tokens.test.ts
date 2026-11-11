@@ -19,3 +19,4 @@ describe("Token Desain (DESIGN.md)", () => {
     expect(THEME_TOKENS.fonts.mono).toBe("var(--font-jetbrains-mono)");
   });
 });
+
