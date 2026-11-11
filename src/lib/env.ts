@@ -20,16 +20,25 @@ export function validateEnv(env: Record<string, string | undefined> = process.en
   return result.data;
 }
 
-// In test environment, allow mock values if not provided
-const isTest = process.env.NODE_ENV === "test";
-export const env = isTest
+// Gunakan fallback aman saat pengujian unit atau saat fase build sebelum file .env diisi secara lokal
+const isTestOrBuild =
+  process.env.NODE_ENV === "test" ||
+  process.env.NEXT_PHASE === "phase-production-build" ||
+  !process.env.DATABASE_URL;
+
+export const env: Env = isTestOrBuild
   ? {
-      DATABASE_URL: process.env.DATABASE_URL || "postgresql://test:test@localhost:5432/testdb",
-      DIRECT_URL: process.env.DIRECT_URL || "postgresql://test:test@localhost:5432/testdb",
-      BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET || "rahasia-uji-coba-minimal-32-karakter-panjang",
+      DATABASE_URL:
+        process.env.DATABASE_URL ||
+        "postgresql://placeholder:placeholder@localhost:5432/placeholder",
+      DIRECT_URL:
+        process.env.DIRECT_URL ||
+        "postgresql://placeholder:placeholder@localhost:5432/placeholder",
+      BETTER_AUTH_SECRET:
+        process.env.BETTER_AUTH_SECRET ||
+        "rahasia-placeholder-minimal-32-karakter-panjang",
       BETTER_AUTH_URL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-      NODE_ENV: "test" as const,
+      NODE_ENV: (process.env.NODE_ENV as "development" | "test" | "production") || "development",
     }
   : validateEnv(process.env);
-
