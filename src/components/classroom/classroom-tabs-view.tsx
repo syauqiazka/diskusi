@@ -37,6 +37,7 @@ import {
   sendMessage,
   type ConversationDetail,
 } from "@/lib/chat/actions";
+import { useClassroomPresence } from "@/lib/realtime/use-classroom-presence";
 import type {
   ClassroomDetail,
   ClassroomMemberUser,
@@ -100,6 +101,26 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
   const teachers = classroom.members.filter(
     (m) => m.role === "TEACHER" || m.role === "ASSISTANT"
   );
+
+  const myMembership = classroom.members.find((m) => m.user.id === currentUserId);
+  const myName = myMembership?.user.displayName || myMembership?.user.name || "Saya";
+  const mySeat = myMembership?.seatIndex ?? null;
+
+  const classMembersForPresence = React.useMemo(() => {
+    return classroom.members.map((m) => ({
+      userId: m.user.id,
+      seatIndex: m.seatIndex,
+      name: m.user.displayName || m.user.name,
+    }));
+  }, [classroom.members]);
+
+  const { onlineUserIds, activeStudentCount } = useClassroomPresence({
+    classId: classroom.id,
+    currentUserId,
+    currentUserName: myName,
+    currentUserSeatIndex: mySeat,
+    classMembers: classMembersForPresence,
+  });
 
   const isTeacherOrAdmin = React.useMemo(() => {
     return classroom.members.some(
@@ -305,34 +326,42 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
               <Badge variant="cyan">DEPAN KELAS</Badge>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {teachers.map((t) => (
-                <div
-                  key={t.id}
-                  className="p-3 border border-neon-cyan/40 bg-neon-cyan/5 flex items-center justify-between"
-                >
-                  <div className="flex items-center space-x-2">
-                    <span className="w-2.5 h-2.5 bg-ok inline-block" />
-                    <div>
-                      <div className="font-sign uppercase text-base text-fluor">
-                        {t.user.displayName || t.user.name}
-                      </div>
-                      <div className="font-mono text-[11px] text-fluor/60">
-                        {t.role === "TEACHER" ? "Pengajar Utama" : "Asisten Kelas"}
+              {teachers.map((t) => {
+                const isTeacherOnline = onlineUserIds.has(t.user.id);
+                return (
+                  <div
+                    key={t.id}
+                    className="p-3 border border-neon-cyan/40 bg-neon-cyan/5 flex items-center justify-between"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`w-2.5 h-2.5 ${
+                          isTeacherOnline ? "bg-ok animate-pulse" : "bg-fluor/20"
+                        } inline-block`}
+                        title={isTeacherOnline ? "Pengajar Online" : "Pengajar Offline"}
+                      />
+                      <div>
+                        <div className="font-sign uppercase text-base text-fluor">
+                          {t.user.displayName || t.user.name}
+                        </div>
+                        <div className="font-mono text-[11px] text-fluor/60">
+                          {t.role === "TEACHER" ? "Pengajar Utama" : "Asisten Kelas"}
+                        </div>
                       </div>
                     </div>
+                    {t.user.id !== currentUserId && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleOpenDm(t.user)}
+                        className="text-xs"
+                      >
+                        KIRIM PESAN
+                      </Button>
+                    )}
                   </div>
-                  {t.user.id !== currentUserId && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleOpenDm(t.user)}
-                      className="text-xs"
-                    >
-                      KIRIM PESAN
-                    </Button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -340,7 +369,7 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-sign text-xl uppercase tracking-wider text-fluor">
-                GRID MEJA SISWA (30 MEJA)
+                GRID MEJA SISWA ({activeStudentCount} / {classroom.members.filter((m) => m.role === "STUDENT").length} ONLINE)
               </h3>
               <span className="font-mono text-xs text-fluor/60">
                 LAYOUT: {classroom.roomLayout.toUpperCase()}
@@ -351,6 +380,7 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
               {Array.from({ length: 30 }).map((_, index) => {
                 const member = studentSeats.get(index);
                 const isMe = member?.user.id === currentUserId;
+                const isOnline = member ? onlineUserIds.has(member.user.id) : false;
 
                 return (
                   <div
@@ -359,7 +389,9 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                       member
                         ? isMe
                           ? "border-caution bg-caution/10"
-                          : "border-fluor/40 bg-night hover:border-fluor"
+                          : isOnline
+                            ? "border-fluor bg-fluor/[0.04] shadow-[0_0_10px_rgba(79,208,138,0.1)]"
+                            : "border-fluor/30 bg-night"
                         : "border-dashed border-fluor/20 bg-fluor/[0.02]"
                     }`}
                   >
@@ -370,9 +402,13 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                       {member && (
                         <span
                           className={`w-2 h-2 ${
-                            isMe ? "bg-caution" : "bg-ok"
+                            isOnline
+                              ? isMe
+                                ? "bg-caution animate-pulse"
+                                : "bg-ok animate-pulse"
+                              : "bg-fluor/20"
                           } inline-block`}
-                          title="Presence: Online"
+                          title={isOnline ? "Status: Online di Meja" : "Status: Offline"}
                         />
                       )}
                     </div>
@@ -384,6 +420,13 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                         </div>
                         <div className="font-mono text-[11px] text-fluor/50 truncate">
                           {isMe ? "(MEJA ANDA)" : `@${member.user.username || "siswa"}`}
+                        </div>
+                        <div className="font-mono text-[10px] mt-0.5">
+                          {isOnline ? (
+                            <span className="text-ok font-semibold">● ONLINE DI MEJA</span>
+                          ) : (
+                            <span className="text-fluor/40">○ OFFLINE</span>
+                          )}
                         </div>
                       </div>
                     ) : (

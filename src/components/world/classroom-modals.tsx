@@ -43,9 +43,10 @@ import type { ClassroomDetail, ClassroomMemberDetail } from "@/lib/classroom/typ
 interface ClassroomModalsProps {
   classroom: ClassroomDetail;
   currentUserId: string;
+  onlineUserIds?: Set<string>;
 }
 
-export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsProps) {
+export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: ClassroomModalsProps) {
   const router = useRouter();
   const activePanel = useWorldStore((s) => s.activePanel);
   const activeInteractable = useWorldStore((s) => s.activeInteractable);
@@ -267,7 +268,12 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
                     </div>
 
                     <div className="text-[11px] text-fluor/60 pt-1">
-                      Status Kehadiran: <span className="text-ok font-bold">ONLINE DI MEJA</span>
+                      Status Kehadiran:{" "}
+                      {onlineUserIds && !onlineUserIds.has(targetMember.user.id) ? (
+                        <span className="text-fluor/40">○ OFFLINE</span>
+                      ) : (
+                        <span className="text-ok font-bold">● ONLINE DI MEJA</span>
+                      )}
                     </div>
                   </div>
                 </div>

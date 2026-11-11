@@ -5,14 +5,24 @@ import { Text } from "@react-three/drei";
 import { useWorldStore } from "@/stores/use-world-store";
 import { calculateDeskGridPosition } from "@/lib/classroom/classroom-math";
 import { CLASSROOM_COLORS, createGridTexture } from "./classroom-materials";
+import { StudentSittingAvatar, RemotePlayerAvatar } from "./player-avatar";
+import type { PeerPlayerState } from "@/lib/realtime/use-classroom-presence";
 import type { ClassroomDetail, ClassroomMemberDetail } from "@/lib/classroom/types";
 
 interface ClassroomSceneProps {
   classroom: ClassroomDetail;
   currentUserId: string;
+  activeSeatIndices?: Set<number>;
+  onlineUserIds?: Set<string>;
+  peerPositions?: Map<string, PeerPlayerState>;
 }
 
-export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps) {
+export function ClassroomScene({
+  classroom,
+  currentUserId,
+  activeSeatIndices = new Set(),
+  peerPositions = new Map(),
+}: ClassroomSceneProps) {
   const gridTexture = React.useMemo(() => {
     if (typeof window === "undefined") return null;
     return createGridTexture();
@@ -33,6 +43,11 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
   const teacher = React.useMemo(() => {
     return classroom.members.find((m) => m.role === "TEACHER" || m.role === "ASSISTANT");
   }, [classroom.members]);
+
+  // Daftar pemain lain yang posisinya sedang disinkronkan secara realtime
+  const peerList = React.useMemo(() => {
+    return Array.from(peerPositions.values());
+  }, [peerPositions]);
 
   return (
     <group>
@@ -81,7 +96,6 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
           <boxGeometry args={[13, 4.0, 0.2]} />
           <meshStandardMaterial color={CLASSROOM_COLORS.wall} roughness={0.85} />
         </mesh>
-        {/* Lis bawah dinding */}
         <mesh position={[0, -1.85, 0.11]}>
           <boxGeometry args={[13, 0.3, 0.05]} />
           <meshStandardMaterial color={CLASSROOM_COLORS.wallBase} />
@@ -100,103 +114,92 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
         </mesh>
       </group>
 
+      {/* Dinding Kiri (X = -6.5) */}
+      <group position={[-6.5, 2.0, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[15, 4.0, 0.2]} />
+          <meshStandardMaterial color={CLASSROOM_COLORS.wall} roughness={0.85} />
+        </mesh>
+        <mesh position={[0, -1.85, 0.11]}>
+          <boxGeometry args={[15, 0.3, 0.05]} />
+          <meshStandardMaterial color={CLASSROOM_COLORS.wallBase} />
+        </mesh>
+      </group>
+
       {/* Dinding Kanan (X = 6.5) */}
-      <group position={[6.5, 2.0, 0]}>
+      <group position={[6.5, 2.0, 0]} rotation={[0, -Math.PI / 2, 0]}>
         <mesh receiveShadow>
-          <boxGeometry args={[0.2, 4.0, 15]} />
+          <boxGeometry args={[15, 4.0, 0.2]} />
           <meshStandardMaterial color={CLASSROOM_COLORS.wall} roughness={0.85} />
         </mesh>
-        <mesh position={[-0.11, -1.85, 0]}>
-          <boxGeometry args={[0.05, 0.3, 15]} />
+        <mesh position={[0, -1.85, 0.11]}>
+          <boxGeometry args={[15, 0.3, 0.05]} />
           <meshStandardMaterial color={CLASSROOM_COLORS.wallBase} />
         </mesh>
       </group>
 
-      {/* Dinding Kiri dengan 4 Jendela Besar (X = -6.5) */}
-      <group position={[-6.5, 2.0, 0]}>
-        <mesh receiveShadow>
-          <boxGeometry args={[0.2, 4.0, 15]} />
-          <meshStandardMaterial color={CLASSROOM_COLORS.wall} roughness={0.85} />
-        </mesh>
-        <mesh position={[0.11, -1.85, 0]}>
-          <boxGeometry args={[0.05, 0.3, 15]} />
-          <meshStandardMaterial color={CLASSROOM_COLORS.wallBase} />
-        </mesh>
-        {/* Bingkai Jendela Kaca */}
-        {[-4.5, -1.5, 1.5, 4.5].map((z) => (
-          <group key={`window-${z}`} position={[0.11, 0.3, z]}>
-            <mesh>
-              <boxGeometry args={[0.06, 2.2, 1.8]} />
-              <meshStandardMaterial color="#0A0E17" roughness={0.2} metalness={0.7} />
-            </mesh>
-            <pointLight position={[0.3, 0, 0]} intensity={0.15} distance={3} color="#5CE1FF" />
-          </group>
-        ))}
-      </group>
-
-      {/* 5. OBJEK KELAS: PAPAN TULIS BESAR (Depan Kelas) */}
+      {/* 5. PAPAN TULIS KELAS (Dinding Depan) */}
       <group
-        position={[0, 2.1, -7.38]}
+        position={[0, 2.2, -7.38]}
         userData={{
           interactable: {
             id: "classroom-blackboard",
             type: "classroom-blackboard",
             label: "Papan Tulis Kelas",
-            actionPrompt: "[E] BUKA PENGUMUMAN KELAS",
+            actionPrompt: "[E] BUKA PAPAN TULIS / PENGUMUMAN",
           },
         }}
       >
-        {/* Bingkai Kayu */}
         <mesh>
-          <boxGeometry args={[6.2, 2.4, 0.08]} />
+          <boxGeometry args={[6.0, 2.2, 0.06]} />
           <meshStandardMaterial color={CLASSROOM_COLORS.blackboardFrame} />
         </mesh>
-        {/* Permukaan Papan Hijau Tua */}
-        <mesh position={[0, 0, 0.045]}>
-          <boxGeometry args={[6.0, 2.2, 0.02]} />
-          <meshStandardMaterial color={CLASSROOM_COLORS.blackboard} roughness={0.7} />
+        <mesh position={[0, 0, 0.035]}>
+          <boxGeometry args={[5.8, 2.0, 0.02]} />
+          <meshStandardMaterial color={CLASSROOM_COLORS.blackboard} roughness={0.9} />
         </mesh>
         <Text
-          position={[0, 0.6, 0.06]}
-          fontSize={0.24}
-          color="#E9F2E3"
+          position={[0, 0.8, 0.05]}
+          fontSize={0.2}
+          color="#F2C200"
           anchorX="center"
           anchorY="middle"
         >
           {classroom.name.toUpperCase()}
         </Text>
         <Text
-          position={[0, 0.2, 0.06]}
-          fontSize={0.14}
-          color="#F2C200"
+          position={[0, 0.5, 0.05]}
+          fontSize={0.11}
+          color="#E9F2E3"
           anchorX="center"
           anchorY="middle"
         >
-          {`[ KODE: ${classroom.code} // TATA LETAK: ${classroom.roomLayout.toUpperCase()} ]`}
+          AGENDA & PENGUMUMAN LAB
         </Text>
       </group>
 
-      {/* 6. MEJA GURU (Depan Papan Tulis) */}
+      {/* 6. MEJA PENGAJAR / GURU (Depan Kanan) */}
       <group
-        position={[0, 0, -5.6]}
+        position={[3.8, 0, -5.6]}
+        rotation={[0, -Math.PI / 6, 0]}
         userData={{
           interactable: {
             id: "classroom-teacher",
             type: "classroom-teacher",
             label: "Meja Guru / Pengajar",
-            actionPrompt: teacher ? `[E] MEJA PENGAJAR: ${teacher.user.displayName || teacher.user.name}` : "[E] MEJA PENGAJAR",
+            actionPrompt: "[E] LIHAT MEJA PENGAJAR",
+            targetId: teacher?.user.id || "",
           },
         }}
       >
-        <mesh position={[0, 0.76, 0]}>
-          <boxGeometry args={[2.0, 0.06, 0.9]} />
-          <meshStandardMaterial color={CLASSROOM_COLORS.deskTop} />
+        <mesh position={[0, 0.75, 0]}>
+          <boxGeometry args={[1.8, 0.06, 0.9]} />
+          <meshStandardMaterial color={CLASSROOM_COLORS.deskTop} roughness={0.65} />
         </mesh>
-        {/* Kaki Meja Guru */}
-        {[-0.9, 0.9].map((x) =>
-          [-0.38, 0.38].map((z) => (
-            <mesh key={`tleg-${x}-${z}`} position={[x, 0.38, z]}>
-              <boxGeometry args={[0.06, 0.76, 0.06]} />
+        {[-0.8, 0.8].map((lx) =>
+          [-0.38, 0.38].map((lz) => (
+            <mesh key={`tleg-${lx}-${lz}`} position={[lx, 0.375, lz]}>
+              <boxGeometry args={[0.06, 0.75, 0.06]} />
               <meshStandardMaterial color={CLASSROOM_COLORS.deskLegs} />
             </mesh>
           ))
@@ -254,7 +257,6 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
           <boxGeometry args={[1.6, 2.4, 0.6]} />
           <meshStandardMaterial color="#2B2119" />
         </mesh>
-        {/* Sekat Rak */}
         {[-0.6, 0, 0.6].map((y) => (
           <mesh key={`shelf-${y}`} position={[0, y, 0.05]}>
             <boxGeometry args={[1.5, 0.04, 0.55]} />
@@ -298,6 +300,7 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
         const member = studentSeats.get(index);
         const isMe = member?.user.id === currentUserId;
         const isTargeted = activeInteractable?.id === `desk-${index}`;
+        const isOnline = activeSeatIndices.has(index);
 
         return (
           <group
@@ -344,12 +347,10 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
                 <boxGeometry args={[0.5, 0.04, 0.45]} />
                 <meshStandardMaterial color={CLASSROOM_COLORS.chairSeat} />
               </mesh>
-              {/* Sandaran Kursi */}
               <mesh position={[0, 0.75, 0.2]}>
                 <boxGeometry args={[0.48, 0.35, 0.03]} />
                 <meshStandardMaterial color={CLASSROOM_COLORS.chairSeat} />
               </mesh>
-              {/* Kaki Kursi */}
               {[-0.2, 0.2].map((cx) =>
                 [-0.18, 0.18].map((cz) => (
                   <mesh key={`cleg-${cx}-${cz}`} position={[cx, 0.22, cz]}>
@@ -360,6 +361,14 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
               )}
             </group>
 
+            {/* Sosok Siswa Duduk di Meja (Hanya Muncul jika Sedang Online) */}
+            {member && isOnline && (
+              <StudentSittingAvatar
+                name={member.user.displayName || member.user.name}
+                isMe={isMe}
+              />
+            )}
+
             {/* Pelat Nomor Meja di Bagian Depan */}
             <mesh position={[0, 0.68, -0.34]}>
               <boxGeometry args={[0.22, 0.08, 0.02]} />
@@ -369,17 +378,17 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
               position={[0, 0.68, -0.36]}
               rotation={[0, Math.PI, 0]}
               fontSize={0.06}
-              color={member ? (isMe ? "#4FD08A" : "#F2C200") : "#E9F2E3"}
+              color={member ? (isOnline ? "#4FD08A" : "#666") : "#E9F2E3"}
               anchorX="center"
               anchorY="middle"
             >
               {`#${index + 1}`}
             </Text>
 
-            {/* Jika Berpenghuni: Lampu Meja dan Label Nama */}
+            {/* Lampu Meja Belajar (Menyala jika Siswa Sedang Online) */}
             {member && (
               <group position={[0.4, 0.74, -0.15]}>
-                {/* Dudukan Lampu Meja */}
+                {/* Dudukan Lampu */}
                 <mesh>
                   <cylinderGeometry args={[0.05, 0.07, 0.03, 8]} />
                   <meshStandardMaterial color="#222" />
@@ -388,17 +397,24 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
                   <cylinderGeometry args={[0.015, 0.015, 0.2, 6]} />
                   <meshStandardMaterial color="#444" />
                 </mesh>
-                {/* Kap Lampu */}
+                {/* Kap Lampu: Menyala terang jika online, redup jika offline */}
                 <mesh position={[0, 0.2, 0]} rotation={[0.2, 0, 0]}>
                   <coneGeometry args={[0.08, 0.08, 8]} />
-                  <meshStandardMaterial color={isMe ? "#4FD08A" : "#F2C200"} />
+                  <meshStandardMaterial
+                    color={isOnline ? (isMe ? "#4FD08A" : "#F2C200") : "#2A2A2A"}
+                    emissive={isOnline ? (isMe ? "#4FD08A" : "#F2C200") : "#000000"}
+                    emissiveIntensity={isOnline ? 0.8 : 0}
+                  />
                 </mesh>
-                <pointLight
-                  position={[0, 0.18, 0]}
-                  intensity={0.6}
-                  distance={2.5}
-                  color={isMe ? "#4FD08A" : "#F2C200"}
-                />
+                {/* Point Light aktif hanya saat online */}
+                {isOnline && (
+                  <pointLight
+                    position={[0, 0.18, 0]}
+                    intensity={0.8}
+                    distance={2.8}
+                    color={isMe ? "#4FD08A" : "#F2C200"}
+                  />
+                )}
               </group>
             )}
 
@@ -408,7 +424,7 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
                 position={[0, 0.75, 0]}
                 rotation={[-Math.PI / 2, 0, 0]}
                 fontSize={0.08}
-                color={isMe ? "#4FD08A" : "#E9F2E3"}
+                color={isOnline ? (isMe ? "#4FD08A" : "#F2C200") : "#555"}
                 anchorX="center"
                 anchorY="middle"
               >
@@ -418,6 +434,11 @@ export function ClassroomScene({ classroom, currentUserId }: ClassroomSceneProps
           </group>
         );
       })}
+
+      {/* 11. AVATAR SISWA LAIN YANG BERJALAN DI RUANG KELAS (MULTIPLAYER SPASIAL) */}
+      {peerList.map((peer) => (
+        <RemotePlayerAvatar key={peer.userId} player={peer} />
+      ))}
     </group>
   );
 }

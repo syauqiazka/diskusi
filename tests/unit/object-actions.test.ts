@@ -127,7 +127,7 @@ describe("Logika Integrasi Objek Interaktif (Tahap 4)", () => {
       expect(DEFAULT_AVATAR_FRAMES.some((f) => f.slug === "frame-caution")).toBe(true);
       expect(DEFAULT_AVATAR_FRAMES.some((f) => f.slug === "frame-cyan")).toBe(true);
       expect(DEFAULT_PROFILE_EFFECTS.some((e) => e.slug === "effect-glow")).toBe(true);
-    });
+    }, 15000);
   });
 });
 

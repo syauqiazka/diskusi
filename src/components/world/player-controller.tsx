@@ -26,11 +26,13 @@ interface KeyState {
 export interface PlayerControllerProps {
   initialPosition?: [number, number, number];
   bounds?: { minX: number; maxX: number; minZ: number; maxZ: number };
+  onPositionUpdate?: (pos: { x: number; y: number; z: number; rotY: number }) => void;
 }
 
 export function PlayerController({
   initialPosition = [0, STANDING_HEIGHT, 5],
   bounds,
+  onPositionUpdate,
 }: PlayerControllerProps = {}) {
   const { camera, gl } = useThree();
   const keys = React.useRef<KeyState>({
@@ -247,6 +249,15 @@ export function PlayerController({
 
     // Laporkan koordinat posisi ke Zustand store
     setPlayerPosition([activeCam.position.x, activeCam.position.y, activeCam.position.z]);
+
+    if (onPositionUpdate) {
+      onPositionUpdate({
+        x: activeCam.position.x,
+        y: activeCam.position.y,
+        z: activeCam.position.z,
+        rotY: euler.current.y,
+      });
+    }
   });
 
   return null;

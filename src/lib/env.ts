@@ -7,6 +7,7 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.string().url("BETTER_AUTH_URL harus berupa URL valid"),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  ABLY_API_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -40,5 +41,6 @@ export const env: Env = isTestOrBuild
       BETTER_AUTH_URL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
       NODE_ENV: (process.env.NODE_ENV as "development" | "test" | "production") || "development",
+      ABLY_API_KEY: process.env.ABLY_API_KEY || undefined,
     }
   : validateEnv(process.env);

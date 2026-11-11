@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
-import { ArrowRight, Zap, DoorOpen } from "lucide-react";
+import { ArrowRight, Zap, DoorOpen, Users } from "lucide-react";
 import { useWorldStore } from "@/stores/use-world-store";
 import { CLASSROOM_BOUNDS } from "@/lib/classroom/classroom-math";
 import { ClassroomScene } from "./classroom-scene";
@@ -15,6 +15,7 @@ import { PauseMenu } from "./pause-menu";
 import { TouchControls } from "./touch-controls";
 import { ClassroomModals } from "./classroom-modals";
 import { Button } from "@/components/ui/button";
+import { useClassroomPresence } from "@/lib/realtime/use-classroom-presence";
 import type { ClassroomDetail } from "@/lib/classroom/types";
 
 function isWebGLAvailable(): boolean {
@@ -39,7 +40,36 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
   const [hasWebGL] = React.useState<boolean>(() => isWebGLAvailable());
   const fastMode = useWorldStore((s) => s.worldSettings.fastMode);
 
-  // Fallback Otomatis Mode Cepat 2D (Review Focus 1 & WORLD.md)
+  // Data keanggotaan pengguna aktif untuk real-time presence
+  const myMembership = classroom.members.find((m) => m.user.id === currentUserId);
+  const myName = myMembership?.user.displayName || myMembership?.user.name || "Saya";
+  const mySeat = myMembership?.seatIndex ?? null;
+
+  const classMembersForPresence = React.useMemo(() => {
+    return classroom.members.map((m) => ({
+      userId: m.user.id,
+      seatIndex: m.seatIndex,
+      name: m.user.displayName || m.user.name,
+    }));
+  }, [classroom.members]);
+
+  // Hook Real-Time Presence & Multiplayer Spasial (Tahap 8)
+  const {
+    activeSeatIndices,
+    onlineUserIds,
+    peerPositions,
+    broadcastPosition,
+    activeStudentCount,
+    isFallback,
+  } = useClassroomPresence({
+    classId: classroom.id,
+    currentUserId,
+    currentUserName: myName,
+    currentUserSeatIndex: mySeat,
+    classMembers: classMembersForPresence,
+  });
+
+  // Fallback Otomatis Mode Cepat 2D
   if (!hasWebGL || fastMode) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center p-6 bg-night text-fluor font-mono">
@@ -80,6 +110,18 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
 
   return (
     <div className="relative w-full h-[85vh] sm:h-[88vh] bg-night overflow-hidden border border-fluor/30 select-none">
+      {/* Indikator Status Kehadiran Ruang Kelas (HUD Pojok) */}
+      <div className="absolute top-4 right-4 z-20 pointer-events-none flex items-center space-x-2 font-mono text-xs">
+        <div className="bg-night/85 border border-fluor/30 px-3 py-1 flex items-center space-x-2 text-fluor shadow-md">
+          <Users className="w-3.5 h-3.5 text-ok" />
+          <span>
+            {activeStudentCount} / {classroom.members.filter((m) => m.role === "STUDENT").length} ONLINE
+          </span>
+          <span className="w-2 h-2 rounded-full bg-ok animate-pulse inline-block" />
+          {isFallback && <span className="text-[10px] text-caution">(LOKAL)</span>}
+        </div>
+      </div>
+
       {/* 3D Canvas React Three Fiber Khusus Ruang Kelas */}
       <Canvas
         camera={{ position: [0, 1.6, 5.5], fov: 75, near: 0.1, far: 50 }}
@@ -89,9 +131,16 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
         <PlayerController
           initialPosition={[0, 1.6, 5.5]}
           bounds={CLASSROOM_BOUNDS}
+          onPositionUpdate={broadcastPosition}
         />
         <RaycastDetector />
-        <ClassroomScene classroom={classroom} currentUserId={currentUserId} />
+        <ClassroomScene
+          classroom={classroom}
+          currentUserId={currentUserId}
+          activeSeatIndices={activeSeatIndices}
+          onlineUserIds={onlineUserIds}
+          peerPositions={peerPositions}
+        />
         <VhsEffects />
       </Canvas>
 
@@ -105,8 +154,11 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
       <TouchControls />
 
       {/* Panel Modal 2D Objek Interaktif Ruang Kelas */}
-      <ClassroomModals classroom={classroom} currentUserId={currentUserId} />
+      <ClassroomModals
+        classroom={classroom}
+        currentUserId={currentUserId}
+        onlineUserIds={onlineUserIds}
+      />
     </div>
   );
 }
-
