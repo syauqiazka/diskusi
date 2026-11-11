@@ -132,3 +132,115 @@ export async function joinClassByCode(rawCode: string) {
     return { success: false, error: errorMsg };
   }
 }
+
+
+/**
+ * Mengambil detail kelas dan daftar anggota terverifikasi (hanya untuk anggota kelas)
+ */
+export async function getClassDetails(classId: string) {
+  const session = await getCurrentSession();
+  if (!session?.user) {
+    return { authorized: false, error: "Harap masuk untuk melihat kelas." };
+  }
+
+  // Verifikasi keanggotaan kelas di sisi server
+  const myMembership = await prisma.classMember.findUnique({
+    where: {
+      userId_classId: {
+        userId: session.user.id,
+        classId,
+      },
+    },
+  });
+
+  if (!myMembership) {
+    return {
+      authorized: false,
+      error: "Akses ditolak: Anda bukan anggota kelas ini. Masukkan kode kelas untuk bergabung.",
+    };
+  }
+
+  const classroom = await prisma.class.findUnique({
+    where: { id: classId },
+    include: {
+      members: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              displayName: true,
+              username: true,
+              image: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: [{ role: "asc" }, { seatIndex: "asc" }],
+      },
+      createdBy: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+        },
+      },
+    },
+  });
+
+  if (!classroom) {
+    return { authorized: false, error: "Kelas tidak ditemukan." };
+  }
+
+  return {
+    authorized: true,
+    class: classroom,
+    myMembership,
+  };
+}
+
+/**
+ * Memverifikasi apakah dua pengguna berada di kelas yang sama sebelum membuka DM
+ */
+export async function verifySameClassMembership(targetUserId: string) {
+  const session = await getCurrentSession();
+  if (!session?.user) {
+    return { allowed: false, reason: "Belum terautentikasi." };
+  }
+
+  if (session.user.id === targetUserId) {
+    return { allowed: false, reason: "Tidak dapat mengirim pesan ke diri sendiri." };
+  }
+
+  // Cari apakah ada classId di mana kedua user terdaftar
+  const sharedClass = await prisma.classMember.findFirst({
+    where: {
+      userId: session.user.id,
+      class: {
+        members: {
+          some: {
+            userId: targetUserId,
+          },
+        },
+      },
+    },
+    include: {
+      class: {
+        select: { id: true, name: true },
+      },
+    },
+  });
+
+  if (!sharedClass) {
+    return {
+      allowed: false,
+      reason:
+        "Aturan DM: Anda dan pengguna tujuan tidak berada di kelas yang sama. DM hanya diizinkan antar sesama anggota kelas.",
+    };
+  }
+
+  return {
+    allowed: true,
+    sharedClass: sharedClass.class,
+  };
+}
