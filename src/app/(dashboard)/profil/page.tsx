@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/auth-client";
+import { getCerminCosmetics, updateUserActiveFrame } from "@/lib/classroom/object-actions";
 
 // Katalog Resmi Bingkai Avatar (DESIGN.md: Katalog saja, tanpa upload pengguna)
 const avatarFrames = [
@@ -33,7 +34,22 @@ export default function ProfilPage() {
   const [graphicsQuality, setGraphicsQuality] = React.useState<"low" | "medium" | "high">("medium");
   const [saveSuccess, setSaveSuccess] = React.useState(false);
 
-  const handleSaveSettings = () => {
+  // Sinkronkan bingkai aktif dari database
+  React.useEffect(() => {
+    getCerminCosmetics().then((res) => {
+      if (res.activeFrameId) {
+        setSelectedFrame(res.activeFrameId);
+      }
+    });
+  }, []);
+
+  const handleSaveSettings = async () => {
+    // Simpan bingkai ke database jika user sudah login
+    if (selectedFrame !== "frame-none") {
+      await updateUserActiveFrame(selectedFrame);
+    } else {
+      await updateUserActiveFrame(null);
+    }
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);

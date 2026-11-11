@@ -36,13 +36,22 @@ async function ClassroomContent({ id }: { id: string }) {
     <div className="space-y-6">
       {/* Baris Navigasi Kembali & Info Header Kelas */}
       <div className="border-b border-fluor/20 pb-4 space-y-3">
-        <Link
-          href="/kelas"
-          className="inline-flex items-center space-x-1.5 font-mono text-xs text-fluor/60 hover:text-caution transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>KEMBALI KE DAFTAR KELAS</span>
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/kelas"
+            className="inline-flex items-center space-x-1.5 font-mono text-xs text-fluor/60 hover:text-caution transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>KEMBALI KE DAFTAR KELAS</span>
+          </Link>
+
+          <Link
+            href="/dunia"
+            className="inline-flex items-center space-x-1.5 font-mono text-xs text-caution hover:underline transition-colors"
+          >
+            <span>[E] KELUAR KE LORONG 3D</span>
+          </Link>
+        </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
