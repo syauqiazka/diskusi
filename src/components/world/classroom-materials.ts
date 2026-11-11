@@ -52,3 +52,4 @@ export function createGridTexture(): THREE.CanvasTexture {
   texture.repeat.set(12, 14);
   return texture;
 }
+

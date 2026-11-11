@@ -65,3 +65,4 @@ interface ClassroomWorldViewProps {
 export function ClassroomWorldView({ classroom, currentUserId }: ClassroomWorldViewProps) {
   return <ClassroomContainer classroom={classroom} currentUserId={currentUserId} />;
 }
+

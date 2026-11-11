@@ -55,6 +55,17 @@ model User {
   memberships    ClassMember[]
   createdClasses Class[]       @relation("CreatedClasses")
 
+  // Relasi Forum, Materi & Pengumuman (Tahap 6)
+  threads        Thread[]
+  comments       Comment[]
+  materials      LearningMaterial[]
+  announcements  Announcement[]
+
+  // Relasi Chat Pribadi / DM Intra-Kelas (Tahap 7 & WORLD.md)
+  conversationsInitiated Conversation[] @relation("ConversationUser1")
+  conversationsReceived  Conversation[] @relation("ConversationUser2")
+  messagesSent           Message[]      @relation("SentMessages")
+
   @@map("user")
 }
 
@@ -143,7 +154,11 @@ model Class {
   createdById String
   createdBy   User          @relation("CreatedClasses", fields: [createdById], references: [id])
   
-  members     ClassMember[]
+  members       ClassMember[]
+  threads       Thread[]
+  materials     LearningMaterial[]
+  announcements Announcement[]
+  conversations Conversation[]
 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -169,3 +184,149 @@ model ClassMember {
   @@unique([classId, seatIndex])
   @@map("class_member")
 }
+
+// ---------------------------------------------------------
+// MODEL FORUM DISKUSI (Mading Global & Papan Diskusi Kelas)
+// Single Engine: classId null = Mading, classId ada = Kelas
+// ---------------------------------------------------------
+
+model Thread {
+  id            String       @id @default(cuid())
+  title         String
+  content       String
+  category      String       // Misal: "JARINGAN & SERVER", "VIRTUALISASI", "PENGUMUMAN"
+  votes         Int          @default(0)
+  isPinned      Boolean      @default(false)
+  hasBestAnswer Boolean      @default(false)
+
+  authorId      String
+  author        User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Single Engine: null = Mading Global, non-null = Papan Diskusi Kelas
+  classId       String?
+  class         Class?       @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  comments      Comment[]
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([classId, createdAt])
+  @@map("thread")
+}
+
+model Comment {
+  id           String    @id @default(cuid())
+  content      String
+  isBestAnswer Boolean   @default(false)
+  depth        Int       @default(1) // 1, 2, atau 3 (maksimal)
+
+  threadId     String
+  thread       Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  authorId     String
+  author       User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  parentId     String?
+  parent       Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      Comment[] @relation("CommentReplies")
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([threadId, parentId])
+  @@map("comment")
+}
+
+// ---------------------------------------------------------
+// MODEL REPOSITORI MATERI (Perpustakaan & Rak Materi Kelas)
+// Single Engine: classId null = Terbuka, classId ada = Kelas
+// ---------------------------------------------------------
+
+model LearningMaterial {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  fileFormat  String   @default("PDF")
+  fileSize    String   @default("1.0 MB")
+  fileUrl     String
+
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Single Engine: null = Perpustakaan Terbuka, non-null = Rak Materi Kelas
+  classId     String?
+  class       Class?   @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([classId, category])
+  @@map("learning_material")
+}
+
+// ---------------------------------------------------------
+// MODEL PENGUMUMAN KELAS (Papan Tulis Kelas)
+// ---------------------------------------------------------
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  isPinned  Boolean  @default(true)
+
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([classId, isPinned])
+  @@map("announcement")
+}
+
+// ---------------------------------------------------------
+// MODEL CHAT PRIBADI / DM INTRA-KELAS (WORLD.md & docs/rancangan.md)
+// DM hanya diizinkan antar sesama anggota yang sekelas
+// ---------------------------------------------------------
+
+model Conversation {
+  id        String    @id @default(cuid())
+  classId   String
+  class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  user1Id   String
+  user1     User      @relation("ConversationUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+
+  user2Id   String
+  user2     User      @relation("ConversationUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+
+  messages  Message[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([classId, user1Id, user2Id])
+  @@index([classId])
+  @@map("conversation")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId       String
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  content        String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+  @@map("message")
+}
+

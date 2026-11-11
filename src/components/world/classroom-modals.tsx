@@ -15,12 +15,29 @@ import {
   ShieldCheck,
   CheckCircle2,
   Lock,
+  Download,
 } from "lucide-react";
 import { useWorldStore } from "@/stores/use-world-store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { verifySameClassMembership } from "@/lib/classroom/actions";
+import {
+  getAnnouncements,
+  type AnnouncementListItem,
+} from "@/lib/announcements/actions";
+import {
+  getThreads,
+  type ThreadListItem,
+} from "@/lib/forum/actions";
+import {
+  getMaterials,
+  type MaterialListItem,
+} from "@/lib/materials/actions";
+import {
+  getOrCreateConversation,
+  sendMessage,
+  type ConversationDetail,
+} from "@/lib/chat/actions";
 import type { ClassroomDetail, ClassroomMemberDetail } from "@/lib/classroom/types";
 
 interface ClassroomModalsProps {
@@ -34,14 +51,19 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
   const activeInteractable = useWorldStore((s) => s.activeInteractable);
   const closePanel = useWorldStore((s) => s.closePanel);
 
-  // State DM Meja Siswa
+  // State DM Meja Siswa (Riwayat Nyata)
+  const [conversation, setConversation] = React.useState<ConversationDetail | null>(null);
+  const [isLoadingDm, setIsLoadingDm] = React.useState(false);
+  const [dmError, setDmError] = React.useState<string | null>(null);
   const [dmMessage, setDmMessage] = React.useState("");
-  const [isSending, setIsSending] = React.useState(false);
-  const [sentNotice, setSentNotice] = React.useState(false);
-  const [dmVerification, setDmVerification] = React.useState<{
-    allowed?: boolean;
-    reason?: string;
-  } | null>(null);
+  const [isSendingDm, setIsSendingDm] = React.useState(false);
+
+  // State Data Objek Kelas (Pengumuman, Diskusi, Materi)
+  const [announcements, setAnnouncements] = React.useState<AnnouncementListItem[]>([]);
+  const [threads, setThreads] = React.useState<ThreadListItem[]>([]);
+  const [materials, setMaterials] = React.useState<MaterialListItem[]>([]);
+  const [isLoadingObjects, setIsLoadingObjects] = React.useState(false);
+  const [downloadNotice, setDownloadNotice] = React.useState<string | null>(null);
 
   // Temukan anggota berdasarkan meja yang diklik
   const targetMember = React.useMemo<ClassroomMemberDetail | null>(() => {
@@ -72,41 +94,112 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activePanel, closePanel]);
 
-  // Reset form DM saat target meja berganti
+  // Load riwayat DM saat membuka meja siswa lain
   React.useEffect(() => {
-    let ignore = false;
+    let isMounted = true;
+    if (activePanel !== "classroom-desk" || !targetMember || targetMember.user.id === currentUserId) {
+      Promise.resolve().then(() => {
+        if (isMounted) {
+          setConversation(null);
+          setDmError(null);
+        }
+      });
+      return;
+    }
+
     Promise.resolve().then(() => {
-      if (!ignore) {
-        setDmMessage("");
-        setSentNotice(false);
-        setDmVerification(null);
+      if (isMounted) {
+        setIsLoadingDm(true);
+        setDmError(null);
       }
     });
 
-    if (targetMember && targetMember.user.id !== currentUserId) {
-      verifySameClassMembership(targetMember.user.id).then((res) => {
-        if (!ignore) setDmVerification(res);
+    getOrCreateConversation(classroom.id, targetMember.user.id)
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.success && res.conversation) {
+          setConversation(res.conversation);
+        } else {
+          setDmError(res.error || "Gagal memuat percakapan.");
+        }
+      })
+      .catch(() => {
+        if (isMounted) setDmError("Terjadi kesalahan memuat DM.");
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingDm(false);
       });
-    }
 
     return () => {
-      ignore = true;
+      isMounted = false;
     };
-  }, [targetMember, currentUserId]);
+  }, [activePanel, targetMember, currentUserId, classroom.id]);
 
-  const handleSendDm = (e: React.FormEvent) => {
+  // Load data pengumuman / diskusi / materi saat panel bersangkutan dibuka
+  React.useEffect(() => {
+    if (!activePanel) return;
+
+    if (
+      activePanel === "classroom-blackboard" ||
+      activePanel === "classroom-discussion" ||
+      activePanel === "classroom-materials"
+    ) {
+      let isMounted = true;
+      Promise.resolve().then(() => {
+        if (isMounted) {
+          setIsLoadingObjects(true);
+        }
+      });
+
+      Promise.all([
+        getAnnouncements(classroom.id),
+        getThreads({ classId: classroom.id }),
+        getMaterials({ classId: classroom.id }),
+      ])
+        .then(([annRes, threadRes, matRes]) => {
+          if (!isMounted) return;
+          setAnnouncements(annRes);
+          setThreads(threadRes.threads);
+          setMaterials(matRes);
+        })
+        .catch((err) => {
+          console.error("Gagal memuat data objek kelas 3D:", err);
+        })
+        .finally(() => {
+          if (isMounted) setIsLoadingObjects(false);
+        });
+
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [activePanel, classroom.id]);
+
+  const handleSendDm = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dmMessage.trim() || !targetMember) return;
 
-    setIsSending(true);
-    setTimeout(() => {
-      setIsSending(false);
-      setSentNotice(true);
-      setDmMessage("");
-      setTimeout(() => {
-        setSentNotice(false);
-      }, 2000);
-    }, 500);
+    try {
+      setIsSendingDm(true);
+      const res = await sendMessage({
+        classId: classroom.id,
+        targetUserId: targetMember.user.id,
+        content: dmMessage.trim(),
+      });
+
+      if (res.success && res.message) {
+        setConversation((prev) =>
+          prev ? { ...prev, messages: [...prev.messages, res.message!] } : null
+        );
+        setDmMessage("");
+      } else {
+        setDmError(res.error || "Gagal mengirim pesan.");
+      }
+    } catch {
+      setDmError("Terjadi kesalahan jaringan saat mengirim pesan.");
+    } finally {
+      setIsSendingDm(false);
+    }
   };
 
   if (!activePanel) return null;
@@ -135,7 +228,7 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
               <div className="flex items-center space-x-2 text-caution">
                 <User className="w-6 h-6" />
                 <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} INTERAKSI MEJA SISWA
+                  {"//"} INTERAKSI MEJA SISWA (3D)
                 </span>
               </div>
               <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
@@ -179,43 +272,80 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
                   </div>
                 </div>
 
-                {/* Formulir DM Intra-Kelas */}
+                {/* Formulir DM Intra-Kelas dengan Riwayat Obrolan Nyata */}
                 {targetMember.user.id !== currentUserId ? (
                   <div className="border border-fluor/25 bg-fluor/[0.02] p-4 space-y-3 font-mono text-xs">
                     <div className="flex items-center justify-between border-b border-fluor/10 pb-2">
                       <span className="font-bold text-caution uppercase flex items-center space-x-1.5">
                         <MessageSquare className="w-3.5 h-3.5" />
-                        <span>KIRIM PESAN LANGSUNG (DM INTRA-KELAS)</span>
+                        <span>PERCAKAPAN DM SPASIAL (INTRA-KELAS)</span>
                       </span>
-                      {dmVerification?.allowed && (
-                        <span className="text-ok text-[11px] flex items-center space-x-1">
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>TERVERIFIKASI SEKELAS</span>
-                        </span>
-                      )}
+                      <span className="text-ok text-[11px] flex items-center space-x-1">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>TERVERIFIKASI SEKELAS</span>
+                      </span>
                     </div>
 
-                    {sentNotice ? (
-                      <div className="p-3 border border-ok bg-ok/10 text-ok flex items-center space-x-2">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Pesan berhasil dikirimkan ke meja @{targetMember.user.username || targetMember.user.name}!</span>
+                    {isLoadingDm ? (
+                      <div className="py-6 text-center text-fluor/50">
+                        Memuat riwayat pesan meja...
+                      </div>
+                    ) : dmError ? (
+                      <div className="p-3 border border-alert bg-alert/10 text-alert text-xs">
+                        {dmError}
                       </div>
                     ) : (
-                      <form onSubmit={handleSendDm} className="space-y-2">
-                        <Input
-                          value={dmMessage}
-                          onChange={(e) => setDmMessage(e.target.value)}
-                          placeholder={`Tulis pesan untuk ${targetMember.user.displayName || targetMember.user.name}...`}
-                          className="font-mono text-xs"
-                          disabled={isSending}
-                        />
-                        <div className="flex justify-end gap-2">
-                          <Button type="submit" variant="default" size="sm" disabled={isSending || !dmMessage.trim()}>
-                            <Send className="w-3.5 h-3.5 mr-1" />
-                            <span>{isSending ? "MENGIRIM..." : "KIRIM PESAN"}</span>
-                          </Button>
+                      <div className="space-y-3">
+                        {/* Riwayat Percakapan */}
+                        <div className="border border-fluor/20 p-3 space-y-2 max-h-48 overflow-y-auto bg-night">
+                          {!conversation || conversation.messages.length === 0 ? (
+                            <div className="text-center text-fluor/40 py-4 text-[11px]">
+                              Belum ada percakapan dengan @{targetMember.user.username || targetMember.user.name}.
+                            </div>
+                          ) : (
+                            conversation.messages.map((msg) => (
+                              <div
+                                key={msg.id}
+                                className={`flex flex-col ${msg.isSelf ? "items-end" : "items-start"}`}
+                              >
+                                <div
+                                  className={`p-2 max-w-[85%] text-xs font-body leading-relaxed ${
+                                    msg.isSelf
+                                      ? "bg-caution/15 border border-caution/40 text-fluor"
+                                      : "bg-neon-cyan/15 border border-neon-cyan/40 text-fluor"
+                                  }`}
+                                >
+                                  <div className="font-mono text-[10px] text-fluor/50 mb-0.5">
+                                    {msg.isSelf ? "Anda" : msg.senderName}
+                                  </div>
+                                  <div>{msg.content}</div>
+                                </div>
+                              </div>
+                            ))
+                          )}
                         </div>
-                      </form>
+
+                        {/* Input Pesan */}
+                        <form onSubmit={handleSendDm} className="flex gap-2">
+                          <Input
+                            value={dmMessage}
+                            onChange={(e) => setDmMessage(e.target.value)}
+                            placeholder={`Kirim pesan ke meja @${targetMember.user.username || targetMember.user.name}...`}
+                            className="font-mono text-xs flex-1"
+                            disabled={isSendingDm}
+                          />
+                          <Button
+                            type="submit"
+                            variant="default"
+                            size="sm"
+                            disabled={isSendingDm || !dmMessage.trim()}
+                            className="space-x-1"
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                            <span>{isSendingDm ? "..." : "KIRIM"}</span>
+                          </Button>
+                        </form>
+                      </div>
                     )}
                   </div>
                 ) : (
@@ -249,7 +379,7 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
           </div>
         )}
 
-        {/* 2. MODAL PAPAN TULIS KELAS (PENGUMUMAN) */}
+        {/* 2. MODAL PAPAN TULIS KELAS (PENGUMUMAN NYATA) */}
         {activePanel === "classroom-blackboard" && (
           <div className="space-y-6">
             <div className="border-b border-fluor/20 pb-4 space-y-2">
@@ -267,20 +397,32 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
               </p>
             </div>
 
-            <div className="space-y-3 font-mono text-xs">
-              <div className="border border-caution/40 bg-caution/5 p-4 space-y-2">
-                <div className="flex justify-between items-center text-caution font-bold">
-                  <span>AGENDA MINGGU INI</span>
-                  <Badge variant="caution">DIPIN OLEH GURU</Badge>
-                </div>
-                <h4 className="font-sign text-base uppercase text-fluor">
-                  Praktikum Konfigurasi Switch Core & VLAN SIJA BAZMA
-                </h4>
-                <p className="font-body text-xs text-fluor/80">
-                  Seluruh siswa diharapkan mempersiapkan kabel console dan login ke routerboard lab pada jam pelajaran ke-3.
-                </p>
+            {isLoadingObjects ? (
+              <div className="py-8 text-center font-mono text-xs text-fluor/50">
+                Memuat agenda papan tulis...
               </div>
-            </div>
+            ) : announcements.length === 0 ? (
+              <div className="py-8 text-center font-mono text-xs text-fluor/50 border border-fluor/20">
+                Belum ada pengumuman yang ditulis pada papan kelas.
+              </div>
+            ) : (
+              <div className="space-y-3 font-mono text-xs">
+                {announcements.map((ann) => (
+                  <div key={ann.id} className="border border-caution/40 bg-caution/5 p-4 space-y-2">
+                    <div className="flex justify-between items-center text-caution font-bold">
+                      <span className="uppercase">{ann.title}</span>
+                      <Badge variant="caution">DIPIN OLEH PENGAJAR</Badge>
+                    </div>
+                    <p className="font-body text-xs sm:text-sm text-fluor/90 leading-relaxed whitespace-pre-wrap">
+                      {ann.content}
+                    </p>
+                    <div className="text-[10px] text-fluor/50 pt-1 border-t border-fluor/10">
+                      Oleh: {ann.author.name} • {new Date(ann.createdAt).toLocaleDateString("id-ID")}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Button
@@ -302,7 +444,7 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
           </div>
         )}
 
-        {/* 3. MODAL PAPAN DISKUSI KELAS */}
+        {/* 3. MODAL PAPAN DISKUSI KELAS (THREAD NYATA) */}
         {activePanel === "classroom-discussion" && (
           <div className="space-y-6">
             <div className="border-b border-fluor/20 pb-4 space-y-2">
@@ -320,17 +462,32 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
               </p>
             </div>
 
-            <div className="space-y-3 font-mono text-xs">
-              <div className="border border-fluor/20 p-3 bg-night">
-                <span className="text-neon-cyan font-bold">[DISKUSI KELAS #1]</span>
-                <h4 className="font-sign text-base uppercase text-fluor mt-1">
-                  Kendala Subnetting CIDR /28 pada Lab Jaringan
-                </h4>
-                <p className="font-body text-xs text-fluor/60 mt-0.5 line-clamp-1">
-                  Berapa host usable yang tersisa jika router gateway mengambil IP pertama?
-                </p>
+            {isLoadingObjects ? (
+              <div className="py-8 text-center font-mono text-xs text-fluor/50">
+                Memuat topik diskusi kelas...
               </div>
-            </div>
+            ) : threads.length === 0 ? (
+              <div className="py-8 text-center font-mono text-xs text-fluor/50 border border-fluor/20">
+                Belum ada topik diskusi di papan kelas ini.
+              </div>
+            ) : (
+              <div className="space-y-3 font-mono text-xs">
+                {threads.map((thread) => (
+                  <div key={thread.id} className="border border-fluor/20 p-3 bg-night space-y-1">
+                    <div className="flex items-center justify-between text-neon-cyan font-bold">
+                      <span>[{thread.category}]</span>
+                      <span className="text-[11px] text-fluor/50">{thread.commentCount} Komentar</span>
+                    </div>
+                    <h4 className="font-sign text-base uppercase text-fluor mt-1">
+                      {thread.title}
+                    </h4>
+                    <p className="font-body text-xs text-fluor/70 line-clamp-2">
+                      {thread.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Button
@@ -352,7 +509,7 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
           </div>
         )}
 
-        {/* 4. MODAL RAK MATERI KELAS */}
+        {/* 4. MODAL RAK MATERI KELAS (MATERI NYATA) */}
         {activePanel === "classroom-materials" && (
           <div className="space-y-6">
             <div className="border-b border-fluor/20 pb-4 space-y-2">
@@ -370,15 +527,45 @@ export function ClassroomModals({ classroom, currentUserId }: ClassroomModalsPro
               </p>
             </div>
 
-            <div className="space-y-2 font-mono text-xs">
-              <div className="p-3 border border-fluor/20 flex items-center justify-between">
-                <div>
-                  <div className="text-fluor font-semibold">Modul 01: Topologi Jaringan & Pengkabelan UTP</div>
-                  <div className="text-fluor/50 text-[11px]">Format: PDF (3.2 MB) // Praktikum Lab</div>
-                </div>
-                <Badge variant="ok">TERSEDIA</Badge>
+            {downloadNotice && (
+              <div className="border border-ok bg-ok/10 text-ok p-2.5 font-mono text-xs flex items-center space-x-2 animate-fadeIn">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{downloadNotice}</span>
               </div>
-            </div>
+            )}
+
+            {isLoadingObjects ? (
+              <div className="py-8 text-center font-mono text-xs text-fluor/50">
+                Memuat berkas modul rak kelas...
+              </div>
+            ) : materials.length === 0 ? (
+              <div className="py-8 text-center font-mono text-xs text-fluor/50 border border-fluor/20">
+                Belum ada modul yang ditempatkan di rak materi kelas ini.
+              </div>
+            ) : (
+              <div className="space-y-2 font-mono text-xs max-h-56 overflow-y-auto">
+                {materials.map((mat) => (
+                  <div key={mat.id} className="p-3 border border-fluor/20 flex items-center justify-between">
+                    <div>
+                      <div className="text-fluor font-semibold">{mat.title}</div>
+                      <div className="text-fluor/50 text-[11px]">Format: {mat.fileFormat} ({mat.fileSize}) // {mat.category}</div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setDownloadNotice(`Mempersiapkan unduhan: ${mat.title}...`);
+                        setTimeout(() => setDownloadNotice(null), 2500);
+                      }}
+                      className="space-x-1 text-xs"
+                    >
+                      <Download className="w-3 h-3" />
+                      <span>UNDUH</span>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Button

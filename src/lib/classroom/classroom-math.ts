@@ -44,3 +44,4 @@ export function calculateDeskGridPosition(seatIndex: number): [number, number, n
 
   return [x, y, z];
 }
+
