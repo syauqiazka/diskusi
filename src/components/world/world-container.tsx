@@ -137,7 +137,7 @@ export function WorldContainer() {
           position: [spawnPos[0], spawnPos[1] + 1.6, spawnPos[2]],
           fov: 75,
           near: 0.05,
-          far: 250,
+          far: 1200,
         }}
         gl={{ antialias: false, powerPreference: "high-performance" }}
         className="w-full h-full cursor-crosshair"

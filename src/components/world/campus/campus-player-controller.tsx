@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CAMPUS_LAYOUT } from '@/lib/world/campus-layout';
@@ -40,6 +41,7 @@ import {
 } from '@/lib/world/movement';
 
 export function FirstPersonController() {
+  const router = useRouter();
   const { camera, gl } = useThree();
 
   const cameraMode = useWorldStore((s) => s.cameraMode);
@@ -67,6 +69,7 @@ export function FirstPersonController() {
   useEffect(() => {
     if (camera instanceof THREE.PerspectiveCamera) {
       camera.near = PLAYER_NEAR_PLANE;
+      camera.far = 1200;
       camera.updateProjectionMatrix();
     }
     camera.rotation.order = 'YXZ';
@@ -244,6 +247,11 @@ export function FirstPersonController() {
       }
 
       if (state.cameraMode !== 'fps' || state.isPaused || state.activePanel !== null) {
+        if (state.isPaused && (e.code === 'KeyX' || e.key === 'x' || e.key === 'X')) {
+          e.preventDefault();
+          state.setPaused(false);
+          router.push('/');
+        }
         return;
       }
 
@@ -332,7 +340,7 @@ export function FirstPersonController() {
       window.removeEventListener('blur', handleWindowBlur);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [gl]);
+  }, [gl, router]);
 
   useFrame((_, delta) => {
     const state = useWorldStore.getState();

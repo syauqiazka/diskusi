@@ -325,6 +325,84 @@ export const TimeOfDayEnvironment: React.FC = () => {
   const dustPointsRef = useRef<THREE.Points>(null);
   const dustMatRef = useRef<THREE.PointsMaterial>(null);
 
+  // Inisialisasi geometri bintang di kubah langit atas
+  const { starsGeometry } = useMemo(() => {
+    const count = 450;
+    const positions = new Float32Array(count * 3);
+    const radius = 620;
+
+    for (let i = 0; i < count; i++) {
+      const u = Math.random();
+      const v = Math.random();
+      const theta = u * 2.0 * Math.PI;
+      const phi = Math.acos(2.0 * v - 1.0) * 0.45;
+
+      const x = radius * Math.sin(phi) * Math.cos(theta);
+      const y = Math.max(10, radius * Math.cos(phi));
+      const z = radius * Math.sin(phi) * Math.sin(theta);
+
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = z;
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return { starsGeometry: geo, starsCount: count };
+  }, []);
+
+  // Inisialisasi geometri partikel debu udara
+  const { dustGeometry, dustVelocities, dustCount } = useMemo(() => {
+    const count = 160;
+    const positions = new Float32Array(count * 3);
+    const velocities = new Float32Array(count * 3);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 36;
+      positions[i * 3 + 1] = 0.5 + Math.random() * 6.5;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 36;
+
+      velocities[i * 3] = (Math.random() - 0.5) * 0.08;
+      velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.04;
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.08;
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return { dustGeometry: geo, dustVelocities: velocities, dustCount: count };
+  }, []);
+
+  // Material kubah langit dibuat SEKALI (tanpa dependensi re-instansiasi)
+  const skyMaterial = useMemo(() => {
+    // Pastikan store membaca jam sistem terbaru sebelum membuat material
+    if (typeof window !== 'undefined') {
+      useTimeOfDayStore.getState().useSystemTime();
+    }
+    const { activePhase, nextPhase, blendFactor } = useTimeOfDayStore.getState();
+    const init = getBlendedVisualConfig(activePhase, nextPhase, blendFactor);
+    return new THREE.ShaderMaterial({
+      vertexShader: skyVertexShader,
+      fragmentShader: skyFragmentShader,
+      uniforms: {
+        uTopColor: { value: init.skyTop.clone() },
+        uBottomColor: { value: init.skyBottom.clone() },
+        uExponent: { value: init.skyExponent },
+      },
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      fog: false, // Bebas dari kabut agar warna langit selalu presisi
+    });
+  }, []);
+
+  // Bersihkan resource saat unmount
+  useEffect(() => {
+    return () => {
+      starsGeometry.dispose();
+      dustGeometry.dispose();
+      skyMaterial.dispose();
+    };
+  }, [starsGeometry, dustGeometry, skyMaterial]);
+
   // Timer per detik untuk jam sistem
   useEffect(() => {
     const interval = setInterval(() => {
@@ -409,92 +487,49 @@ export const TimeOfDayEnvironment: React.FC = () => {
       dirLightRef.current.intensity = initialConfig.celestialIntensity;
     }
 
+    // Berlangganan ke perubahan store (termasuk tombol debug manual seperti 12:30 Siang)
+    const unsub = useTimeOfDayStore.subscribe((state) => {
+      const config = getBlendedVisualConfig(state.activePhase, state.nextPhase, state.blendFactor);
+      const activeMat = skyMatRef.current || skyMaterial;
+      if (activeMat?.uniforms) {
+        (activeMat.uniforms.uTopColor.value as THREE.Color).copy(config.skyTop);
+        (activeMat.uniforms.uBottomColor.value as THREE.Color).copy(config.skyBottom);
+        activeMat.uniforms.uExponent.value = config.skyExponent;
+      }
+      if (dirLightRef.current) {
+        dirLightRef.current.color.copy(config.celestialColor);
+        dirLightRef.current.intensity = config.celestialIntensity;
+      }
+      if (ambientLightRef.current) {
+        ambientLightRef.current.color.copy(config.ambientColor);
+        ambientLightRef.current.intensity = config.ambientIntensity * 0.6;
+      }
+      if (hemiLightRef.current) {
+        hemiLightRef.current.color.copy(config.skyBottom);
+        hemiLightRef.current.groundColor.copy(config.ambientColor);
+        hemiLightRef.current.intensity = config.ambientIntensity * 0.72;
+      }
+      if (scene.fog && scene.fog instanceof THREE.FogExp2) {
+        scene.fog.color.copy(config.fogColor);
+        scene.fog.density = config.fogDensity;
+      }
+      if (starsMatRef.current) {
+        starsMatRef.current.opacity = config.starsOpacity;
+        if (starsPointsRef.current) {
+          starsPointsRef.current.visible = config.starsOpacity > 0.02;
+        }
+      }
+    });
+
     return () => {
+      unsub();
       scene.fog = null;
       scene.environment = null;
       roomEnv.dispose();
       envTarget.dispose();
       pmremGenerator.dispose();
     };
-  }, [scene, gl]);
-
-  // Inisialisasi geometri bintang di kubah langit atas
-  const { starsGeometry } = useMemo(() => {
-    const count = 450;
-    const positions = new Float32Array(count * 3);
-    const radius = 620;
-
-    for (let i = 0; i < count; i++) {
-      const u = Math.random();
-      const v = Math.random();
-      const theta = u * 2.0 * Math.PI;
-      const phi = Math.acos(2.0 * v - 1.0) * 0.45;
-
-      const x = radius * Math.sin(phi) * Math.cos(theta);
-      const y = Math.max(10, radius * Math.cos(phi));
-      const z = radius * Math.sin(phi) * Math.sin(theta);
-
-      positions[i * 3] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
-    }
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    return { starsGeometry: geo, starsCount: count };
-  }, []);
-
-  // Inisialisasi geometri partikel debu udara
-  const { dustGeometry, dustVelocities, dustCount } = useMemo(() => {
-    const count = 160;
-    const positions = new Float32Array(count * 3);
-    const velocities = new Float32Array(count * 3);
-
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 36;
-      positions[i * 3 + 1] = 0.5 + Math.random() * 6.5;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 36;
-
-      velocities[i * 3] = (Math.random() - 0.5) * 0.08;
-      velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.04;
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.08;
-    }
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    return { dustGeometry: geo, dustVelocities: velocities, dustCount: count };
-  }, []);
-
-  // Material kubah langit dibuat SEKALI (tanpa dependensi re-instansiasi)
-  const skyMaterial = useMemo(() => {
-    // Pastikan store membaca jam sistem terbaru sebelum membuat material
-    if (typeof window !== 'undefined') {
-      useTimeOfDayStore.getState().useSystemTime();
-    }
-    const { activePhase, nextPhase, blendFactor } = useTimeOfDayStore.getState();
-    const init = getBlendedVisualConfig(activePhase, nextPhase, blendFactor);
-    return new THREE.ShaderMaterial({
-      vertexShader: skyVertexShader,
-      fragmentShader: skyFragmentShader,
-      uniforms: {
-        uTopColor: { value: init.skyTop.clone() },
-        uBottomColor: { value: init.skyBottom.clone() },
-        uExponent: { value: init.skyExponent },
-      },
-      side: THREE.BackSide,
-      depthWrite: false,
-      fog: false, // Bebas dari kabut agar warna langit selalu presisi
-    });
-  }, []);
-
-  // Bersihkan resource saat unmount
-  useEffect(() => {
-    return () => {
-      starsGeometry.dispose();
-      dustGeometry.dispose();
-      skyMaterial.dispose();
-    };
-  }, [starsGeometry, dustGeometry, skyMaterial]);
+  }, [scene, gl, skyMaterial]);
 
   // Perulangan animasi per-frame (useFrame) membaca getState() tanpa memicu React re-render
   useFrame((_, delta) => {
@@ -597,12 +632,13 @@ export const TimeOfDayEnvironment: React.FC = () => {
       );
     }
 
-    // 4. Kubah Langit
-    if (skyMatRef.current) {
-      (skyMatRef.current.uniforms.uTopColor.value as THREE.Color).lerp(blended.skyTop, damping);
-      (skyMatRef.current.uniforms.uBottomColor.value as THREE.Color).lerp(blended.skyBottom, damping);
-      skyMatRef.current.uniforms.uExponent.value = THREE.MathUtils.damp(
-        skyMatRef.current.uniforms.uExponent.value,
+    // 4. Kubah Langit (update baik via ref maupun instance useMemo)
+    const activeSkyMat = skyMatRef.current || skyMaterial;
+    if (activeSkyMat && activeSkyMat.uniforms) {
+      (activeSkyMat.uniforms.uTopColor.value as THREE.Color).lerp(blended.skyTop, damping);
+      (activeSkyMat.uniforms.uBottomColor.value as THREE.Color).lerp(blended.skyBottom, damping);
+      activeSkyMat.uniforms.uExponent.value = THREE.MathUtils.damp(
+        activeSkyMat.uniforms.uExponent.value,
         blended.skyExponent,
         TIME_OF_DAY_CONFIG.dampingLambda,
         dt
