@@ -10,12 +10,41 @@ export type InteractableType =
   | "library"
   | "locker"
   | "mirror"
+  | "lab_komputer"
+  | "ruang_rapat"
+  | "ruang_konsultansi"
+  | "ruang_kelas"
+  | "perpustakaan"
+  | "ruang_musik"
   | "classroom-desk"
   | "classroom-blackboard"
   | "classroom-discussion"
   | "classroom-materials"
   | "classroom-exit"
   | "classroom-teacher";
+
+export type CameraMode = "fps" | "inspect";
+
+export interface HoveredInteractableState {
+  id: string;
+  type: InteractableType;
+  label: string;
+  actionLabel: string;
+  isLocked?: boolean;
+  lockedMessage?: string;
+  distance: number;
+  source: "refs" | "konseptual";
+}
+
+export interface ActivePanelState {
+  interactableId: string;
+  type: InteractableType;
+  title: string;
+  description: string;
+  details?: string[];
+  source: "refs" | "konseptual";
+  isLocked?: boolean;
+}
 
 export interface InteractableItem {
   id: string;
@@ -42,14 +71,24 @@ export interface WorldState {
   isCrouching: boolean;
   isRunning: boolean;
   cameraHeight: number;
+  eyeHeight: number; // alias untuk cameraHeight
+  standingHeight: number;
+  crouchingHeight: number;
+  maxWalkableSlope: number;
   playerPosition: [number, number, number];
   isPointerLocked: boolean;
   touchControlsActive: boolean;
   webGLSupported: boolean;
+  cameraMode: CameraMode;
+  cutawayMode: boolean;
+  headBobEnabled: boolean;
 
   // Interaksi & Panel
   activeInteractable: InteractableItem | null;
+  hoveredInteractable: HoveredInteractableState | null;
   activePanel: InteractableType | null;
+  activePanelState: ActivePanelState | null;
+  doorStates: Record<string, boolean>;
   showControlHelp: boolean;
   sessionDuration: number; // detik
 
@@ -65,8 +104,14 @@ export interface WorldState {
   setPointerLocked: (locked: boolean) => void;
   setTouchControlsActive: (active: boolean) => void;
   setWebGLSupported: (supported: boolean) => void;
+  setCameraMode: (mode: CameraMode) => void;
+  setCutawayMode: (enabled: boolean) => void;
+  setHeadBobEnabled: (enabled: boolean) => void;
+  toggleDoorState: (doorId: string) => void;
+
   setActiveInteractable: (item: InteractableItem | null) => void;
-  openPanel: (panel: InteractableType) => void;
+  setHoveredInteractable: (target: HoveredInteractableState | null) => void;
+  openPanel: (panel: InteractableType | ActivePanelState) => void;
   closePanel: () => void;
   setShowControlHelp: (show: boolean) => void;
   toggleControlHelp: () => void;
@@ -88,13 +133,23 @@ export const useWorldStore = create<WorldState>((set) => ({
   isCrouching: false,
   isRunning: false,
   cameraHeight: STANDING_HEIGHT,
-  playerPosition: [0, STANDING_HEIGHT, 5],
+  eyeHeight: STANDING_HEIGHT,
+  standingHeight: STANDING_HEIGHT,
+  crouchingHeight: CROUCHING_HEIGHT,
+  maxWalkableSlope: 0.45,
+  playerPosition: [0, STANDING_HEIGHT, 38], // spawn di dekat gerbang
   isPointerLocked: false,
   touchControlsActive: false,
   webGLSupported: true,
+  cameraMode: "fps",
+  cutawayMode: false,
+  headBobEnabled: false,
 
   activeInteractable: null,
+  hoveredInteractable: null,
   activePanel: null,
+  activePanelState: null,
+  doorStates: {},
   showControlHelp: false,
   sessionDuration: 0,
 
@@ -108,6 +163,7 @@ export const useWorldStore = create<WorldState>((set) => ({
     set({
       isCrouching,
       cameraHeight: isCrouching ? CROUCHING_HEIGHT : STANDING_HEIGHT,
+      eyeHeight: isCrouching ? CROUCHING_HEIGHT : STANDING_HEIGHT,
     }),
 
   setRunning: (isRunning) => set({ isRunning }),
@@ -120,32 +176,52 @@ export const useWorldStore = create<WorldState>((set) => ({
 
   setWebGLSupported: (webGLSupported) => set({ webGLSupported }),
 
+  setCameraMode: (cameraMode) => set({ cameraMode }),
+
+  setCutawayMode: (cutawayMode) => set({ cutawayMode }),
+
+  setHeadBobEnabled: (headBobEnabled) => set({ headBobEnabled }),
+
+  toggleDoorState: (doorId: string) =>
+    set((state) => ({
+      doorStates: {
+        ...state.doorStates,
+        [doorId]: !state.doorStates[doorId],
+      },
+    })),
+
   setActiveInteractable: (activeInteractable) => set({ activeInteractable }),
 
-  openPanel: (panel) =>
-    set({
-      activePanel: panel,
-      isPaused: true, // Otomatis jeda kontrol saat panel 2D terbuka
-      isPointerLocked: false, // Lepas pointer lock agar mouse bebas di panel
-    }),
+  setHoveredInteractable: (hoveredInteractable) => set({ hoveredInteractable }),
 
-  closePanel: () =>
-    set({
-      activePanel: null,
-      isPaused: false,
-    }),
+  openPanel: (panel) => {
+    if (typeof panel === "string") {
+      set({ activePanel: panel, isPaused: true, isPointerLocked: false });
+    } else {
+      set({
+        activePanelState: panel,
+        activePanel: panel.type,
+        isPaused: true,
+        isPointerLocked: false,
+      });
+    }
+  },
+
+  closePanel: () => set({ activePanel: null, activePanelState: null, isPaused: false }),
 
   setShowControlHelp: (showControlHelp) => set({ showControlHelp }),
 
-  toggleControlHelp: () => set((state) => ({ showControlHelp: !state.showControlHelp })),
+  toggleControlHelp: () =>
+    set((state) => ({ showControlHelp: !state.showControlHelp })),
 
-  incrementSessionDuration: () => set((state) => ({ sessionDuration: state.sessionDuration + 1 })),
+  incrementSessionDuration: () =>
+    set((state) => ({ sessionDuration: state.sessionDuration + 1 })),
 
-  updateWorldSettings: (newSettings) =>
+  updateWorldSettings: (settings) =>
     set((state) => ({
       worldSettings: {
         ...state.worldSettings,
-        ...newSettings,
+        ...settings,
       },
     })),
 
@@ -155,13 +231,13 @@ export const useWorldStore = create<WorldState>((set) => ({
       isCrouching: false,
       isRunning: false,
       cameraHeight: STANDING_HEIGHT,
-      playerPosition: [0, STANDING_HEIGHT, 5],
+      eyeHeight: STANDING_HEIGHT,
+      playerPosition: [0, STANDING_HEIGHT, 38],
       isPointerLocked: false,
-      touchControlsActive: false,
-      webGLSupported: true,
       activeInteractable: null,
+      hoveredInteractable: null,
       activePanel: null,
-      showControlHelp: false,
+      activePanelState: null,
       sessionDuration: 0,
       worldSettings: defaultSettings,
     }),
