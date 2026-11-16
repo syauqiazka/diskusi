@@ -109,7 +109,20 @@ export function WorldContainer() {
   const spawnPos = CAMPUS_LAYOUT.playerSpawn.position;
 
   return (
-    <div className="relative w-full h-[85vh] sm:h-[88vh] bg-night overflow-hidden border border-fluor/30 select-none">
+    <div className="relative w-screen h-screen bg-night overflow-hidden select-none">
+      {/* Tombol Pintas Kembali ke Mode Cepat 2D */}
+      <div className="absolute top-3 right-3 z-40 flex items-center gap-2">
+        <Link href="/kelas">
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-night/90 hover:bg-caution hover:text-night text-fluor border-fluor/40 hover:border-caution font-hud text-base tracking-wider uppercase transition-colors"
+          >
+            [X] KELUAR KE MODE 2D
+          </Button>
+        </Link>
+      </div>
+
       {/* 3D Canvas React Three Fiber */}
       <Canvas
         camera={{

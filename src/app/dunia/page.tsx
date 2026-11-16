@@ -33,16 +33,16 @@ function WorldLoadingScreen() {
   }, [loadingTexts.length]);
 
   return (
-    <div className="w-full h-[85vh] bg-night border border-fluor/30 flex flex-col items-center justify-center space-y-4 p-6 select-none font-hud">
+    <div className="w-screen h-screen bg-night flex flex-col items-center justify-center space-y-4 p-6 select-none font-hud">
       <div className="relative">
-        <Loader2 className="w-10 h-10 text-caution animate-spin" />
+        <Loader2 className="w-12 h-12 text-caution animate-spin" />
         <span className="absolute inset-0 flex items-center justify-center font-mono text-[10px] text-fluor">
           3D
         </span>
       </div>
 
       <div className="space-y-1 text-center">
-        <div className="text-caution text-2xl sm:text-3xl tracking-widest uppercase">
+        <div className="text-caution text-3xl sm:text-4xl tracking-widest uppercase">
           MEMUAT KAWASAN SEKOLAH 3D
         </div>
         <div className="font-mono text-xs text-fluor/70 tracking-wider">
@@ -58,11 +58,5 @@ function WorldLoadingScreen() {
 }
 
 export default function DuniaPage() {
-  return (
-    <div className="space-y-4">
-      {/* Container Dunia 3D */}
-      <WorldContainer />
-    </div>
-  );
+  return <WorldContainer />;
 }
-

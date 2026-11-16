@@ -7,7 +7,14 @@ import type { ClassroomDetail } from "@/lib/classroom/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-async function ClassroomContent({ id }: { id: string }) {
+export const instant = false;
+
+async function ClassroomContent({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const session = await getCurrentSession();
   const result = await getClassDetails(id);
 
@@ -101,13 +108,11 @@ async function ClassroomContent({ id }: { id: string }) {
   );
 }
 
-export default async function RuangKelasPage({
+export default function RuangKelasPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-
   return (
     <Suspense
       fallback={
@@ -116,7 +121,7 @@ export default async function RuangKelasPage({
         </div>
       }
     >
-      <ClassroomContent id={id} />
+      <ClassroomContent params={params} />
     </Suspense>
   );
 }

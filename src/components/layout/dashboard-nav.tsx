@@ -9,11 +9,6 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   {
-    label: "[00] DUNIA 3D (LORONG)",
-    href: "/dunia",
-    icon: Compass,
-  },
-  {
     label: "[01] KELAS SAYA",
     href: "/kelas",
     icon: GraduationCap,
@@ -29,14 +24,14 @@ const navItems = [
     icon: BookOpen,
   },
   {
-    label: "[04] LOKER & PROFIL",
-    href: "/profil",
-    icon: User,
-  },
-  {
-    label: "[05] PESAN KELAS",
+    label: "[04] PESAN KELAS",
     href: "/pesan",
     icon: MessageSquare,
+  },
+  {
+    label: "[05] LOKER & PROFIL",
+    href: "/profil",
+    icon: User,
   },
 ];
 
@@ -54,8 +49,8 @@ export function DashboardNav() {
   return (
     <div className="border-b border-fluor/20 bg-night/90">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between py-3 gap-3">
-          {/* Navigasi Tab Mode Cepat */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between py-3 gap-3">
+          {/* Navigasi Tab Mode 2D */}
           <nav className="flex flex-wrap items-center gap-2">
             {navItems.map((item) => {
               const isActive =
@@ -81,14 +76,26 @@ export function DashboardNav() {
             })}
           </nav>
 
-          {/* Info Status Pengguna & Signout */}
-          <div className="flex items-center space-x-3 self-end md:self-auto font-mono text-xs">
+          {/* Switcher ke Dunia 3D & Status Pengguna */}
+          <div className="flex flex-wrap items-center gap-3 self-end lg:self-auto font-mono text-xs">
+            {/* Tombol Pemisah Tegas ke Dunia 3D */}
+            <Link href="/dunia">
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-caution text-night hover:bg-caution/90 border border-caution font-hud tracking-wider text-sm flex items-center space-x-1.5"
+              >
+                <Compass className="w-4 h-4" />
+                <span>[E] MASUK DUNIA 3D</span>
+              </Button>
+            </Link>
+
             {isPending ? (
               <span className="text-fluor/40">Memeriksa sesi...</span>
             ) : session?.user ? (
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-1.5">
-                  <span className="w-2 h-2 rounded-none bg-ok inline-block animate-pulse" />
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1.5 px-2 py-1 border border-fluor/20 bg-night">
+                  <span className="w-2 h-2 bg-ok inline-block animate-pulse" />
                   <span className="text-fluor font-medium">{session.user.name}</span>
                 </div>
                 <Badge variant="outline">
@@ -119,4 +126,3 @@ export function DashboardNav() {
     </div>
   );
 }
-

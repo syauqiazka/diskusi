@@ -1,20 +1,29 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { getServerSession } from "@/lib/auth/session";
 import { HudHeader } from "@/components/layout/hud-header";
 import { HudFooter } from "@/components/layout/hud-footer";
 import { DashboardNav } from "@/components/layout/dashboard-nav";
 
-export default function DashboardLayout({
+export const instant = false;
+
+export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession();
+  if (!session) {
+    redirect("/masuk");
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-night text-fluor">
       <HudHeader />
       <Suspense
         fallback={
           <div className="border-b border-fluor/20 bg-night/90 h-12 flex items-center px-4 font-mono text-xs text-fluor/50">
-            MEMUAT NAVIGASI SISTEM...
+            MEMUAT NAVIGASI SISTEM 2D...
           </div>
         }
       >
