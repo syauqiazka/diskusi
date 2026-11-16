@@ -66,6 +66,8 @@ export function WorldContainer() {
   const [hasWebGL] = React.useState<boolean>(() => isWebGLAvailable());
   const fastMode = useWorldStore((s) => s.worldSettings.fastMode);
   const cutawayMode = useWorldStore((s) => s.cutawayMode);
+  const isPointerLocked = useWorldStore((s) => s.isPointerLocked);
+  const isPaused = useWorldStore((s) => s.isPaused);
   const [showLabels] = React.useState(false);
 
   // Fallback Otomatis Mode Cepat 2D (Review Focus 1 & WORLD.md)
@@ -108,20 +110,26 @@ export function WorldContainer() {
 
   const spawnPos = CAMPUS_LAYOUT.playerSpawn.position;
 
+  // Tombol keluar hanya terlihat saat dijeda atau pointer tidak terkunci
+  const showExitButton = isPaused || !isPointerLocked;
+
   return (
     <div className="relative w-screen h-screen bg-night overflow-hidden select-none">
-      {/* Tombol Pintas Kembali ke Mode Cepat 2D */}
-      <div className="absolute top-3 right-3 z-40 flex items-center gap-2">
-        <Link href="/kelas">
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-night/90 hover:bg-caution hover:text-night text-fluor border-fluor/40 hover:border-caution font-hud text-base tracking-wider uppercase transition-colors"
-          >
-            [X] KELUAR KE MODE 2D
-          </Button>
-        </Link>
-      </div>
+      {/* Tombol Pintas Kembali ke Mode Cepat 2D — hanya tampil saat dijeda */}
+      {showExitButton && (
+        <div className="absolute top-3 right-3 z-40 flex items-center gap-2">
+          <Link href="/kelas" tabIndex={isPointerLocked ? -1 : 0}>
+            <Button
+              variant="outline"
+              size="sm"
+              tabIndex={isPointerLocked ? -1 : 0}
+              className="bg-night/90 hover:bg-caution hover:text-night text-fluor border-fluor/40 hover:border-caution font-hud text-base tracking-wider uppercase transition-colors"
+            >
+              KELUAR KE MODE 2D
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* 3D Canvas React Three Fiber */}
       <Canvas

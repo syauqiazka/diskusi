@@ -39,7 +39,7 @@ export function PauseMenu() {
               <rect x="6" y="4" width="4" height="16" />
               <rect x="14" y="4" width="4" height="16" />
             </svg>
-            <span>PAUSE ❚❚</span>
+            <span>PAUSE</span>
           </div>
           <h2 className="font-sign text-3xl sm:text-5xl tracking-wide uppercase text-fluor">
             SEKOLAH TENGAH MALAM

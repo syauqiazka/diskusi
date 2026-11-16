@@ -346,6 +346,12 @@ export const TimeOfDayEnvironment: React.FC = () => {
 
   // Pasang kabut atmosfer & RoomEnvironment IBL halus di scene
   useEffect(() => {
+    // Paksa store membaca ulang jam sistem terkini agar fase aktif akurat
+    useTimeOfDayStore.getState().tickSystemTime();
+    if (useTimeOfDayStore.getState().timeSource === 'system') {
+      useTimeOfDayStore.getState().useSystemTime();
+    }
+
     const { activePhase, nextPhase, blendFactor } = useTimeOfDayStore.getState();
     const initialConfig = getBlendedVisualConfig(activePhase, nextPhase, blendFactor);
     const fog = new THREE.FogExp2(initialConfig.fogColor.clone(), initialConfig.fogDensity);
@@ -372,6 +378,35 @@ export const TimeOfDayEnvironment: React.FC = () => {
     if (starsMatRef.current && starsPointsRef.current) {
       starsMatRef.current.opacity = initialConfig.starsOpacity;
       starsPointsRef.current.visible = initialConfig.starsOpacity > 0.02;
+    }
+
+    // Langsung set sky shader ke warna yang benar (tanpa menunggu damping lerp)
+    if (skyMatRef.current) {
+      (skyMatRef.current.uniforms.uTopColor.value as THREE.Color).copy(initialConfig.skyTop);
+      (skyMatRef.current.uniforms.uBottomColor.value as THREE.Color).copy(initialConfig.skyBottom);
+      skyMatRef.current.uniforms.uExponent.value = initialConfig.skyExponent;
+    }
+
+    // Langsung set directional light ke posisi dan warna yang benar
+    if (dirLightRef.current) {
+      const celestial = calculateCelestialPositions(
+        useTimeOfDayStore.getState().currentHour,
+        TIME_OF_DAY_CONFIG.celestialOrbitRadius
+      );
+      _sunPos.set(celestial.sun[0], celestial.sun[1], celestial.sun[2]);
+      _moonPos.set(celestial.moon[0], celestial.moon[1], celestial.moon[2]);
+
+      const activeDir = _sunPos.y >= -5 ? _sunPos.clone().normalize() : _moonPos.clone().normalize();
+      _currentLightDir.copy(activeDir);
+
+      const lightRadius = TIME_OF_DAY_CONFIG.celestialOrbitRadius;
+      dirLightRef.current.position.set(
+        activeDir.x * lightRadius,
+        Math.max(18, activeDir.y * lightRadius),
+        activeDir.z * lightRadius
+      );
+      dirLightRef.current.color.copy(initialConfig.celestialColor);
+      dirLightRef.current.intensity = initialConfig.celestialIntensity;
     }
 
     return () => {
@@ -432,6 +467,10 @@ export const TimeOfDayEnvironment: React.FC = () => {
 
   // Material kubah langit dibuat SEKALI (tanpa dependensi re-instansiasi)
   const skyMaterial = useMemo(() => {
+    // Pastikan store membaca jam sistem terbaru sebelum membuat material
+    if (typeof window !== 'undefined') {
+      useTimeOfDayStore.getState().useSystemTime();
+    }
     const { activePhase, nextPhase, blendFactor } = useTimeOfDayStore.getState();
     const init = getBlendedVisualConfig(activePhase, nextPhase, blendFactor);
     return new THREE.ShaderMaterial({

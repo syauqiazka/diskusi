@@ -259,7 +259,7 @@ export function FirstPersonController() {
         return;
       }
 
-      if (e.code === 'Backspace') {
+      if (e.code === 'Space') {
         e.preventDefault();
         if (!e.repeat && isGroundedRef.current && !state.isCrouching) {
           const ceil = ceilingYRef.current;

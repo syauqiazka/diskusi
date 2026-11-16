@@ -58,7 +58,7 @@ async function DuniaKelasContent({
             size="sm"
             className="bg-night/90 hover:bg-caution hover:text-night text-fluor border-fluor/40 hover:border-caution font-hud text-base tracking-wider uppercase transition-colors"
           >
-            [X] KELUAR KE KELAS 2D
+            KELUAR KE KELAS 2D
           </Button>
         </Link>
       </div>

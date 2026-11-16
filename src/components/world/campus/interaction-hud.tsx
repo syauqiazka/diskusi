@@ -131,7 +131,7 @@ export function InteractionHud() {
             <span aria-hidden="true">·</span>
             <span>C Jongkok ({isCrouching ? '0.9m' : '1.6m'})</span>
             <span aria-hidden="true">·</span>
-            <span>Backspace Lompat</span>
+            <span>Spasi Lompat</span>
             <span aria-hidden="true">·</span>
             <span>E / Klik Interaksi</span>
             <span aria-hidden="true">·</span>
@@ -238,7 +238,7 @@ export function InteractionHud() {
               <span>W / A / S / D : Bergerak</span>
               <span>Shift : Lari cepat</span>
               <span>C : Toggle jongkok</span>
-              <span>Backspace : Lompat</span>
+              <span>Spasi : Lompat</span>
               <span>E / Klik Kiri : Interaksi</span>
               <span>Mouse : Arah pandang</span>
               <span>Esc : Jeda / Tutup panel</span>
