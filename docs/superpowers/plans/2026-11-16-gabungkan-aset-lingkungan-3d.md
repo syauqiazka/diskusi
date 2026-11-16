@@ -39,10 +39,10 @@
 - Create: `public/assets/aistudio/image_e4efc7f8.png`
 - Create: `docs/denah-konseptual-sekolah.md`
 
-- [ ] **Step 1: Buat direktori `public/assets/aistudio` dan salin 5 file gambar PNG**
-- [ ] **Step 2: Salin file `docs/denah-konseptual-sekolah.md` ke folder `docs/`**
-- [ ] **Step 3: Verifikasi keberadaan dan ukuran file hasil penyalinan**
-- [ ] **Step 4: Commit aset dan dokumen denah konseptual**
+- [x] **Step 1: Buat direktori `public/assets/aistudio` dan salin 5 file gambar PNG**
+- [x] **Step 2: Salin file `docs/denah-konseptual-sekolah.md` ke folder `docs/`**
+- [x] **Step 3: Verifikasi keberadaan dan ukuran file hasil penyalinan**
+- [x] **Step 4: Commit aset dan dokumen denah konseptual**
 
 ### Task 2: Porting Library Matematika & Tata Letak Kawasan (`src/lib/world/`)
 
@@ -57,11 +57,11 @@
 - Create: `src/lib/world/webgl-env.ts`
 - Create: `tests/unit/campus-layout.test.ts`
 
-- [ ] **Step 1: Tulis unit test Vitest untuk verifikasi tata letak kampus dan elevasi (`tests/unit/campus-layout.test.ts`)**
-- [ ] **Step 2: Jalankan test dan konfirmasi kegagalan awal jika modul belum di-port**
-- [ ] **Step 3: Implementasikan modul-modul di `src/lib/world/` dengan import path Next.js `@/...`**
-- [ ] **Step 4: Jalankan `npm test tests/unit/campus-layout.test.ts` dan pastikan PASS**
-- [ ] **Step 5: Commit modul lib world**
+- [x] **Step 1: Tulis unit test Vitest untuk verifikasi tata letak kampus dan elevasi (`tests/unit/campus-layout.test.ts`)**
+- [x] **Step 2: Jalankan test dan konfirmasi kegagalan awal jika modul belum di-port**
+- [x] **Step 3: Implementasikan modul-modul di `src/lib/world/` dengan import path Next.js `@/...`**
+- [x] **Step 4: Jalankan `npm test tests/unit/campus-layout.test.ts` dan pastikan PASS**
+- [x] **Step 5: Commit modul lib world**
 
 ### Task 3: Porting Sistem Waktu Realtime & Lingkungan Langit (`src/lib/world/time-of-day/` & Komponen)
 
@@ -73,11 +73,11 @@
 - Create: `src/components/world/environment/time-of-day-debug-panel.tsx`
 - Create: `tests/unit/time-logic.test.ts`
 
-- [ ] **Step 1: Tulis unit test Vitest untuk logika perhitungan waktu dan interpolasi pencahayaan (`tests/unit/time-logic.test.ts`)**
-- [ ] **Step 2: Implementasikan store `use-time-of-day-store.ts` dan konfigurasi `time-of-day.config.ts`**
-- [ ] **Step 3: Implementasikan komponen R3F `time-of-day-environment.tsx`, `sky-clouds.tsx`, dan `time-of-day-debug-panel.tsx`**
-- [ ] **Step 4: Jalankan `npm test tests/unit/time-logic.test.ts` dan pastikan PASS**
-- [ ] **Step 5: Commit modul waktu realtime**
+- [x] **Step 1: Tulis unit test Vitest untuk logika perhitungan waktu dan interpolasi pencahayaan (`tests/unit/time-logic.test.ts`)**
+- [x] **Step 2: Implementasikan store `use-time-of-day-store.ts` dan konfigurasi `time-of-day.config.ts`**
+- [x] **Step 3: Implementasikan komponen R3F `time-of-day-environment.tsx`, `sky-clouds.tsx`, dan `time-of-day-debug-panel.tsx`**
+- [x] **Step 4: Jalankan `npm test tests/unit/time-logic.test.ts` dan pastikan PASS**
+- [x] **Step 5: Commit modul waktu realtime**
 
 ### Task 4: Porting Komponen 3D Kawasan & Interior Sekolah
 
@@ -88,12 +88,12 @@
 - Create: `src/components/world/campus/sekolah-interior.tsx`
 - Create: `src/components/world/campus/campus-blockout.tsx`
 
-- [ ] **Step 1: Implementasikan `campus-terrain.tsx` dan `campus-grass.tsx` menggunakan fungsi elevasi tanah**
-- [ ] **Step 2: Implementasikan `sekolah-furniture.tsx` (instanced rendering meja, kursi, komputer, rak server)**
-- [ ] **Step 3: Implementasikan `sekolah-interior.tsx` (lantai 1-3, sekat ruangan, pintu, tangga U)**
-- [ ] **Step 4: Implementasikan `campus-blockout.tsx` (gedung asrama 5 lantai, sekolah 3 lantai, atap limas, tangga lapangan, talud)**
-- [ ] **Step 5: Verifikasi typecheck modul kampus**
-- [ ] **Step 6: Commit komponen 3D kampus**
+- [x] **Step 1: Implementasikan `campus-terrain.tsx` dan `campus-grass.tsx` menggunakan fungsi elevasi tanah**
+- [x] **Step 2: Implementasikan `sekolah-furniture.tsx` (instanced rendering meja, kursi, komputer, rak server)**
+- [x] **Step 3: Implementasikan `sekolah-interior.tsx` (lantai 1-3, sekat ruangan, pintu, tangga U)**
+- [x] **Step 4: Implementasikan `campus-blockout.tsx` (gedung asrama 5 lantai, sekolah 3 lantai, atap limas, tangga lapangan, talud)**
+- [x] **Step 5: Verifikasi typecheck modul kampus**
+- [x] **Step 6: Commit komponen 3D kampus**
 
 ### Task 5: Penyatuan Kontrol Pemain, Fisika Gerak, & Interaksi Terpadu
 
@@ -105,13 +105,13 @@
 - Create: `src/components/world/campus/interaction-raycaster.tsx`
 - Create: `tests/unit/player-movement.test.ts`
 
-- [ ] **Step 1: Tulis unit test Vitest untuk kalkulasi tabrakan AABB dan pijakan tangga (`tests/unit/player-movement.test.ts`)**
-- [ ] **Step 2: Porting logika fisika `movement.ts`**
-- [ ] **Step 3: Update `use-world-store.ts` agar mendukung state kamera (fps / inspect), cutaway, dan penanda interaktif**
-- [ ] **Step 4: Implementasikan `campus-player-controller.tsx`, `interactable-markers.tsx`, dan `interaction-raycaster.tsx`**
-- [ ] **Step 5: Sambungkan interaksi penanda 3D ke modal 2D `d:\diskusi` (Papan Tulis, Papan Diskusi, Rak Materi, Meja Siswa, Mading, Perpustakaan, Loker)**
-- [ ] **Step 6: Jalankan test dan pastikan PASS**
-- [ ] **Step 7: Commit sistem kontrol dan interaksi**
+- [x] **Step 1: Tulis unit test Vitest untuk kalkulasi tabrakan AABB dan pijakan tangga (`tests/unit/player-movement.test.ts`)**
+- [x] **Step 2: Porting logika fisika `movement.ts`**
+- [x] **Step 3: Update `use-world-store.ts` agar mendukung state kamera (fps / inspect), cutaway, dan penanda interaktif**
+- [x] **Step 4: Implementasikan `campus-player-controller.tsx`, `interactable-markers.tsx`, dan `interaction-raycaster.tsx`**
+- [x] **Step 5: Sambungkan interaksi penanda 3D ke modal 2D `d:\diskusi` (Papan Tulis, Papan Diskusi, Rak Materi, Meja Siswa, Mading, Perpustakaan, Loker)**
+- [x] **Step 6: Jalankan test dan pastikan PASS**
+- [x] **Step 7: Commit sistem kontrol dan interaksi**
 
 ### Task 6: Integrasi Penuh ke Halaman `/dunia` & Verifikasi Akhir
 
@@ -119,9 +119,9 @@
 - Modify: `src/components/world/world-container.tsx`
 - Modify: `src/app/(dashboard)/dunia/page.tsx`
 
-- [ ] **Step 1: Pasang komponen kampus utuh (`CampusBlockout`, `CampusTerrain`, `CampusGrass`, `TimeOfDayEnvironment`, `CampusPlayerController`, `InteractableMarkers`) ke dalam `world-container.tsx`**
-- [ ] **Step 2: Pastikan sakelar HUD VHS, pause menu, dan fallback Mode Cepat 2D tetap berfungsi sempurna**
-- [ ] **Step 3: Jalankan seluruh suite tes unit (`npm test`)**
-- [ ] **Step 4: Jalankan `npm run lint` dan `npm run typecheck`**
-- [ ] **Step 5: Jalankan `npm run build` untuk memvalidasi kompilasi produksi Next.js**
-- [ ] **Step 6: Commit dan buat ringkasan penyelesaian**
+- [x] **Step 1: Pasang komponen kampus utuh (`CampusBlockout`, `CampusTerrain`, `CampusGrass`, `TimeOfDayEnvironment`, `CampusPlayerController`, `InteractableMarkers`) ke dalam `world-container.tsx`**
+- [x] **Step 2: Pastikan sakelar HUD VHS, pause menu, dan fallback Mode Cepat 2D tetap berfungsi sempurna**
+- [x] **Step 3: Jalankan seluruh suite tes unit (`npm test`)**
+- [x] **Step 4: Jalankan `npm run lint` dan `npm run typecheck`**
+- [x] **Step 5: Jalankan `npm run build` untuk memvalidasi kompilasi produksi Next.js**
+- [x] **Step 6: Commit dan buat ringkasan penyelesaian**

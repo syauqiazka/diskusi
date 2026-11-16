@@ -92,17 +92,19 @@ export function InteractionPanel() {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const activePanel: ActivePanelState | null =
-    activePanelState ||
-    (activePanelType
-      ? {
-          interactableId: activePanelType,
-          type: activePanelType,
-          title: activePanelType.toUpperCase().replace(/[-_]/g, ' '),
-          description: 'Panel interaksi kawasan retro-liminal SMK TI BAZMA.',
-          source: 'konseptual',
-        }
-      : null);
+  const activePanel: ActivePanelState | null = React.useMemo(() => {
+    if (activePanelState) return activePanelState;
+    if (activePanelType) {
+      return {
+        interactableId: activePanelType,
+        type: activePanelType,
+        title: activePanelType.toUpperCase().replace(/[-_]/g, ' '),
+        description: 'Panel interaksi kawasan retro-liminal SMK TI BAZMA.',
+        source: 'konseptual',
+      };
+    }
+    return null;
+  }, [activePanelState, activePanelType]);
 
   useEffect(() => {
     if (!activePanel) return;
@@ -329,34 +331,6 @@ export function InteractionPanel() {
             type="button"
             onClick={closePanel}
             className="bg-[#F2C200] hover:bg-[#ffd426] text-[#0B0D12] font-anton text-base tracking-wider uppercase px-5 py-2 cursor-pointer transition-colors ml-auto"
-          >
-            KEMBALI KE KAWASAN
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-                RINGKASAN FASILITAS · DENAH KONSEPTUAL
-              </div>
-              <ul className="space-y-1.5 text-sm text-[#E9F2E3]/85">
-                {activePanel.details.map((line, i) => (
-                  <li key={`detail_${i}`}>{line}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Footer aksi */}
-        <div className="mt-6 pt-4 border-t border-[#E9F2E3]/20 flex items-center justify-between gap-4">
-          <span className="font-jetbrains text-xs text-[#E9F2E3]/60">
-            Tekan Esc untuk kembali menjelajah
-          </span>
-          <button
-            type="button"
-            onClick={closePanel}
-            className="bg-[#F2C200] hover:bg-[#ffd426] text-[#0B0D12] font-anton text-base tracking-wider uppercase px-5 py-2 cursor-pointer transition-colors"
           >
             KEMBALI KE KAWASAN
           </button>

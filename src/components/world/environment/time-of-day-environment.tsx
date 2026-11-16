@@ -384,7 +384,7 @@ export const TimeOfDayEnvironment: React.FC = () => {
   }, [scene, gl]);
 
   // Inisialisasi geometri bintang di kubah langit atas
-  const { starsGeometry, starsCount } = useMemo(() => {
+  const { starsGeometry } = useMemo(() => {
     const count = 450;
     const positions = new Float32Array(count * 3);
     const radius = 620;

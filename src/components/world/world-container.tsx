@@ -3,17 +3,24 @@
 import * as React from "react";
 import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import { ArrowRight, Zap } from "lucide-react";
 import { useWorldStore } from "@/stores/use-world-store";
-import { SchoolHallwayScene } from "./school-hallway-scene";
-import { PlayerController } from "./player-controller";
-import { RaycastDetector } from "./raycast-detector";
+import { CampusBlockout } from "./campus/campus-blockout";
+import { CampusTerrain } from "./campus/campus-terrain";
+import { CampusGrass } from "./campus/campus-grass";
+import { CampusPlayerController } from "./campus/campus-player-controller";
+import { InteractableMarkers } from "./campus/interactable-markers";
+import { InteractionRaycaster } from "./campus/interaction-raycaster";
+import { InteractionHud } from "./campus/interaction-hud";
+import { InteractionPanel } from "./campus/interaction-panel";
+import { TimeOfDayEnvironment } from "./environment/time-of-day-environment";
+import { TimeOfDayDebugPanel } from "./environment/time-of-day-debug-panel";
 import { VhsEffects } from "./vhs-effects";
-import { WorldHud } from "./world-hud";
 import { PauseMenu } from "./pause-menu";
 import { TouchControls } from "./touch-controls";
-import { WorldModals } from "./world-modals";
 import { Button } from "@/components/ui/button";
+import { CAMPUS_LAYOUT } from "@/lib/world/campus-layout";
 
 function isWebGLAvailable(): boolean {
   if (typeof window === "undefined") return true;
@@ -28,9 +35,38 @@ function isWebGLAvailable(): boolean {
   }
 }
 
+function CampusScene({
+  showLabels,
+  cutawayMode,
+}: {
+  showLabels: boolean;
+  cutawayMode: boolean;
+}) {
+  const cameraMode = useWorldStore((s) => s.cameraMode);
+
+  return (
+    <>
+      <TimeOfDayEnvironment />
+      <CampusTerrain />
+      <CampusBlockout showLabels={showLabels} cutawayMode={cutawayMode} />
+      <CampusGrass />
+      <InteractableMarkers />
+      <InteractionRaycaster />
+      {cameraMode === "fps" ? (
+        <CampusPlayerController />
+      ) : (
+        <OrbitControls target={[0, -2, 0]} makeDefault />
+      )}
+      <VhsEffects />
+    </>
+  );
+}
+
 export function WorldContainer() {
   const [hasWebGL] = React.useState<boolean>(() => isWebGLAvailable());
   const fastMode = useWorldStore((s) => s.worldSettings.fastMode);
+  const cutawayMode = useWorldStore((s) => s.cutawayMode);
+  const [showLabels] = React.useState(false);
 
   // Fallback Otomatis Mode Cepat 2D (Review Focus 1 & WORLD.md)
   if (!hasWebGL || fastMode) {
@@ -70,22 +106,26 @@ export function WorldContainer() {
     );
   }
 
+  const spawnPos = CAMPUS_LAYOUT.playerSpawn.position;
+
   return (
     <div className="relative w-full h-[85vh] sm:h-[88vh] bg-night overflow-hidden border border-fluor/30 select-none">
       {/* 3D Canvas React Three Fiber */}
       <Canvas
-        camera={{ position: [0, 1.6, 5], fov: 75, near: 0.1, far: 50 }}
+        camera={{
+          position: [spawnPos[0], spawnPos[1] + 1.6, spawnPos[2]],
+          fov: 75,
+          near: 0.05,
+          far: 250,
+        }}
         gl={{ antialias: false, powerPreference: "high-performance" }}
         className="w-full h-full cursor-crosshair"
       >
-        <PlayerController />
-        <RaycastDetector />
-        <SchoolHallwayScene />
-        <VhsEffects />
+        <CampusScene showLabels={showLabels} cutawayMode={cutawayMode} />
       </Canvas>
 
       {/* Layer HUD VHS Kamera (PLAY, PAUSE, Timer SP, Crosshair) */}
-      <WorldHud />
+      <InteractionHud />
 
       {/* Layar Jeda / Pause Menu dengan Sakelar ON/OFF */}
       <PauseMenu />
@@ -94,7 +134,10 @@ export function WorldContainer() {
       <TouchControls />
 
       {/* Panel Modal 2D Objek Interaktif (Pintu, Mading, Perpustakaan, Loker, Cermin) */}
-      <WorldModals />
+      <InteractionPanel />
+
+      {/* Panel Debug Pengaturan Waktu Realtime (Pagi, Siang, Sore, Malam) */}
+      <TimeOfDayDebugPanel />
     </div>
   );
 }

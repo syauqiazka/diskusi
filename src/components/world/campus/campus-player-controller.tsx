@@ -16,7 +16,7 @@ import {
   SCHOOL_STAIR_RAMPS,
 } from '@/lib/world/school-interior-layout';
 import { getTerrainHeight } from '@/lib/world/terrain';
-import { useWorldStore } from '@/stores/use-world-store';
+import { useWorldStore, WorldStoreState } from '@/stores/use-world-store';
 import { useTimeOfDayStore } from '@/stores/use-time-of-day-store';
 import {
   CROUCH_BODY_HEIGHT,

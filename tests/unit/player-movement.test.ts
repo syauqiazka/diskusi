@@ -105,7 +105,7 @@ describe("SMK TI BAZMA - First-Person Player & Interaction System", () => {
   });
 
   it("batas kemiringan maxWalkableSlope menahan tanjakan curam tetapi meloloskan lereng landai dan tangga", () => {
-    const steepTerrain = (x: number, _z: number) => (x > 0 ? x * 1.2 : 0);
+    const steepTerrain = (x: number) => (x > 0 ? x * 1.2 : 0);
     // Mencoba naik dari x=-0.1 ke x=0.5 (deltaX=0.6, rise=0.6 -> slope=1.0 > 0.45)
     const blocked = resolveSlopeStep(
       -0.1,
@@ -120,7 +120,7 @@ describe("SMK TI BAZMA - First-Person Player & Interaction System", () => {
     expect(blocked.x).toBe(-0.1);
 
     // Lereng landai (slope 0.2 <= 0.45)
-    const gentleTerrain = (x: number, _z: number) => (x > 0 ? x * 0.2 : 0);
+    const gentleTerrain = (x: number) => (x > 0 ? x * 0.2 : 0);
     const allowed = resolveSlopeStep(
       0,
       0,

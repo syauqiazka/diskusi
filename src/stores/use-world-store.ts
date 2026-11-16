@@ -128,6 +128,8 @@ const defaultSettings: WorldSettings = {
   graphicsQuality: "medium",
 };
 
+export type WorldStoreState = WorldState;
+
 export const useWorldStore = create<WorldState>((set) => ({
   isPaused: false,
   isCrouching: false,

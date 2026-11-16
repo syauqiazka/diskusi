@@ -126,3 +126,4 @@ describe("calculateCelestialPositions", () => {
     expect(celestial.moonElevation).toBeGreaterThan(0.3);
   });
 });
+
