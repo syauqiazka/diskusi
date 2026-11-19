@@ -47,3 +47,5 @@ dist/
 # agents and local tools cache
 .codex/
 .agents/skills/impeccable/
+__pycache__/
+*.py[cod]
