@@ -642,17 +642,17 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
             </button>
 
             <div className="border-b border-fluor/20 pb-3">
-              <div className="flex items-center space-x-2 text-caution">
+              <div className="flex items-center space-x-2 text-caution mb-0.5">
                 <ShieldCheck className="w-4 h-4" />
-                <span className="font-hud text-lg tracking-widest uppercase">
-                  [PESAN PRIBADI // DM INTRA-KELAS]
+                <span className="font-mono text-xs uppercase tracking-wider">
+                  Pesan Pribadi Teman Sekelas
                 </span>
               </div>
-              <h3 className="font-sign text-2xl text-fluor uppercase mt-1">
-                KEPADA: {selectedRecipient.displayName || selectedRecipient.name}
+              <h3 className="font-sign text-2xl text-fluor uppercase">
+                {selectedRecipient.displayName || selectedRecipient.name}
               </h3>
               <p className="font-mono text-xs text-fluor/60">
-                @{selectedRecipient.username || "siswa"} • KELAS: {classroom.name}
+                @{selectedRecipient.username || "siswa"} • Kelas: {classroom.name}
               </p>
             </div>
 

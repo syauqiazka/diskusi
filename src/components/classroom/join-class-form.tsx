@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { DoorOpen, AlertCircle, CheckCircle2 } from "lucide-react";
+import { DoorOpen, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { joinClassByCode } from "@/lib/classroom/actions";
@@ -42,22 +42,22 @@ export function JoinClassForm() {
   };
 
   return (
-    <div className="border border-fluor/30 bg-night p-5 space-y-4">
-      <div className="flex items-center justify-between border-b border-fluor/15 pb-3">
+    <div className="border border-fluor/25 bg-night p-5 space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-fluor/15 pb-3">
         <div className="flex items-center space-x-2 text-caution">
           <DoorOpen className="w-5 h-5" />
-          <h3 className="font-sign text-lg uppercase tracking-wider">
-            GABUNG KELAS DENGAN KODE
-          </h3>
+          <h2 className="font-sign text-lg uppercase tracking-wide text-fluor">
+            Gabung ke Ruang Kelas
+          </h2>
         </div>
-        <span className="font-mono text-[11px] text-fluor/60 px-2 py-0.5 border border-fluor/20">
-          CONTOH: SIJA-10A
+        <span className="font-mono text-xs text-fluor/60">
+          Contoh kode: <span className="text-caution font-semibold">SIJA-10A</span>
         </span>
       </div>
 
       <p className="font-body text-xs text-fluor/70">
-        Masukkan kode akses kelas yang diberikan oleh pengajar atau asisten. Siswa akan secara
-        otomatis dialokasikan nomor meja kosong di ruang kelas virtual.
+        Masukkan kode akses kelas yang dibagikan oleh guru atau staf pengajar. Siswa akan otomatis
+        mendapatkan alokasi meja belajar di dalam kelas.
       </p>
 
       {errorMessage && (
@@ -74,25 +74,31 @@ export function JoinClassForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 pt-1">
         <Input
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="MASUKKAN KODE KELAS (MISAL: SIJA-10A)"
-          className="uppercase tracking-widest text-sm"
+          placeholder="Ketik kode kelas (misal: SIJA-10A)"
+          className="uppercase tracking-wider text-xs sm:text-sm h-10 flex-1"
           disabled={isLoading}
         />
         <Button
           type="submit"
           variant="default"
           disabled={isLoading || !code.trim()}
-          className="whitespace-nowrap px-6"
+          className="whitespace-nowrap px-6 h-10 font-hud text-xs sm:text-sm tracking-wider"
         >
-          {isLoading ? "MEMERIKSA..." : "GABUNG KELAS"}
+          {isLoading ? (
+            <span className="flex items-center space-x-1.5">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Memeriksa...</span>
+            </span>
+          ) : (
+            <span>Gabung Kelas</span>
+          )}
         </Button>
       </form>
     </div>
   );
 }
-

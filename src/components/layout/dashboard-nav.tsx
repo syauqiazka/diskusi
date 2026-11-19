@@ -11,27 +11,27 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   {
-    label: "[01] KELAS SAYA",
+    label: "Kelas Saya",
     href: "/kelas",
     icon: GraduationCap,
   },
   {
-    label: "[02] MADING (GLOBAL)",
+    label: "Mading Forum",
     href: "/mading",
     icon: LayoutGrid,
   },
   {
-    label: "[03] PERPUSTAKAAN",
+    label: "Perpustakaan",
     href: "/perpustakaan",
     icon: BookOpen,
   },
   {
-    label: "[04] PESAN KELAS",
+    label: "Pesan Pribadi",
     href: "/pesan",
     icon: MessageSquare,
   },
   {
-    label: "[05] LOKER & PROFIL",
+    label: "Loker & Profil",
     href: "/profil",
     icon: User,
   },
@@ -99,10 +99,10 @@ export function DashboardNav() {
               <Button
                 variant="default"
                 size="sm"
-                className="bg-caution text-night hover:bg-caution/90 border border-caution font-hud tracking-wider text-sm flex items-center space-x-1.5"
+                className="bg-caution text-night hover:bg-caution/90 border border-caution font-hud tracking-wider text-xs sm:text-sm flex items-center space-x-1.5"
               >
                 <Compass className="w-4 h-4" />
-                <span>[E] MASUK DUNIA 3D</span>
+                <span>Dunia 3D</span>
               </Button>
             </Link>
 
@@ -145,7 +145,7 @@ export function DashboardNav() {
                 href="/masuk"
                 className="text-caution hover:underline uppercase tracking-wider"
               >
-                [MASUK UNTUK BERINTERAKSI]
+                Masuk Akun
               </Link>
             )}
           </div>

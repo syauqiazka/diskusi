@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db";
 import { assignClassMemberWithRetry } from "@/lib/classroom/seat-allocation";
@@ -243,4 +244,59 @@ export async function verifySameClassMembership(targetUserId: string) {
     allowed: true,
     sharedClass: sharedClass.class,
   };
+}
+
+/**
+ * Membuat kelas kejuruan baru (HANYA boleh dilakukan oleh SUPERADMIN atau ADMIN Guru/Staf)
+ */
+export async function createNewClass(input: {
+  name: string;
+  code: string;
+  description?: string;
+}): Promise<{ success: boolean; classId?: string; error?: string }> {
+  const session = await getCurrentSession();
+  if (!session?.user?.id) {
+    return { success: false, error: "Harap masuk log terlebih dahulu." };
+  }
+
+  const userRole = (session.user as { role?: string })?.role;
+  const isStaff = userRole === "SUPERADMIN" || userRole === "ADMIN";
+  if (!isStaff) {
+    return {
+      success: false,
+      error: "Akses Ditolak: Hanya Super Admin atau Guru/Staf yang berwenang membuat ruang kelas baru.",
+    };
+  }
+
+  const cleanCode = input.code.trim().toUpperCase().replace(/[^A-Z0-9-]/g, "");
+  if (!cleanCode || cleanCode.length < 3) {
+    return { success: false, error: "Kode kelas minimal 3 karakter huruf/angka." };
+  }
+
+  const existing = await prisma.class.findUnique({
+    where: { code: cleanCode },
+  });
+  if (existing) {
+    return { success: false, error: `Kode kelas ${cleanCode} sudah digunakan.` };
+  }
+
+  const newClass = await prisma.class.create({
+    data: {
+      name: input.name.trim(),
+      code: cleanCode,
+      description: input.description?.trim(),
+      createdById: session.user.id,
+      roomLayout: "GRID_26",
+    },
+  });
+
+  // Daftarkan pembuat kelas sebagai TEACHER
+  await assignClassMemberWithRetry(prisma, {
+    classId: newClass.id,
+    userId: session.user.id,
+    role: ClassRole.TEACHER,
+  });
+
+  revalidatePath("/kelas");
+  return { success: true, classId: newClass.id };
 }

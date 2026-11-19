@@ -108,7 +108,18 @@ export async function createMaterial(
 
   const { title, description, category, fileFormat, fileSize, fileUrl, classId } = parsed.data;
 
-  // Jika materi kelas, pastikan pengguna adalah pengajar/asisten/anggota kelas
+  const userRole = (session.user as { role?: string })?.role;
+  const isStaff = userRole === "SUPERADMIN" || userRole === "ADMIN";
+
+  // Otorisasi: Perpustakaan umum HANYA boleh dikelola oleh Super Admin atau Admin (Guru/Staf)
+  if (!classId && !isStaff) {
+    return {
+      success: false,
+      error: "Hanya Super Admin atau Admin (Guru/Staf) yang berhak mengunggah materi ke Perpustakaan.",
+    };
+  }
+
+  // Jika materi kelas, harus pengajar/asisten atau Super Admin/Admin
   if (classId) {
     const membership = await prisma.classMember.findUnique({
       where: {
@@ -118,8 +129,8 @@ export async function createMaterial(
         },
       },
     });
-    if (!membership) {
-      return { success: false, error: "Anda bukan anggota kelas ini." };
+    if (!membership && !isStaff) {
+      return { success: false, error: "Anda bukan pengajar atau anggota di kelas ini." };
     }
   }
 
@@ -143,5 +154,46 @@ export async function createMaterial(
   }
 
   return { success: true, materialId: material.id };
+}
+
+/**
+ * Menghapus materi belajar (Khusus Super Admin, Admin Guru/Staf, atau penulis materi)
+ */
+export async function deleteMaterial(
+  materialId: string
+): Promise<{ success: boolean; error?: string }> {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return { success: false, error: "Harap masuk log terlebih dahulu." };
+  }
+
+  const material = await prisma.learningMaterial.findUnique({
+    where: { id: materialId },
+    select: { id: true, authorId: true, classId: true },
+  });
+
+  if (!material) {
+    return { success: false, error: "Materi tidak ditemukan." };
+  }
+
+  const userRole = (session.user as { role?: string })?.role;
+  const isStaff = userRole === "SUPERADMIN" || userRole === "ADMIN";
+  const isAuthor = material.authorId === session.user.id;
+
+  if (!isStaff && !isAuthor) {
+    return { success: false, error: "Hanya Super Admin atau Guru pengajar yang berhak menghapus materi." };
+  }
+
+  await prisma.learningMaterial.delete({
+    where: { id: materialId },
+  });
+
+  if (material.classId) {
+    revalidatePath(`/dunia/kelas/${material.classId}`);
+  } else {
+    revalidatePath("/perpustakaan");
+  }
+
+  return { success: true };
 }
 

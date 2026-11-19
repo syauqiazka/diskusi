@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Search,
   User,
+  Users,
   ArrowRight,
   X,
   Compass,
@@ -246,26 +247,22 @@ export default function PesanPage() {
         <div>
           <div className="flex items-center space-x-2 text-caution mb-1">
             <MessageSquare className="w-5 h-5" />
-            <span className="font-hud text-lg tracking-widest uppercase">
-              {"//"} PESAN PRIBADI // DM INTRA-KELAS (2D)
-            </span>
+            <h1 className="font-sign text-2xl sm:text-3xl text-fluor tracking-wide uppercase">
+              Pesan Pribadi
+            </h1>
           </div>
-          <h1 className="font-sign text-3xl sm:text-4xl text-fluor tracking-wide uppercase">
-            INBOX PERCAKAPAN SPASIAL
-          </h1>
           <p className="font-body text-xs sm:text-sm text-fluor/70 mt-1">
-            Jalur komunikasi langsung antaranggota sekelas. Sesuai aturan dunia, pesan pribadi hanya
-            diizinkan bagi pengguna yang berada dalam kelas yang sama.
+            Komunikasi langsung dengan rekan sekelas dan guru pembimbing SMK TI BAZMA.
           </p>
         </div>
 
         <Button
           variant="default"
           onClick={handleOpenNewChatDialog}
-          className="self-start sm:self-auto space-x-2"
+          className="self-start sm:self-auto space-x-2 font-hud tracking-wider text-xs sm:text-sm"
         >
           <Plus className="w-4 h-4" />
-          <span>MULAI PESAN BARU</span>
+          <span>Kirim Pesan Baru</span>
         </Button>
       </div>
 
@@ -538,13 +535,16 @@ export default function PesanPage() {
             </button>
 
             <div className="border-b border-fluor/20 pb-3">
-              <span className="font-hud text-lg tracking-widest text-caution">
-                [DM INTRA-KELAS // TEMUKAN TEMAN BELAJAR]
-              </span>
-              <h3 className="font-sign text-2xl text-fluor uppercase mt-1">
-                DAFTAR TEMAN &amp; SISWA
+              <div className="flex items-center space-x-2 text-caution mb-0.5">
+                <Users className="w-4 h-4" />
+                <span className="font-mono text-xs uppercase tracking-wider">
+                  Mulai Obrolan Baru
+                </span>
+              </div>
+              <h3 className="font-sign text-2xl text-fluor uppercase">
+                Pilih Teman Belajar
               </h3>
-              <p className="font-mono text-xs text-fluor/60">
+              <p className="font-body text-xs text-fluor/70 mt-1">
                 Pilih rekan sekelas untuk mulai mengobrol langsung, atau temukan siswa SMK TI BAZMA lainnya.
               </p>
 
@@ -751,12 +751,12 @@ export default function PesanPage() {
               </div>
             )}
 
-            <div className="flex justify-between items-center pt-2">
-              <span className="font-mono text-[11px] text-fluor/50">
-                Pesan direct (DM) intra-kelas terlindungi otorisasi server SMK TI BAZMA.
+            <div className="flex justify-between items-center pt-2 border-t border-fluor/15">
+              <span className="font-body text-xs text-fluor/50">
+                Pesan terlindungi oleh otorisasi server SMK TI BAZMA.
               </span>
               <Button variant="outline" size="sm" onClick={() => setShowNewChatDialog(false)}>
-                TUTUP
+                Tutup
               </Button>
             </div>
           </div>

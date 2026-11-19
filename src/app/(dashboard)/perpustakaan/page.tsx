@@ -8,32 +8,52 @@ import {
   Plus,
   X,
   CheckCircle2,
+  Trash2,
+  Loader2,
+  FileText,
+  AlertCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth/auth-client";
 import {
   getMaterials,
   createMaterial,
+  deleteMaterial,
   type MaterialListItem,
 } from "@/lib/materials/actions";
 
+const CATEGORIES = [
+  "Semua",
+  "Jaringan & Server",
+  "Virtualisasi",
+  "Sistem Operasi",
+  "Pemrograman",
+];
+
 export default function PerpustakaanPage() {
+  const { data: session } = authClient.useSession();
+  const userRole = (session?.user as { role?: string } | undefined)?.role;
+  const canManage = userRole === "SUPERADMIN" || userRole === "ADMIN";
+
   const [materials, setMaterials] = React.useState<MaterialListItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState("SEMUA");
+  const [selectedCategory, setSelectedCategory] = React.useState("Semua");
   const [downloadNotice, setDownloadNotice] = React.useState<string | null>(null);
 
-  // Dialog Unggah Materi
+  // Dialog Unggah Materi (Hanya Admin & Super Admin)
   const [showUploadDialog, setShowUploadDialog] = React.useState(false);
   const [newTitle, setNewTitle] = React.useState("");
   const [newDesc, setNewDesc] = React.useState("");
-  const [newCategory, setNewCategory] = React.useState("JARINGAN & SERVER");
+  const [newCategory, setNewCategory] = React.useState("Jaringan & Server");
   const [newFormat, setNewFormat] = React.useState("PDF");
   const [newSize, setNewSize] = React.useState("2.5 MB");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
   const fetchMaterials = React.useCallback(async () => {
     try {
@@ -62,18 +82,39 @@ export default function PerpustakaanPage() {
     return materials.filter((item) => {
       const matchSearch =
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
+        (item.description &&
+          item.description.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchCategory =
-        selectedCategory === "SEMUA" || item.category === selectedCategory;
+        selectedCategory === "Semua" ||
+        item.category.toLowerCase() === selectedCategory.toLowerCase();
       return matchSearch && matchCategory;
     });
   }, [materials, searchTerm, selectedCategory]);
 
   const handleDownload = (title: string) => {
-    setDownloadNotice(`Mempersiapkan unduhan: ${title}...`);
+    setDownloadNotice(`Mempersiapkan berkas: "${title}"...`);
     setTimeout(() => {
       setDownloadNotice(null);
     }, 2500);
+  };
+
+  const handleDelete = async (materialId: string, title: string) => {
+    if (!confirm(`Hapus materi "${title}" dari perpustakaan?`)) {
+      return;
+    }
+    setDeletingId(materialId);
+    try {
+      const res = await deleteMaterial(materialId);
+      if (res.success) {
+        await fetchMaterials();
+      } else {
+        alert(res.error || "Gagal menghapus materi.");
+      }
+    } catch {
+      alert("Terjadi kesalahan sistem saat menghapus materi.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleUploadMaterial = async (e: React.FormEvent) => {
@@ -87,11 +128,11 @@ export default function PerpustakaanPage() {
       const res = await createMaterial({
         title: newTitle.trim(),
         description: newDesc.trim() || undefined,
-        category: newCategory,
-        fileFormat: newFormat,
+        category: newCategory.toUpperCase(),
+        fileFormat: newFormat.toUpperCase(),
         fileSize: newSize,
         fileUrl: `/materials/${newTitle.toLowerCase().replace(/\s+/g, "-")}.${newFormat.toLowerCase()}`,
-        classId: null, // Perpustakaan terbuka
+        classId: null, // Perpustakaan umum
       });
 
       if (!res.success) {
@@ -111,133 +152,170 @@ export default function PerpustakaanPage() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header Perpustakaan */}
-      <div className="border-b border-fluor/20 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* Header Halaman Perpustakaan */}
+      <div className="border-b border-fluor/20 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 text-caution mb-1">
             <BookOpen className="w-5 h-5" />
-            <span className="font-hud text-lg tracking-widest uppercase">
-              {"//"} PERPUSTAKAAN DIGITAL KAWASAN
-            </span>
+            <h1 className="font-sign text-2xl sm:text-3xl text-fluor tracking-wide uppercase">
+              Perpustakaan Digital
+            </h1>
           </div>
-          <h1 className="font-sign text-3xl sm:text-4xl text-fluor tracking-wide uppercase">
-            REPOSITORI MATERI TERBUKA
-          </h1>
-          <p className="font-body text-xs sm:text-sm text-fluor/70 mt-1">
-            Koleksi buku teks, panduan konfigurasi lab, standar operasional, dan modul mandiri
-            jurusan SIJA SMK TI BAZMA.
+          <p className="font-body text-xs sm:text-sm text-fluor/70">
+            Koleksi buku teks, panduan konfigurasi lab, dan modul pembelajaran SIJA SMK TI BAZMA.
           </p>
         </div>
 
-        <Button
-          variant="default"
-          onClick={() => setShowUploadDialog(true)}
-          className="self-start sm:self-auto space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>UNGGAH MATERI</span>
-        </Button>
+        {/* Kontrol Hak Akses: Tombol Tambah hanya untuk Pengajar/Super Admin */}
+        <div className="flex items-center space-x-3">
+          {canManage ? (
+            <Button
+              variant="default"
+              onClick={() => setShowUploadDialog(true)}
+              className="space-x-2 font-hud tracking-wider text-xs sm:text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Materi</span>
+            </Button>
+          ) : (
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 border border-fluor/20 bg-fluor/[0.03] text-fluor/70 font-mono text-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-ok" />
+              <span>Kurasi Guru &amp; Staf</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Notifikasi Download Toast */}
       {downloadNotice && (
-        <div className="border border-ok bg-ok/10 text-ok p-3 font-mono text-xs flex items-center space-x-2 animate-fadeIn">
+        <div className="border border-ok bg-ok/10 text-ok p-3 font-mono text-xs flex items-center space-x-2">
           <CheckCircle2 className="w-4 h-4" />
           <span>{downloadNotice}</span>
         </div>
       )}
 
-      {/* Kontrol Pencarian & Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-3.5 text-fluor/40" />
+      {/* Bar Pencarian & Filter Kategori */}
+      <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+        <div className="relative flex-1 max-w-lg">
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-fluor/40" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Cari modul, panduan OSPF, Linux, atau SOP lab..."
-            className="pl-9"
+            placeholder="Cari materi, modul praktikum, atau topik..."
+            className="pl-10 h-10 text-xs sm:text-sm"
           />
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {["SEMUA", "JARINGAN & SERVER", "VIRTUALISASI", "SISTEM OPERASI", "PEMROGRAMAN"].map(
-            (cat) => (
+          {CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            return (
               <button
                 key={cat}
+                type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-2 border font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer ${
-                  selectedCategory === cat
+                className={`px-3 py-1.5 border font-mono text-xs transition-colors cursor-pointer ${
+                  isSelected
                     ? "border-caution text-caution bg-caution/10 font-bold"
                     : "border-fluor/20 text-fluor/70 hover:border-fluor/50 hover:text-fluor bg-night"
                 }`}
               >
                 {cat}
               </button>
-            )
-          )}
+            );
+          })}
         </div>
       </div>
 
       {/* Grid Materi Pembelajaran */}
       {isLoading ? (
-        <div className="p-8 border border-fluor/20 text-center font-mono text-xs text-fluor/60">
-          Memuat repositori dokumen dan modul pembelajaran...
+        <div className="p-12 border border-fluor/20 bg-night text-center font-mono text-xs text-fluor/60 flex items-center justify-center space-x-2">
+          <Loader2 className="w-4 h-4 animate-spin text-caution" />
+          <span>Memuat koleksi materi pembelajaran...</span>
         </div>
       ) : filteredMaterials.length === 0 ? (
-        <div className="border border-fluor/20 bg-night p-8 text-center space-y-2">
-          <p className="font-mono text-xs text-fluor/50">
-            Tidak ditemukan materi dengan kriteria pencarian tersebut.
+        <div className="border border-fluor/20 bg-night p-10 text-center space-y-2">
+          <FileText className="w-10 h-10 text-fluor/30 mx-auto" />
+          <h3 className="font-sign text-lg uppercase text-fluor/80">
+            Tidak Ada Materi yang Cocok
+          </h3>
+          <p className="font-body text-xs text-fluor/60 max-w-md mx-auto">
+            {searchTerm
+              ? `Tidak ditemukan materi dengan kata kunci "${searchTerm}". Silakan periksa kembali kata pencarian atau pilih kategori lain.`
+              : "Belum ada dokumen materi untuk kategori ini."}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredMaterials.map((item) => (
             <div
               key={item.id}
-              className="border border-fluor/30 bg-night p-5 flex flex-col justify-between space-y-4 hover:border-fluor/70 transition-colors"
+              className="border border-fluor/25 bg-night p-5 flex flex-col justify-between space-y-4 hover:border-fluor/60 transition-colors"
             >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Badge variant="cyan">{item.category}</Badge>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Badge variant="cyan" className="text-[10px] uppercase">
+                    {item.category}
+                  </Badge>
                   <span className="font-mono text-[11px] text-fluor/50">
                     {item.fileFormat} • {item.fileSize}
                   </span>
                 </div>
 
-                <h3 className="font-sign text-xl text-fluor uppercase tracking-wide">
-                  {item.title}
-                </h3>
-
-                <p className="font-body text-xs text-fluor/70 leading-relaxed">
-                  {item.description || "Tidak ada deskripsi rinci untuk dokumen ini."}
-                </p>
+                <div>
+                  <h2 className="font-sign text-lg uppercase tracking-wide text-fluor line-clamp-2">
+                    {item.title}
+                  </h2>
+                  <p className="font-body text-xs text-fluor/70 leading-relaxed mt-1 line-clamp-3">
+                    {item.description || "Dokumen materi pembelajaran SIJA SMK TI BAZMA."}
+                  </p>
+                </div>
               </div>
 
-              <div className="pt-3 border-t border-fluor/10 flex items-center justify-between">
-                <div className="font-mono text-[11px] text-fluor/50">
+              <div className="pt-3 border-t border-fluor/15 flex items-center justify-between gap-2">
+                <div className="font-mono text-[11px] text-fluor/50 truncate">
                   Oleh: <span className="text-fluor/80">{item.author.name}</span>
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDownload(item.title)}
-                  className="space-x-1.5"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>UNDUH</span>
-                </Button>
+                <div className="flex items-center space-x-2 shrink-0">
+                  {canManage && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(item.id, item.title)}
+                      disabled={deletingId === item.id}
+                      className="text-alert/80 hover:text-alert hover:bg-alert/10 px-2 h-8"
+                      title="Hapus materi"
+                    >
+                      {deletingId === item.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5" />
+                      )}
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownload(item.title)}
+                    className="space-x-1.5 h-8 font-hud text-xs tracking-wider"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh</span>
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Dialog Unggah Materi */}
+      {/* Dialog Modal Unggah Materi (Hanya Super Admin & Admin) */}
       {showUploadDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-night/85 select-none">
-          <div className="border border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-night/85 backdrop-blur-sm select-none">
+          <div className="border border-caution/60 bg-night w-full max-w-lg p-6 space-y-4 relative shadow-[0_0_30px_rgba(242,194,0,0.15)]">
             <button
               onClick={() => setShowUploadDialog(false)}
               className="absolute top-4 right-4 text-fluor/60 hover:text-fluor"
@@ -247,24 +325,31 @@ export default function PerpustakaanPage() {
             </button>
 
             <div className="border-b border-fluor/20 pb-3">
-              <span className="font-hud text-lg tracking-widest text-caution">
-                [PERPUSTAKAAN // UNGGAH MATERI BARU]
-              </span>
-              <h3 className="font-sign text-2xl text-fluor uppercase mt-1">
-                DOKUMEN TERBUKA
+              <div className="flex items-center space-x-2 text-caution mb-0.5">
+                <BookOpen className="w-4 h-4" />
+                <span className="font-mono text-xs uppercase tracking-wider">
+                  Kelola Perpustakaan
+                </span>
+              </div>
+              <h3 className="font-sign text-2xl text-fluor uppercase">
+                Unggah Dokumen Materi Baru
               </h3>
             </div>
 
             {errorMsg && (
-              <div className="p-3 border border-alert bg-alert/10 text-alert text-xs font-mono">
-                {errorMsg}
+              <div className="p-3 border border-alert bg-alert/10 text-alert text-xs font-mono flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
               </div>
             )}
 
             <form onSubmit={handleUploadMaterial} className="space-y-4">
               <div className="space-y-1">
-                <label htmlFor="materialTitle" className="font-mono text-xs text-fluor/70 block">
-                  Judul Modul / Berkas:
+                <label
+                  htmlFor="materialTitle"
+                  className="font-mono text-xs text-fluor/70 block"
+                >
+                  Judul Modul / Berkas
                 </label>
                 <Input
                   id="materialTitle"
@@ -278,25 +363,31 @@ export default function PerpustakaanPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label htmlFor="materialCat" className="font-mono text-xs text-fluor/70 block">
-                    Kategori:
+                  <label
+                    htmlFor="materialCat"
+                    className="font-mono text-xs text-fluor/70 block"
+                  >
+                    Kategori
                   </label>
                   <select
                     id="materialCat"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full h-11 border border-fluor/30 bg-night px-3 font-mono text-xs text-fluor focus:border-caution focus:outline-none"
+                    className="w-full h-10 border border-fluor/30 bg-night px-3 font-mono text-xs text-fluor focus:border-caution focus:outline-none"
                   >
-                    <option value="JARINGAN & SERVER">JARINGAN & SERVER</option>
-                    <option value="VIRTUALISASI">VIRTUALISASI</option>
-                    <option value="SISTEM OPERASI">SISTEM OPERASI</option>
-                    <option value="PEMROGRAMAN">PEMROGRAMAN</option>
+                    <option value="Jaringan & Server">Jaringan &amp; Server</option>
+                    <option value="Virtualisasi">Virtualisasi</option>
+                    <option value="Sistem Operasi">Sistem Operasi</option>
+                    <option value="Pemrograman">Pemrograman</option>
                   </select>
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="materialFmt" className="font-mono text-xs text-fluor/70 block">
-                    Format & Ukuran:
+                  <label
+                    htmlFor="materialFmt"
+                    className="font-mono text-xs text-fluor/70 block"
+                  >
+                    Format &amp; Ukuran
                   </label>
                   <div className="flex gap-2">
                     <Input
@@ -317,8 +408,11 @@ export default function PerpustakaanPage() {
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="materialDesc" className="font-mono text-xs text-fluor/70 block">
-                  Deskripsi Singkat:
+                <label
+                  htmlFor="materialDesc"
+                  className="font-mono text-xs text-fluor/70 block"
+                >
+                  Ringkasan Materi
                 </label>
                 <textarea
                   id="materialDesc"
@@ -326,21 +420,34 @@ export default function PerpustakaanPage() {
                   onChange={(e) => setNewDesc(e.target.value)}
                   rows={3}
                   className="w-full border border-fluor/30 bg-night p-3 font-body text-xs text-fluor placeholder:text-fluor/40 focus:border-caution focus:outline-none"
-                  placeholder="Ringkasan topik atau kompetensi yang dibahas dalam modul..."
+                  placeholder="Ringkasan kompetensi atau topik yang dibahas dalam dokumen ini..."
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-2">
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-fluor/15">
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowUploadDialog(false)}
                 >
-                  BATAL
+                  Batal
                 </Button>
-                <Button type="submit" variant="default" size="sm" disabled={isSubmitting}>
-                  {isSubmitting ? "MENYIMPAN..." : "UNGGAH KE PERPUSTAKAAN"}
+                <Button
+                  type="submit"
+                  variant="default"
+                  size="sm"
+                  disabled={isSubmitting}
+                  className="space-x-1.5"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <span>Unggah ke Perpustakaan</span>
+                  )}
                 </Button>
               </div>
             </form>
