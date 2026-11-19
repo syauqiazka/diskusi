@@ -99,7 +99,7 @@ export function DashboardNav() {
               <Button
                 variant="default"
                 size="sm"
-                className="bg-caution text-night hover:bg-caution/90 border border-caution font-hud tracking-wider text-xs sm:text-sm flex items-center space-x-1.5"
+                className="bg-caution text-white hover:bg-caution/90 border border-caution font-hud tracking-wider text-xs sm:text-sm flex items-center space-x-1.5 shadow-sm"
               >
                 <Compass className="w-4 h-4" />
                 <span>Dunia 3D</span>

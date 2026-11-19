@@ -1,17 +1,18 @@
 /**
- * Token warna dan tipografi resmi sesuai DESIGN.md
- * Referensi: Sekolah Tengah Malam
+ * Token warna dan tipografi resmi sesuai DESIGN.md (Ergonomic & Eye-Comfort update via ui-ux-pro-max)
+ * Referensi: Sekolah Tengah Malam - SMK TI BAZMA
  */
 
 export const THEME_TOKENS = {
   colors: {
-    night: "#0B0D12",
-    fluor: "#E9F2E3",
-    caution: "#F2C200",
-    neonCyan: "#5CE1FF",
-    neonPink: "#FF5C93",
-    alert: "#E0412F",
-    ok: "#4FD08A",
+    night: "#FFFFFF",
+    canvas: "#F8FAFC",
+    fluor: "#0F172A",
+    caution: "#B45309",
+    neonCyan: "#0284C7",
+    neonPink: "#E11D48",
+    alert: "#DC2626",
+    ok: "#16A34A",
   },
   fonts: {
     hud: "var(--font-vt323)",
@@ -20,4 +21,3 @@ export const THEME_TOKENS = {
     mono: "var(--font-jetbrains-mono)",
   },
 } as const;
-

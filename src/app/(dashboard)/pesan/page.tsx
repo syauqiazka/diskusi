@@ -524,7 +524,7 @@ export default function PesanPage() {
 
       {/* DIALOG PILIH REKAN SEKELAS (MULAI PESAN BARU) */}
       {showNewChatDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-night/85 backdrop-blur-xs select-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
           <div className="border-2 border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative max-h-[85vh] flex flex-col">
             <button
               onClick={() => setShowNewChatDialog(false)}

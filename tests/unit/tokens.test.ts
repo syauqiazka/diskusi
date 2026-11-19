@@ -2,14 +2,15 @@ import { describe, expect, it } from "vitest";
 import { THEME_TOKENS } from "@/lib/tokens";
 
 describe("Token Desain (DESIGN.md)", () => {
-  it("harus memiliki token warna yang tepat sesuai spesifikasi DESIGN.md", () => {
-    expect(THEME_TOKENS.colors.night).toBe("#0B0D12");
-    expect(THEME_TOKENS.colors.fluor).toBe("#E9F2E3");
-    expect(THEME_TOKENS.colors.caution).toBe("#F2C200");
-    expect(THEME_TOKENS.colors.neonCyan).toBe("#5CE1FF");
-    expect(THEME_TOKENS.colors.neonPink).toBe("#FF5C93");
-    expect(THEME_TOKENS.colors.alert).toBe("#E0412F");
-    expect(THEME_TOKENS.colors.ok).toBe("#4FD08A");
+  it("harus memiliki token warna ergonomis sesuai spesifikasi DESIGN.md terbaru", () => {
+    expect(THEME_TOKENS.colors.night).toBe("#FFFFFF");
+    expect(THEME_TOKENS.colors.canvas).toBe("#F8FAFC");
+    expect(THEME_TOKENS.colors.fluor).toBe("#0F172A");
+    expect(THEME_TOKENS.colors.caution).toBe("#B45309");
+    expect(THEME_TOKENS.colors.neonCyan).toBe("#0284C7");
+    expect(THEME_TOKENS.colors.neonPink).toBe("#E11D48");
+    expect(THEME_TOKENS.colors.alert).toBe("#DC2626");
+    expect(THEME_TOKENS.colors.ok).toBe("#16A34A");
   });
 
   it("harus memiliki variabel font yang tepat untuk HUD, Rambu, Body, dan Mono", () => {
@@ -19,4 +20,3 @@ describe("Token Desain (DESIGN.md)", () => {
     expect(THEME_TOKENS.fonts.mono).toBe("var(--font-jetbrains-mono)");
   });
 });
-

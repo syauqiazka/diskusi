@@ -314,7 +314,7 @@ export default function PerpustakaanPage() {
 
       {/* Dialog Modal Unggah Materi (Hanya Super Admin & Admin) */}
       {showUploadDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-night/85 backdrop-blur-sm select-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
           <div className="border border-caution/60 bg-night w-full max-w-lg p-6 space-y-4 relative shadow-[0_0_30px_rgba(242,194,0,0.15)]">
             <button
               onClick={() => setShowUploadDialog(false)}

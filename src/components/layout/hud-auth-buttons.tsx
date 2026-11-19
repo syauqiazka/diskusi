@@ -33,7 +33,7 @@ export function HudAuthButtons() {
       <div className="flex items-center space-x-2 sm:space-x-3 font-mono text-xs">
         <Link
           href="/profil"
-          className="inline-flex items-center space-x-1.5 px-2.5 py-1 border border-caution/60 bg-caution/10 text-caution hover:bg-caution hover:text-night transition-colors font-bold"
+          className="inline-flex items-center space-x-1.5 px-2.5 py-1 border border-caution/60 bg-caution/10 text-caution hover:bg-caution hover:text-white transition-colors font-bold"
           title="Buka profil siswa"
         >
           <User className="w-3.5 h-3.5" />
@@ -52,7 +52,7 @@ export function HudAuthButtons() {
         <button
           type="button"
           onClick={handleSignOut}
-          className="inline-flex items-center space-x-1 px-2.5 py-1 border border-alert/50 bg-alert/10 text-alert hover:bg-alert hover:text-night transition-colors font-bold uppercase tracking-wider cursor-pointer"
+          className="inline-flex items-center space-x-1 px-2.5 py-1 border border-alert/50 bg-alert/10 text-alert hover:bg-alert hover:text-white transition-colors font-bold uppercase tracking-wider cursor-pointer"
           title="Keluar dari akun"
         >
           <LogOut className="w-3.5 h-3.5" />
@@ -74,7 +74,7 @@ export function HudAuthButtons() {
 
       <Link
         href="/daftar"
-        className="inline-flex items-center space-x-1 px-3 py-1.5 bg-caution text-night border border-caution hover:bg-caution/90 transition-colors font-semibold"
+        className="inline-flex items-center space-x-1 px-3 py-1.5 bg-caution text-white border border-caution hover:bg-caution/90 transition-colors font-semibold shadow-xs"
       >
         <UserPlus className="w-3.5 h-3.5" />
         <span className="uppercase tracking-wider font-bold">Daftar</span>

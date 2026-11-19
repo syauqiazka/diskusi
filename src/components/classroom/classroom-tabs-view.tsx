@@ -631,7 +631,7 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
 
       {/* DIALOG DM INTRA-KELAS LENGKAP DENGAN RIWAYAT PESAN (SERVER VERIFIED) */}
       {selectedRecipient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-night/85 backdrop-blur-xs select-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
           <div className="border-2 border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative flex flex-col max-h-[85vh]">
             <button
               onClick={() => setSelectedRecipient(null)}
@@ -735,7 +735,7 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
 
       {/* Dialog Buat Pengumuman Baru */}
       {showAnnounceDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-night/85 select-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
           <div className="border border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative">
             <button
               onClick={() => setShowAnnounceDialog(false)}
@@ -788,7 +788,7 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
 
       {/* Dialog Buat Thread Diskusi Kelas */}
       {showThreadDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-night/85 select-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
           <div className="border border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative">
             <button
               onClick={() => setShowThreadDialog(false)}
@@ -853,7 +853,7 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
 
       {/* Dialog Unggah Materi Kelas */}
       {showMaterialDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-night/85 select-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
           <div className="border border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative">
             <button
               onClick={() => setShowMaterialDialog(false)}

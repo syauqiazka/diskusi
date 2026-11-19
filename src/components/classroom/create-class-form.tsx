@@ -65,7 +65,7 @@ export function CreateClassForm() {
       </Button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-night/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="max-w-md w-full border border-caution/60 bg-night p-6 space-y-4 shadow-[0_0_30px_rgba(242,194,0,0.15)]">
             <div className="flex items-center justify-between border-b border-fluor/20 pb-3">
               <div className="flex items-center space-x-2 text-caution">

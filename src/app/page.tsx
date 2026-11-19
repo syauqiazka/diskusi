@@ -83,7 +83,7 @@ async function AuthenticatedStudentHome({
           <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
             <Link href="/kelas">
               <Button variant="default" size="lg" className="w-full space-x-2 font-hud tracking-wider text-sm sm:text-base">
-                <GraduationCap className="w-5 h-5 text-night" />
+                <GraduationCap className="w-5 h-5 text-white" />
                 <span>Buka Ruang Kelas</span>
               </Button>
             </Link>
@@ -91,7 +91,7 @@ async function AuthenticatedStudentHome({
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full border-caution text-caution hover:bg-caution hover:text-night space-x-2 font-hud tracking-wider text-sm sm:text-base"
+                className="w-full border-caution text-caution hover:bg-caution hover:text-white space-x-2 font-hud tracking-wider text-sm sm:text-base"
               >
                 <Compass className="w-5 h-5" />
                 <span>Jelajah Dunia 3D</span>
@@ -156,7 +156,7 @@ async function AuthenticatedStudentHome({
             </div>
           </div>
           <Link href="/dunia">
-            <Button variant="default" className="w-full bg-caution text-night hover:bg-caution/90 border-caution space-x-2 font-hud tracking-wider">
+            <Button variant="default" className="w-full bg-caution text-white hover:bg-caution/90 border-caution space-x-2 font-hud tracking-wider">
               <span>Mulai Jelajah Kawasan 3D</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
@@ -612,7 +612,7 @@ async function DynamicHomeContent() {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-night text-fluor">
+    <div className="min-h-screen flex flex-col bg-canvas text-fluor">
       <HudHeader />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

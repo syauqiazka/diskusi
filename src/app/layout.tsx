@@ -43,7 +43,7 @@ export default function RootLayout({
       lang="id"
       className={`${vt323.variable} ${anton.variable} ${instrumentSans.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="bg-night text-fluor font-body min-h-screen antialiased selection:bg-caution selection:text-night">
+      <body className="bg-canvas text-fluor font-body min-h-screen antialiased selection:bg-caution selection:text-white">
         {children}
       </body>
     </html>

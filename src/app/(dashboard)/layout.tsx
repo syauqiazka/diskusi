@@ -18,7 +18,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-night text-fluor">
+    <div className="min-h-screen flex flex-col bg-canvas text-fluor">
       <HudHeader />
       <Suspense
         fallback={
