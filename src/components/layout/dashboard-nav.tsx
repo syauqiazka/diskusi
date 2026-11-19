@@ -1,9 +1,11 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { BookOpen, GraduationCap, LayoutGrid, User, LogOut, Compass, MessageSquare } from "lucide-react";
 import { authClient, signOut } from "@/lib/auth/auth-client";
+import { getUnreadMessagesCount } from "@/lib/chat/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -39,6 +41,15 @@ export function DashboardNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
+  const [unreadCount, setUnreadCount] = React.useState(0);
+
+  // Ambil jumlah pesan belum dibaca saat navigasi berubah
+  React.useEffect(() => {
+    if (!session?.user) return;
+    getUnreadMessagesCount()
+      .then((count) => setUnreadCount(count))
+      .catch(() => {});
+  }, [session?.user, pathname]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -71,6 +82,11 @@ export function DashboardNav() {
                 >
                   <Icon className="w-3.5 h-3.5" />
                   <span>{item.label}</span>
+                  {item.href === "/pesan" && unreadCount > 0 && (
+                    <span className="ml-1 px-1.5 py-0.2 bg-alert text-night font-bold text-[10px] rounded-full animate-pulse shadow-[0_0_8px_rgba(224,65,47,0.7)]">
+                      {unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}

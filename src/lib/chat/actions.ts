@@ -188,6 +188,19 @@ export async function getOrCreateConversation(
     });
   }
 
+  // Tandai pesan belum dibaca dari lawan bicara sebagai telah dibaca
+  await prisma.message.updateMany({
+    where: {
+      conversationId: conversation.id,
+      senderId: { not: currentUserId },
+      isRead: false,
+    },
+    data: {
+      isRead: true,
+      readAt: new Date(),
+    },
+  });
+
   const rawOther =
     conversation.user1Id === currentUserId ? conversation.user2 : conversation.user1;
 
@@ -405,7 +418,18 @@ export async function getUserConversations(): Promise<FormattedConversationListI
           id: true,
           senderId: true,
           content: true,
+          isRead: true,
           createdAt: true,
+        },
+      },
+      _count: {
+        select: {
+          messages: {
+            where: {
+              senderId: { not: currentUserId },
+              isRead: false,
+            },
+          },
         },
       },
     },
@@ -414,6 +438,54 @@ export async function getUserConversations(): Promise<FormattedConversationListI
   return conversations.map((conv) =>
     formatConversationListItem(conv as unknown as RawConversationData, currentUserId)
   );
+}
+
+/**
+ * Menandai semua pesan dalam percakapan yang diterima dari lawan bicara sebagai telah dibaca
+ */
+export async function markConversationAsRead(conversationId: string): Promise<{ success: boolean }> {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return { success: false };
+  }
+
+  const currentUserId = session.user.id;
+
+  await prisma.message.updateMany({
+    where: {
+      conversationId,
+      senderId: { not: currentUserId },
+      isRead: false,
+    },
+    data: {
+      isRead: true,
+      readAt: new Date(),
+    },
+  });
+
+  return { success: true };
+}
+
+/**
+ * Menghitung jumlah total pesan masuk yang belum dibaca pengguna aktif dari semua percakapan
+ */
+export async function getUnreadMessagesCount(): Promise<number> {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return 0;
+  }
+
+  const currentUserId = session.user.id;
+
+  return await prisma.message.count({
+    where: {
+      senderId: { not: currentUserId },
+      isRead: false,
+      conversation: {
+        OR: [{ user1Id: currentUserId }, { user2Id: currentUserId }],
+      },
+    },
+  });
 }
 
 /**

@@ -148,7 +148,14 @@ export default function ProfilPage() {
       </Card>
 
       {/* SECTION PENGELOLAAN PERAN (SUPERADMIN / ADMIN / USER) */}
-      <RoleSwitcher currentRole={(user as { role?: string })?.role} />
+      <RoleSwitcher
+        currentRole={(user as { role?: string })?.role}
+        isSuperAdmin={
+          (user as { role?: string })?.role === "SUPERADMIN" ||
+          user?.email === "admin@smkbazma.sch.id" ||
+          user?.email === "muhammad.syauqi1869@smk.belajar.id"
+        }
+      />
 
       {/* SECTION CERMIN: KATALOG RESMI BINGKAI & EFEK (DESIGN.md) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

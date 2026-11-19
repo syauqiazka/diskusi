@@ -32,8 +32,12 @@ export interface RawConversationData {
     id: string;
     senderId: string;
     content: string;
+    isRead?: boolean;
     createdAt: Date;
   }[];
+  _count?: {
+    messages?: number;
+  };
   updatedAt: Date;
 }
 
@@ -42,6 +46,7 @@ export interface FormattedConversationListItem {
   classId: string;
   className: string;
   classCode: string;
+  unreadCount: number;
   otherUser: {
     id: string;
     name: string;
@@ -120,12 +125,17 @@ export function formatConversationListItem(
   const role = membershipInClass?.role ?? "STUDENT";
 
   const latestMsg = raw.messages[0] || null;
+  const unreadCount =
+    typeof raw._count?.messages === "number"
+      ? raw._count.messages
+      : raw.messages.filter((m) => m.senderId !== currentUserId && !m.isRead).length;
 
   return {
     id: raw.id,
     classId: raw.classId,
     className: raw.class.name,
     classCode: raw.class.code,
+    unreadCount,
     otherUser: {
       id: other.id,
       name: other.name,

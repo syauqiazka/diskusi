@@ -110,6 +110,12 @@ export default function PesanPage() {
     setActiveConversationId(item.id);
     setIsLoadingChat(true);
     setChatError(null);
+
+    // Optimis hilangkan tanda merah notifikasi pesan belum dibaca
+    setConversations((prev) =>
+      prev.map((c) => (c.id === item.id ? { ...c, unreadCount: 0 } : c))
+    );
+
     try {
       const res = await getOrCreateConversation(item.classId, item.otherUser.id);
       if (res.success && res.conversation) {
@@ -317,9 +323,19 @@ export default function PesanPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between font-mono text-[11px] mb-1">
-                      <span className="font-bold text-fluor truncate max-w-[150px]">
-                        {item.otherUser.displayName}
-                      </span>
+                      <div className="flex items-center space-x-1.5 truncate max-w-[170px]">
+                        {item.unreadCount > 0 && (
+                          <span className="w-2 h-2 rounded-full bg-alert inline-block animate-ping shrink-0" />
+                        )}
+                        <span className="font-bold text-fluor truncate">
+                          {item.otherUser.displayName}
+                        </span>
+                        {item.unreadCount > 0 && (
+                          <span className="px-1.5 py-0.5 bg-alert text-night font-bold text-[9px] uppercase tracking-wider shrink-0">
+                            {item.unreadCount} BARU
+                          </span>
+                        )}
+                      </div>
                       <span className="text-fluor/50 text-[10px]">
                         {item.lastMessage
                           ? new Date(item.lastMessage.createdAt).toLocaleTimeString("id-ID", {

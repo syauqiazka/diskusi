@@ -130,6 +130,7 @@ describe("Validasi dan Utilitas Private Chat Intra-Kelas (Tahap 6 & 7)", () => {
       expect(formatted.otherUser.role).toBe("STUDENT");
       expect(formatted.lastMessage?.content).toBe("Sudah selesai konfigurasi OSPF?");
       expect(formatted.lastMessage?.isSelf).toBe(false);
+      expect(formatted.unreadCount).toBe(1);
     });
   });
 });
