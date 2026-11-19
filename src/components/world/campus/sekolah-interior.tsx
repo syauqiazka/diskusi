@@ -21,8 +21,14 @@ import {
   SchoolRoomDefinition,
   SchoolWallSegment,
 } from '@/lib/world/school-interior-layout';
-import { CAMPUS_PALETTE, DESIGN_TOKENS } from '@/lib/world/campus-palette';
+import { CAMPUS_PALETTE } from '@/lib/world/campus-palette';
 import { SekolahFurniture } from './sekolah-furniture';
+import {
+  ShoeLockerArea,
+  ClassroomCurtains,
+  PottedPlants,
+  HallwayBulletinBoards,
+} from './anime-school-details';
 
 interface SekolahInteriorProps {
   materials: Record<string, THREE.Material>;
@@ -43,22 +49,26 @@ function RoomDoorPlaque({ room }: DoorPlaqueProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    ctx.fillStyle = DESIGN_TOKENS.night;
+    // Latar Belakang Kayu Bersih Khas Papan Nama Anime
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = DESIGN_TOKENS.fluor;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+    // Bingkai Kayu Cokelat Hangat
+    ctx.strokeStyle = '#8D5B4C';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
 
-    ctx.fillStyle = DESIGN_TOKENS.fluor;
-    ctx.font = 'bold 22px monospace';
+    // Teks Nama Ruangan (Fredoka / Sans-Serif Tebal)
+    ctx.fillStyle = '#0F172A';
+    ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(room.name.toUpperCase(), canvas.width / 2, 34);
+    ctx.fillText(room.name, canvas.width / 2, 36);
 
-    ctx.fillStyle = DESIGN_TOKENS.caution;
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText(`LT ${room.floorLevel} · KONSEPTUAL`, canvas.width / 2, 68);
+    // Subtitle Lantai
+    ctx.fillStyle = '#10B981';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText(`Lantai ${room.floorLevel} · Sekolah Virtual`, canvas.width / 2, 68);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -86,7 +96,7 @@ function RoomDoorPlaque({ room }: DoorPlaqueProps) {
   return (
     <mesh position={pos} rotation={[0, rotY, 0]}>
       <planeGeometry args={[1.05, 0.39]} />
-      <meshStandardMaterial map={texture} roughness={0.5} metalness={0.05} />
+      <meshStandardMaterial map={texture} roughness={0.4} metalness={0.02} />
     </mesh>
   );
 }
@@ -100,22 +110,26 @@ function EntranceHeaderSign() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    ctx.fillStyle = DESIGN_TOKENS.night;
+    // Latar Belakang Putih Gading Cerah
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = DESIGN_TOKENS.caution;
-    ctx.lineWidth = 5;
+    // Border Biru Navy & Hijau Mint
+    ctx.strokeStyle = '#34D399';
+    ctx.lineWidth = 6;
     ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
 
-    ctx.fillStyle = DESIGN_TOKENS.fluor;
-    ctx.font = 'bold 30px monospace';
+    // Teks Judul
+    ctx.fillStyle = '#0F172A';
+    ctx.font = 'bold 30px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('PINTU MASUK SEKOLAH', canvas.width / 2, 42);
+    ctx.fillText('PINTU MASUK SEKOLAH', canvas.width / 2, 40);
 
-    ctx.fillStyle = DESIGN_TOKENS.caution;
-    ctx.font = 'bold 20px monospace';
-    ctx.fillText('GEDUNG SEKOLAH · DENAH KONSEPTUAL', canvas.width / 2, 82);
+    // Pernyataan bahwa dunia ini bergaya fiksi terinspirasi sekolah
+    ctx.fillStyle = '#64748B';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText('Dunia Fiksi Terinspirasi Sekolah Anime', canvas.width / 2, 78);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -328,8 +342,8 @@ export function SekolahInterior({
         metalness: 0.05,
       }),
       lampTube: new THREE.MeshStandardMaterial({
-        color: DESIGN_TOKENS.fluor,
-        emissive: DESIGN_TOKENS.fluor,
+        color: '#FFFFFF',
+        emissive: '#FFFFFF',
         emissiveIntensity: 0.95,
         roughness: 0.2,
       }),
@@ -855,8 +869,14 @@ export function SekolahInterior({
         castShadow={false}
       />
 
-      {/* 7. Furnitur & Objek Interaktif Ruangan (Tahap B, source: konseptual) */}
+      {/* 7. Furnitur & Objek Interaktif Ruangan */}
       <SekolahFurniture />
+
+      {/* 8. Elemen Detail Interior Anime (Loker Sepatu, Tirai Kelas, Tanaman Pot, Mading Lorong) */}
+      <ShoeLockerArea />
+      <ClassroomCurtains />
+      <PottedPlants />
+      <HallwayBulletinBoards />
     </group>
   );
 }

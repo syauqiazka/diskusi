@@ -25,6 +25,10 @@ import {
 } from '@/lib/world/procedural-textures';
 import { CampusTerrain } from './campus-terrain';
 import { SekolahInterior } from './sekolah-interior';
+import { SchoolFacadeClock } from './school-facade-clock';
+import { SchoolRooftop } from './school-rooftop';
+import { OutdoorAnimeProps } from './outdoor-anime-props';
+import { ANIME_PALETTE } from '@/lib/world/anime-materials';
 
 const _labelWorldPos = new THREE.Vector3();
 
@@ -884,13 +888,16 @@ export function CampusBlockout({ showLabels = true, cutawayMode = false }: Campu
         cutawayMode={cutawayMode}
       />
 
-      {/* 14. Gedung Sekolah dengan Interior 3 Lantai & Atap Limas Proporsional */}
+      {/* 14. Gedung Sekolah dengan Interior 3 Lantai & Fasad/Rooftop Anime */}
       <SekolahBuildingReal
         definition={CAMPUS_LAYOUT.buildings.sekolah}
         materials={materials}
         showLabels={showLabels}
         cutawayMode={cutawayMode}
       />
+
+      {/* 15. Prop & Lingkungan Luar Ruangan Anime (Gerbang, Pohon Sakura, Partikel Kelopak, Vending Machine, Rak Sepeda, Bangku) */}
+      <OutdoorAnimeProps />
     </group>
   );
 }
@@ -1687,22 +1694,75 @@ function SekolahBuildingReal({
           />
         ))}
 
-      {/* 3. Atap Limas Proporsional Sekolah (Tanpa Pelat Kotak Hitam Lebar) */}
-      {!cutawayMode &&
-        wings.map((wing) => (
-          <group key={`sekolah_roof_${wing.id}`} position={[wing.position[0], 10.2, wing.position[2]]}>
-            <mesh position={[0, 0.06, 0]} receiveShadow material={materials.roofFascia}>
-              <boxGeometry args={[wing.dimensions[0] + 0.48, 0.14, wing.dimensions[2] + 0.48]} />
-            </mesh>
-            <HippedRoof
-              width={wing.dimensions[0] + 0.44}
-              depth={wing.dimensions[2] + 0.44}
-              height={1.55}
-              position={[0, 0.13, 0]}
-              material={materials.roofDark}
-            />
-          </group>
-        ))}
+      {/* 3. Fasad Jendela Berderet Anime & Tiang Kolom Vertikal Teratur */}
+      {!cutawayMode && (
+        <group position={[wings[0].position[0], 0, wings[0].position[2] + wings[0].dimensions[2] / 2 + 0.08]}>
+          {/* Jam Fasad Sekolah Fungsional (Menunjukkan Waktu Sistem / Debug) */}
+          <SchoolFacadeClock position={[0, 8.4, 0.15]} scale={1.05} />
+
+          {/* Kolom Vertikal Teratur & Jendela Berderet di Setiap Lantai (LT 1, 2, 3) */}
+          {[1.5, 4.5, 7.5].map((yElev, flIdx) => (
+            <group key={`facade_floor_${flIdx}`} position={[0, yElev, 0]}>
+              {/* Garis Pelat Lantai Tipis Bersih */}
+              <mesh position={[0, -1.45, 0]}>
+                <boxGeometry args={[wings[0].dimensions[0] + 0.2, 0.14, 0.35]} />
+                <meshStandardMaterial color={ANIME_PALETTE.slabTrim} roughness={0.4} />
+              </mesh>
+
+              {/* Jendela Berderet Menerus Kaca Biru Cerah Anime */}
+              {Array.from({ length: 14 }).map((_, wIdx) => {
+                const wx = -wings[0].dimensions[0] / 2 + 3.2 + wIdx * 3.8;
+                if (wx > wings[0].dimensions[0] / 2 - 3.0) return null;
+                return (
+                  <group key={`facade_win_${flIdx}_${wIdx}`} position={[wx, 0.1, 0]}>
+                    {/* Kaca Jendela Biru Anime */}
+                    <mesh>
+                      <boxGeometry args={[3.2, 1.8, 0.08]} />
+                      <meshStandardMaterial
+                        color={ANIME_PALETTE.windowGlassDay}
+                        roughness={0.2}
+                        metalness={0.1}
+                        transparent
+                        opacity={0.88}
+                      />
+                    </mesh>
+                    {/* Kusen Jendela Alumunium / Kayu Anime */}
+                    <mesh position={[0, 0, 0.02]}>
+                      <boxGeometry args={[3.26, 0.06, 0.06]} />
+                      <meshStandardMaterial color={ANIME_PALETTE.windowFrameAlum} roughness={0.4} />
+                    </mesh>
+                    <mesh position={[0, 0, 0.02]}>
+                      <boxGeometry args={[0.06, 1.86, 0.06]} />
+                      <meshStandardMaterial color={ANIME_PALETTE.windowFrameAlum} roughness={0.4} />
+                    </mesh>
+                  </group>
+                );
+              })}
+
+              {/* Tiang Kolom Vertikal Putih Bersih di antara Ruang */}
+              {Array.from({ length: 15 }).map((_, pIdx) => {
+                const px = -wings[0].dimensions[0] / 2 + 1.2 + pIdx * 3.8;
+                if (px > wings[0].dimensions[0] / 2) return null;
+                return (
+                  <mesh key={`facade_pillar_${flIdx}_${pIdx}`} position={[px, 0, 0.05]}>
+                    <boxGeometry args={[0.45, 2.9, 0.25]} />
+                    <meshStandardMaterial color={ANIME_PALETTE.pillarWhite} roughness={0.5} />
+                  </mesh>
+                );
+              })}
+            </group>
+          ))}
+        </group>
+      )}
+
+      {/* 4. Atap Datar Berpagar Khas Anime (Rooftop Fence + Tangga Penthouse Shack + Tangki Air Silinder) */}
+      {!cutawayMode && (
+        <SchoolRooftop
+          width={wings[0].dimensions[0]}
+          depth={wings[0].dimensions[2]}
+          elevation={10.2}
+        />
+      )}
 
       {/* Penanda Sirkulasi Tangga U saat Cutaway Aktif */}
       {cutawayMode && (

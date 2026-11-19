@@ -16,7 +16,6 @@ import { InteractionHud } from "./campus/interaction-hud";
 import { InteractionPanel } from "./campus/interaction-panel";
 import { TimeOfDayEnvironment } from "./environment/time-of-day-environment";
 import { TimeOfDayDebugPanel } from "./environment/time-of-day-debug-panel";
-import { VhsEffects } from "./vhs-effects";
 import { PauseMenu } from "./pause-menu";
 import { TouchControls } from "./touch-controls";
 import { Button } from "@/components/ui/button";
@@ -57,7 +56,6 @@ function CampusScene({
       ) : (
         <OrbitControls target={[0, -2, 0]} makeDefault />
       )}
-      <VhsEffects />
     </>
   );
 }

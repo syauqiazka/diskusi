@@ -16,7 +16,6 @@ import {
   SCHOOL_LT2_Y,
   SchoolInteriorInteractable,
 } from '@/lib/world/school-interior-layout';
-import { DESIGN_TOKENS } from '@/lib/world/campus-palette';
 import { INTERACTABLE_LAYER } from '@/lib/world/selection';
 import { useWorldStore } from '@/stores/use-world-store';
 
@@ -44,8 +43,8 @@ function InteractiveProxyBox({ item }: { item: SchoolInteriorInteractable }) {
         <mesh position={[0, 0.05, 0]}>
           <boxGeometry args={[item.dimensions[0] + 0.04, 0.03, item.dimensions[2] + 0.04]} />
           <meshStandardMaterial
-            color={DESIGN_TOKENS.caution}
-            emissive={DESIGN_TOKENS.caution}
+            color="#34D399"
+            emissive="#34D399"
             emissiveIntensity={0.65}
             transparent
             opacity={0.75}

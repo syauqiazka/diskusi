@@ -9,7 +9,6 @@ import { CLASSROOM_BOUNDS } from "@/lib/classroom/classroom-math";
 import { ClassroomScene } from "./classroom-scene";
 import { PlayerController } from "./player-controller";
 import { RaycastDetector } from "./raycast-detector";
-import { VhsEffects } from "./vhs-effects";
 import { WorldHud } from "./world-hud";
 import { PauseMenu } from "./pause-menu";
 import { TouchControls } from "./touch-controls";
@@ -141,7 +140,6 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
           onlineUserIds={onlineUserIds}
           peerPositions={peerPositions}
         />
-        <VhsEffects />
       </Canvas>
 
       {/* Layer HUD (PLAY, PAUSE, Timer, Crosshair) */}
