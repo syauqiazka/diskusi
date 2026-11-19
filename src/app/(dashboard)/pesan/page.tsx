@@ -19,11 +19,14 @@ import { Input } from "@/components/ui/input";
 import {
   getUserConversations,
   getClassmatesForDm,
+  getSchoolStudentsDirectory,
   getOrCreateConversation,
   sendMessage,
   type ConversationDetail,
   type ClassmateOption,
+  type SchoolStudentItem,
 } from "@/lib/chat/actions";
+import { joinClassByCode } from "@/lib/classroom/actions";
 import type { FormattedConversationListItem } from "@/lib/chat/chat-utils";
 
 export default function PesanPage() {
@@ -39,11 +42,14 @@ export default function PesanPage() {
   const [isSending, setIsSending] = React.useState(false);
   const [chatError, setChatError] = React.useState<string | null>(null);
 
-  // Dialog Mulai Obrolan Baru
+  // Dialog Mulai Obrolan Baru & Direktori Teman
   const [showNewChatDialog, setShowNewChatDialog] = React.useState(false);
+  const [dialogTab, setDialogTab] = React.useState<"classmates" | "directory">("classmates");
   const [classmates, setClassmates] = React.useState<ClassmateOption[]>([]);
+  const [allStudents, setAllStudents] = React.useState<SchoolStudentItem[]>([]);
   const [isLoadingClassmates, setIsLoadingClassmates] = React.useState(false);
   const [searchClassmate, setSearchClassmate] = React.useState("");
+  const [joiningClassCode, setJoiningClassCode] = React.useState<string | null>(null);
 
   // Load daftar inbox percakapan
   const fetchConversations = React.useCallback(async () => {
@@ -78,17 +84,62 @@ export default function PesanPage() {
     };
   }, [fetchConversations]);
 
-  // Load dialog rekan sekelas saat dialog dibuka
+  // Load dialog rekan sekelas & direktori siswa saat dialog dibuka
   const handleOpenNewChatDialog = async () => {
     setShowNewChatDialog(true);
     setIsLoadingClassmates(true);
     try {
-      const data = await getClassmatesForDm();
-      setClassmates(data);
+      const [classmatesData, allStudentsData] = await Promise.all([
+        getClassmatesForDm(),
+        getSchoolStudentsDirectory(),
+      ]);
+      setClassmates(classmatesData);
+      setAllStudents(allStudentsData);
     } catch {
       console.error("Gagal mengambil data rekan sekelas.");
     } finally {
       setIsLoadingClassmates(false);
+    }
+  };
+
+  // Gabung ke kelas rekan & langsung mulai percakapan
+  const handleJoinClassAndChat = async (classCode: string, targetUserId: string) => {
+    setJoiningClassCode(classCode);
+    try {
+      const joinRes = await joinClassByCode(classCode);
+      if (!joinRes.success) {
+        alert(joinRes.error || "Gagal bergabung ke kelas.");
+        return;
+      }
+
+      // Refresh data rekan & buka chat
+      const [classmatesData, allStudentsData] = await Promise.all([
+        getClassmatesForDm(),
+        getSchoolStudentsDirectory(),
+      ]);
+      setClassmates(classmatesData);
+      setAllStudents(allStudentsData);
+
+      // Cari classId dari kelas yang baru digabung
+      const joinedClass = allStudentsData
+        .flatMap((s) => s.classes)
+        .find((c) => c.code.toUpperCase() === classCode.toUpperCase());
+
+      if (joinedClass) {
+        setShowNewChatDialog(false);
+        setIsLoadingChat(true);
+        const convRes = await getOrCreateConversation(joinedClass.id, targetUserId);
+        if (convRes.success && convRes.conversation) {
+          setActiveConversationId(convRes.conversation.id);
+          setActiveConversation(convRes.conversation);
+          await fetchConversations();
+        }
+      }
+    } catch {
+      alert("Terjadi kesalahan saat bergabung ke kelas rekan.");
+    } finally {
+      setJoiningClassCode(null);
+      setIsLoadingChat(false);
     }
   };
 
@@ -184,6 +235,18 @@ export default function PesanPage() {
         cm.className.toLowerCase().includes(q)
     );
   }, [classmates, searchClassmate]);
+
+  const filteredAllStudents = React.useMemo(() => {
+    if (!searchClassmate.trim()) return allStudents;
+    const q = searchClassmate.toLowerCase();
+    return allStudents.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.displayName.toLowerCase().includes(q) ||
+        s.username.toLowerCase().includes(q) ||
+        s.classes.some((c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q))
+    );
+  }, [allStudents, searchClassmate]);
 
   return (
     <div className="space-y-6">
@@ -475,14 +538,40 @@ export default function PesanPage() {
 
             <div className="border-b border-fluor/20 pb-3">
               <span className="font-hud text-lg tracking-widest text-caution">
-                [DM INTRA-KELAS // PILIH REKAN SEKELAS]
+                [DM INTRA-KELAS // TEMUKAN TEMAN BELAJAR]
               </span>
               <h3 className="font-sign text-2xl text-fluor uppercase mt-1">
-                DAFTAR TEMAN KELAS
+                DAFTAR TEMAN &amp; SISWA
               </h3>
               <p className="font-mono text-xs text-fluor/60">
-                Hanya menampilkan murid dan pengajar dari kelas yang Anda ikuti.
+                Pilih rekan sekelas untuk mulai mengobrol langsung, atau temukan siswa SMK TI BAZMA lainnya.
               </p>
+
+              {/* Tab Pemilih: Teman Sekelas vs Direktori Siswa */}
+              <div className="flex space-x-2 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setDialogTab("classmates")}
+                  className={`px-3 py-1 font-mono text-xs uppercase tracking-wider border cursor-pointer transition-colors ${
+                    dialogTab === "classmates"
+                      ? "border-caution text-caution bg-caution/10 font-bold"
+                      : "border-fluor/30 text-fluor/60 hover:text-fluor"
+                  }`}
+                >
+                  Rekan Sekelas ({filteredClassmates.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDialogTab("directory")}
+                  className={`px-3 py-1 font-mono text-xs uppercase tracking-wider border cursor-pointer transition-colors ${
+                    dialogTab === "directory"
+                      ? "border-neon-cyan text-neon-cyan bg-neon-cyan/10 font-bold"
+                      : "border-fluor/30 text-fluor/60 hover:text-fluor"
+                  }`}
+                >
+                  Direktori Siswa Sekolah ({filteredAllStudents.length})
+                </button>
+              </div>
             </div>
 
             {/* Input Pencarian Rekan */}
@@ -491,54 +580,180 @@ export default function PesanPage() {
               <Input
                 value={searchClassmate}
                 onChange={(e) => setSearchClassmate(e.target.value)}
-                placeholder="Cari rekan sekelas berdasarkan nama atau kelas..."
+                placeholder={
+                  dialogTab === "classmates"
+                    ? "Cari rekan sekelas berdasarkan nama atau kelas..."
+                    : "Cari siswa SMK TI BAZMA berdasarkan nama atau username..."
+                }
                 className="pl-9 font-mono text-xs"
                 autoFocus
               />
             </div>
 
-            {/* Daftar Rekan */}
-            <div className="flex-1 overflow-y-auto divide-y divide-fluor/10 max-h-64 border border-fluor/20">
-              {isLoadingClassmates ? (
-                <div className="p-6 text-center font-mono text-xs text-fluor/50">
-                  Memuat daftar rekan sekelas...
-                </div>
-              ) : filteredClassmates.length === 0 ? (
-                <div className="p-6 text-center font-mono text-xs text-fluor/50">
-                  Tidak ditemukan rekan sekelas dengan nama tersebut.
-                </div>
-              ) : (
-                filteredClassmates.map((cm) => (
-                  <div
-                    key={`${cm.classId}-${cm.userId}`}
-                    onClick={() => handleStartChatWithClassmate(cm)}
-                    className="p-3 hover:bg-caution/10 cursor-pointer flex items-center justify-between transition-colors group"
-                  >
-                    <div>
-                      <div className="font-sign text-base text-fluor uppercase group-hover:text-caution transition-colors">
-                        {cm.displayName}
+            {/* Konten Tab 1: Rekan Sekelas */}
+            {dialogTab === "classmates" && (
+              <div className="flex-1 overflow-y-auto divide-y divide-fluor/10 max-h-64 border border-fluor/20">
+                {isLoadingClassmates ? (
+                  <div className="p-6 text-center font-mono text-xs text-fluor/50">
+                    Memuat daftar rekan sekelas...
+                  </div>
+                ) : filteredClassmates.length === 0 ? (
+                  <div className="p-6 text-center space-y-3 font-mono text-xs">
+                    <div className="text-fluor/60">
+                      Belum ada rekan sekelas yang ditemukan di kelas Anda saat ini.
+                    </div>
+                    <div className="p-3 border border-caution/40 bg-caution/10 text-caution text-[11px] text-left">
+                      <strong>Tips:</strong> Bergabunglah ke kelas SIJA untuk langsung terhubung dengan rekan-rekan sekelas:
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span className="font-bold border border-caution px-2 py-0.5 bg-night text-caution">
+                          Kode: SIJA10A (X SIJA 1)
+                        </span>
+                        <span className="font-bold border border-caution px-2 py-0.5 bg-night text-caution">
+                          Kode: SIJA11B (XI SIJA 2)
+                        </span>
                       </div>
-                      <div className="font-mono text-[11px] text-fluor/60 flex items-center space-x-2">
-                        <span>@{cm.username}</span>
-                        <span>•</span>
-                        <span>{cm.className}</span>
-                        {cm.seatIndex !== null && (
-                          <>
-                            <span>•</span>
-                            <span className="text-caution font-bold">
-                              MEJA #{String(cm.seatIndex + 1).padStart(2, "0")}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDialogTab("directory")}
+                      className="text-xs"
+                    >
+                      LIHAT DIREKTORI SISWA SEKOLAH
+                    </Button>
+                  </div>
+                ) : (
+                  filteredClassmates.map((cm) => (
+                    <div
+                      key={`${cm.classId}-${cm.userId}`}
+                      onClick={() => handleStartChatWithClassmate(cm)}
+                      className="p-3 hover:bg-caution/10 cursor-pointer flex items-center justify-between transition-colors group"
+                    >
+                      <div>
+                        <div className="font-sign text-base text-fluor uppercase group-hover:text-caution transition-colors">
+                          {cm.displayName}
+                        </div>
+                        <div className="font-mono text-[11px] text-fluor/60 flex items-center space-x-2">
+                          <span>@{cm.username}</span>
+                          <span>•</span>
+                          <span>{cm.className}</span>
+                          {cm.seatIndex !== null && (
+                            <>
+                              <span>•</span>
+                              <span className="text-caution font-bold">
+                                MEJA #{String(cm.seatIndex + 1).padStart(2, "0")}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-fluor/40 group-hover:text-caution transition-colors" />
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Konten Tab 2: Direktori Siswa Sekolah */}
+            {dialogTab === "directory" && (
+              <div className="flex-1 overflow-y-auto divide-y divide-fluor/10 max-h-64 border border-fluor/20">
+                {isLoadingClassmates ? (
+                  <div className="p-6 text-center font-mono text-xs text-fluor/50">
+                    Memuat direktori seluruh siswa...
+                  </div>
+                ) : filteredAllStudents.length === 0 ? (
+                  <div className="p-6 text-center font-mono text-xs text-fluor/50">
+                    Tidak ditemukan siswa dengan kata kunci tersebut.
+                  </div>
+                ) : (
+                  filteredAllStudents.map((student) => (
+                    <div
+                      key={student.userId}
+                      className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-fluor/[0.03] transition-colors"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-sign text-base text-fluor uppercase">
+                            {student.displayName}
+                          </span>
+                          <span className="font-mono text-[11px] text-fluor/50">
+                            @{student.username}
+                          </span>
+                        </div>
+                        {student.bio && (
+                          <p className="font-body text-xs text-fluor/70 line-clamp-1">
+                            {student.bio}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-1 pt-0.5">
+                          {student.classes.map((cls) => (
+                            <span
+                              key={cls.id}
+                              className={`font-mono text-[10px] px-1.5 py-0.2 border ${
+                                cls.isShared
+                                  ? "border-ok/60 text-ok bg-ok/10"
+                                  : "border-fluor/20 text-fluor/60"
+                              }`}
+                            >
+                              {cls.name} ({cls.code})
                             </span>
-                          </>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="self-end sm:self-auto shrink-0">
+                        {student.canChatDirectly && student.sharedClassId ? (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() =>
+                              handleStartChatWithClassmate({
+                                userId: student.userId,
+                                name: student.name,
+                                displayName: student.displayName,
+                                username: student.username,
+                                classId: student.sharedClassId!,
+                                className: student.classes.find((c) => c.id === student.sharedClassId)?.name || "Kelas",
+                                classCode: student.classes.find((c) => c.id === student.sharedClassId)?.code || "",
+                                seatIndex: null,
+                                role: "STUDENT",
+                              })
+                            }
+                            className="text-xs space-x-1"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>KIRIM PESAN</span>
+                          </Button>
+                        ) : student.classes.length > 0 ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={joiningClassCode === student.classes[0].code}
+                            onClick={() =>
+                              handleJoinClassAndChat(student.classes[0].code, student.userId)
+                            }
+                            className="text-xs text-caution border-caution/60 hover:bg-caution hover:text-night"
+                          >
+                            {joiningClassCode === student.classes[0].code
+                              ? "BERGABUNG..."
+                              : `GABUNG KELAS & CHAT (${student.classes[0].code})`}
+                          </Button>
+                        ) : (
+                          <span className="font-mono text-[10px] text-fluor/40">
+                            Belum terdaftar di kelas
+                          </span>
                         )}
                       </div>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-fluor/40 group-hover:text-caution transition-colors" />
-                  </div>
-                ))
-              )}
-            </div>
+                  ))
+                )}
+              </div>
+            )}
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-between items-center pt-2">
+              <span className="font-mono text-[11px] text-fluor/50">
+                Pesan direct (DM) intra-kelas terlindungi otorisasi server SMK TI BAZMA.
+              </span>
               <Button variant="outline" size="sm" onClick={() => setShowNewChatDialog(false)}>
                 TUTUP
               </Button>

@@ -470,3 +470,77 @@ export async function getClassmatesForDm(): Promise<ClassmateOption[]> {
     role: m.role,
   }));
 }
+
+export interface SchoolStudentItem {
+  userId: string;
+  name: string;
+  displayName: string;
+  username: string;
+  bio: string | null;
+  classes: Array<{
+    id: string;
+    name: string;
+    code: string;
+    isShared: boolean;
+  }>;
+  canChatDirectly: boolean;
+  sharedClassId?: string;
+}
+
+/**
+ * Mengambil direktori seluruh siswa sekolah SMK TI BAZMA
+ * untuk mempermudah pencarian teman, melihat kelas teman, dan menghubungkan obrolan.
+ */
+export async function getSchoolStudentsDirectory(): Promise<SchoolStudentItem[]> {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return [];
+  }
+
+  const currentUserId = session.user.id;
+
+  const myMemberships = await prisma.classMember.findMany({
+    where: { userId: currentUserId },
+    select: { classId: true },
+  });
+  const myClassIds = new Set(myMemberships.map((m) => m.classId));
+
+  const allUsers = await prisma.user.findMany({
+    where: { id: { not: currentUserId } },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+      username: true,
+      bio: true,
+      memberships: {
+        include: {
+          class: { select: { id: true, name: true, code: true } },
+        },
+      },
+    },
+    take: 50,
+  });
+
+  return allUsers.map((u) => {
+    const classList = u.memberships.map((m) => ({
+      id: m.class.id,
+      name: m.class.name,
+      code: m.class.code,
+      isShared: myClassIds.has(m.class.id),
+    }));
+
+    const shared = classList.find((c) => c.isShared);
+
+    return {
+      userId: u.id,
+      name: u.name,
+      displayName: u.displayName || u.name,
+      username: u.username || "siswa",
+      bio: u.bio,
+      classes: classList,
+      canChatDirectly: Boolean(shared),
+      sharedClassId: shared?.id,
+    };
+  });
+}

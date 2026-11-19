@@ -56,8 +56,6 @@ const skyFragmentShader = `
     float factor = pow(h, uExponent);
     vec3 col = mix(uBottomColor, uTopColor, factor);
     gl_FragColor = vec4(col, 1.0);
-    #include <tonemapping_fragment>
-    #include <colorspace_fragment>
   }
 `;
 
@@ -434,6 +432,7 @@ export const TimeOfDayEnvironment: React.FC = () => {
     const initialConfig = getBlendedVisualConfig(activePhase, nextPhase, blendFactor);
     const fog = new THREE.FogExp2(initialConfig.fogColor.clone(), initialConfig.fogDensity);
     scene.fog = fog;
+    scene.background = initialConfig.skyBottom.clone();
 
     const pmremGenerator = new THREE.PMREMGenerator(gl);
     const roomEnv = new RoomEnvironment();
@@ -513,6 +512,9 @@ export const TimeOfDayEnvironment: React.FC = () => {
         scene.fog.color.copy(config.fogColor);
         scene.fog.density = config.fogDensity;
       }
+      if (scene.background && scene.background instanceof THREE.Color) {
+        scene.background.copy(config.skyBottom);
+      }
       if (starsMatRef.current) {
         starsMatRef.current.opacity = config.starsOpacity;
         if (starsPointsRef.current) {
@@ -524,6 +526,7 @@ export const TimeOfDayEnvironment: React.FC = () => {
     return () => {
       unsub();
       scene.fog = null;
+      scene.background = null;
       scene.environment = null;
       roomEnv.dispose();
       envTarget.dispose();
@@ -645,7 +648,7 @@ export const TimeOfDayEnvironment: React.FC = () => {
       );
     }
 
-    // 5. Kabut Atmosfer
+    // 5. Kabut Atmosfer & Background
     if (scene.fog && scene.fog instanceof THREE.FogExp2) {
       scene.fog.color.lerp(blended.fogColor, damping);
       scene.fog.density = THREE.MathUtils.damp(
@@ -654,6 +657,9 @@ export const TimeOfDayEnvironment: React.FC = () => {
         TIME_OF_DAY_CONFIG.dampingLambda,
         dt
       );
+    }
+    if (scene.background && scene.background instanceof THREE.Color) {
+      scene.background.lerp(blended.skyBottom, damping);
     }
 
     // 6. Bintang Malam (matikan mesh sepenuhnya saat siang/pagi)

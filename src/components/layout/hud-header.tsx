@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogIn, UserPlus } from "lucide-react";
+import { HudAuthButtons } from "@/components/layout/hud-auth-buttons";
 
 export function HudHeader() {
   return (
@@ -47,27 +47,9 @@ export function HudHeader() {
           </Link>
         </div>
 
-        {/* Sisi Kanan: Penghitung Waktu & Aksi Autentikasi */}
-        <div className="flex items-center space-x-3 sm:space-x-4 font-mono text-xs">
-          <span className="font-hud text-lg tracking-widest text-fluor/70 hidden sm:inline">
-            SP 0:02:14
-          </span>
-
-          <Link
-            href="/masuk"
-            className="inline-flex items-center space-x-1 px-3 py-1.5 border border-fluor/30 hover:border-caution hover:text-caution transition-colors"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            <span className="uppercase tracking-wider">Masuk</span>
-          </Link>
-
-          <Link
-            href="/daftar"
-            className="inline-flex items-center space-x-1 px-3 py-1.5 bg-caution text-night border border-caution hover:bg-caution/90 transition-colors font-semibold"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span className="uppercase tracking-wider">Daftar</span>
-          </Link>
+        {/* Sisi Kanan: Status Autentikasi Pengguna & Aksi */}
+        <div className="flex items-center space-x-3 font-mono text-xs">
+          <HudAuthButtons />
         </div>
       </div>
     </header>
