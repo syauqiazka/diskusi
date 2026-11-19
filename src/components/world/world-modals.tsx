@@ -675,11 +675,10 @@ export function WorldModals() {
                   {/* Opsi Tanpa Bingkai */}
                   <button
                     onClick={() => setSelectedFrameId(null)}
-                    className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between cursor-pointer ${
-                      selectedFrameId === null
+                    className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between cursor-pointer ${selectedFrameId === null
                         ? "border-primary bg-primary/15 shadow-xs"
                         : "border-border bg-canvas/30 hover:border-primary/50"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-xl border border-border flex items-center justify-center bg-surface">
@@ -700,11 +699,10 @@ export function WorldModals() {
                       <button
                         key={frame.id}
                         onClick={() => setSelectedFrameId(frame.id)}
-                        className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between cursor-pointer ${
-                          isSelected
+                        className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between cursor-pointer ${isSelected
                             ? "border-primary bg-primary/15 shadow-xs"
                             : "border-border bg-canvas/30 hover:border-primary/50"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-xl border-2 border-primary flex items-center justify-center bg-primary/20">
