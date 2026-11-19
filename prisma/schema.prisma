@@ -7,9 +7,9 @@ generator client {
 }
 
 enum PlatformRole {
-  MEMBER
-  MODERATOR
+  SUPERADMIN
   ADMIN
+  USER
 }
 
 enum ClassRole {
@@ -36,7 +36,7 @@ model User {
   displayName   String?
   bio           String?
   bannerUrl     String?
-  role          PlatformRole @default(MEMBER)
+  role          PlatformRole @default(USER)
 
   // Pengaturan Preferensi Visual Dunia (WORLD.md)
   worldSettings Json         @default("{\"graphicsQuality\":\"medium\",\"fastMode\":false,\"nightMode\":true,\"sound\":false}")

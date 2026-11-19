@@ -12,6 +12,7 @@ import {
   ArrowRight,
   X,
   Compass,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,15 +22,17 @@ import {
   getClassmatesForDm,
   getSchoolStudentsDirectory,
   getOrCreateConversation,
+  connectAndStartChat,
   sendMessage,
   type ConversationDetail,
   type ClassmateOption,
   type SchoolStudentItem,
 } from "@/lib/chat/actions";
-import { joinClassByCode } from "@/lib/classroom/actions";
+import { authClient } from "@/lib/auth/auth-client";
 import type { FormattedConversationListItem } from "@/lib/chat/chat-utils";
 
 export default function PesanPage() {
+  const { data: session } = authClient.useSession();
   const [conversations, setConversations] = React.useState<FormattedConversationListItem[]>([]);
   const [activeConversationId, setActiveConversationId] = React.useState<string | null>(null);
   const [activeConversation, setActiveConversation] = React.useState<ConversationDetail | null>(null);
@@ -49,7 +52,7 @@ export default function PesanPage() {
   const [allStudents, setAllStudents] = React.useState<SchoolStudentItem[]>([]);
   const [isLoadingClassmates, setIsLoadingClassmates] = React.useState(false);
   const [searchClassmate, setSearchClassmate] = React.useState("");
-  const [joiningClassCode, setJoiningClassCode] = React.useState<string | null>(null);
+  const [connectingUserId, setConnectingUserId] = React.useState<string | null>(null);
 
   // Load daftar inbox percakapan
   const fetchConversations = React.useCallback(async () => {
@@ -102,47 +105,6 @@ export default function PesanPage() {
     }
   };
 
-  // Gabung ke kelas rekan & langsung mulai percakapan
-  const handleJoinClassAndChat = async (classCode: string, targetUserId: string) => {
-    setJoiningClassCode(classCode);
-    try {
-      const joinRes = await joinClassByCode(classCode);
-      if (!joinRes.success) {
-        alert(joinRes.error || "Gagal bergabung ke kelas.");
-        return;
-      }
-
-      // Refresh data rekan & buka chat
-      const [classmatesData, allStudentsData] = await Promise.all([
-        getClassmatesForDm(),
-        getSchoolStudentsDirectory(),
-      ]);
-      setClassmates(classmatesData);
-      setAllStudents(allStudentsData);
-
-      // Cari classId dari kelas yang baru digabung
-      const joinedClass = allStudentsData
-        .flatMap((s) => s.classes)
-        .find((c) => c.code.toUpperCase() === classCode.toUpperCase());
-
-      if (joinedClass) {
-        setShowNewChatDialog(false);
-        setIsLoadingChat(true);
-        const convRes = await getOrCreateConversation(joinedClass.id, targetUserId);
-        if (convRes.success && convRes.conversation) {
-          setActiveConversationId(convRes.conversation.id);
-          setActiveConversation(convRes.conversation);
-          await fetchConversations();
-        }
-      }
-    } catch {
-      alert("Terjadi kesalahan saat bergabung ke kelas rekan.");
-    } finally {
-      setJoiningClassCode(null);
-      setIsLoadingChat(false);
-    }
-  };
-
   // Pilih percakapan dari daftar inbox
   const handleSelectConversation = async (item: FormattedConversationListItem) => {
     setActiveConversationId(item.id);
@@ -159,6 +121,27 @@ export default function PesanPage() {
       setChatError("Terjadi kesalahan jaringan saat memuat obrolan.");
     } finally {
       setIsLoadingChat(false);
+    }
+  };
+
+  // Mulai obrolan dengan siapapun dari direktori siswa (otomatis terhubung & buat kelas bersama jika perlu)
+  const handleStartDirectChat = async (targetUserId: string) => {
+    setConnectingUserId(targetUserId);
+    setChatError(null);
+    try {
+      const res = await connectAndStartChat(targetUserId);
+      if (res.success && res.conversation) {
+        setShowNewChatDialog(false);
+        setActiveConversationId(res.conversation.id);
+        setActiveConversation(res.conversation);
+        await fetchConversations();
+      } else {
+        alert(res.error || "Gagal menghubungkan obrolan.");
+      }
+    } catch {
+      alert("Terjadi kesalahan sistem saat menghubungkan obrolan.");
+    } finally {
+      setConnectingUserId(null);
     }
   };
 
@@ -237,16 +220,18 @@ export default function PesanPage() {
   }, [classmates, searchClassmate]);
 
   const filteredAllStudents = React.useMemo(() => {
-    if (!searchClassmate.trim()) return allStudents;
+    // Kecualikan diri sendiri agar tidak mencari akun sendiri
+    const list = allStudents.filter((s) => s.userId !== session?.user?.id);
+    if (!searchClassmate.trim()) return list;
     const q = searchClassmate.toLowerCase();
-    return allStudents.filter(
+    return list.filter(
       (s) =>
         s.name.toLowerCase().includes(q) ||
         s.displayName.toLowerCase().includes(q) ||
         s.username.toLowerCase().includes(q) ||
         s.classes.some((c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q))
     );
-  }, [allStudents, searchClassmate]);
+  }, [allStudents, searchClassmate, session?.user?.id]);
 
   return (
     <div className="space-y-6">
@@ -666,86 +651,86 @@ export default function PesanPage() {
                     Tidak ditemukan siswa dengan kata kunci tersebut.
                   </div>
                 ) : (
-                  filteredAllStudents.map((student) => (
-                    <div
-                      key={student.userId}
-                      className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-fluor/[0.03] transition-colors"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-sign text-base text-fluor uppercase">
-                            {student.displayName}
-                          </span>
-                          <span className="font-mono text-[11px] text-fluor/50">
-                            @{student.username}
-                          </span>
-                        </div>
-                        {student.bio && (
-                          <p className="font-body text-xs text-fluor/70 line-clamp-1">
-                            {student.bio}
-                          </p>
-                        )}
-                        <div className="flex flex-wrap gap-1 pt-0.5">
-                          {student.classes.map((cls) => (
-                            <span
-                              key={cls.id}
-                              className={`font-mono text-[10px] px-1.5 py-0.2 border ${
-                                cls.isShared
-                                  ? "border-ok/60 text-ok bg-ok/10"
-                                  : "border-fluor/20 text-fluor/60"
-                              }`}
-                            >
-                              {cls.name} ({cls.code})
+                  filteredAllStudents.map((student) => {
+                    const isConnecting = connectingUserId === student.userId;
+                    return (
+                      <div
+                        key={student.userId}
+                        onClick={() => handleStartDirectChat(student.userId)}
+                        className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-caution/10 border-b border-fluor/10 transition-colors cursor-pointer group"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-sign text-base text-fluor uppercase group-hover:text-caution transition-colors">
+                              {student.displayName}
                             </span>
-                          ))}
+                            <span className="font-mono text-[11px] text-fluor/50">
+                              @{student.username}
+                            </span>
+                            {student.canChatDirectly && (
+                              <span className="font-mono text-[10px] text-ok border border-ok/40 bg-ok/10 px-1.5 py-0.2">
+                                SEKELAS
+                              </span>
+                            )}
+                          </div>
+                          {student.bio && (
+                            <p className="font-body text-xs text-fluor/70 line-clamp-1">
+                              {student.bio}
+                            </p>
+                          )}
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {student.classes.length > 0 ? (
+                              student.classes.map((cls) => (
+                                <span
+                                  key={cls.id}
+                                  className={`font-mono text-[10px] px-1.5 py-0.2 border ${
+                                    cls.isShared
+                                      ? "border-ok/60 text-ok bg-ok/10"
+                                      : "border-fluor/20 text-fluor/60"
+                                  }`}
+                                >
+                                  {cls.name} ({cls.code})
+                                </span>
+                              ))
+                            ) : (
+                              <span className="font-mono text-[10px] text-caution border border-caution/40 bg-caution/10 px-1.5 py-0.2">
+                                Siap dihubungkan ke kelas bersama
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="self-end sm:self-auto shrink-0">
+                          <Button
+                            variant={student.canChatDirectly ? "default" : "outline"}
+                            size="sm"
+                            disabled={isConnecting}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartDirectChat(student.userId);
+                            }}
+                            className={`text-xs space-x-1.5 font-hud tracking-wider ${
+                              !student.canChatDirectly
+                                ? "text-caution border-caution/60 hover:bg-caution hover:text-night"
+                                : ""
+                            }`}
+                          >
+                            {isConnecting ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
+                                <span>MENGHUBUNGKAN...</span>
+                              </>
+                            ) : (
+                              <>
+                                <MessageSquare className="w-3.5 h-3.5 mr-1" />
+                                <span>{student.canChatDirectly ? "KIRIM PESAN" : "HUBUNGKAN & CHAT"}</span>
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
-
-                      <div className="self-end sm:self-auto shrink-0">
-                        {student.canChatDirectly && student.sharedClassId ? (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() =>
-                              handleStartChatWithClassmate({
-                                userId: student.userId,
-                                name: student.name,
-                                displayName: student.displayName,
-                                username: student.username,
-                                classId: student.sharedClassId!,
-                                className: student.classes.find((c) => c.id === student.sharedClassId)?.name || "Kelas",
-                                classCode: student.classes.find((c) => c.id === student.sharedClassId)?.code || "",
-                                seatIndex: null,
-                                role: "STUDENT",
-                              })
-                            }
-                            className="text-xs space-x-1"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                            <span>KIRIM PESAN</span>
-                          </Button>
-                        ) : student.classes.length > 0 ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={joiningClassCode === student.classes[0].code}
-                            onClick={() =>
-                              handleJoinClassAndChat(student.classes[0].code, student.userId)
-                            }
-                            className="text-xs text-caution border-caution/60 hover:bg-caution hover:text-night"
-                          >
-                            {joiningClassCode === student.classes[0].code
-                              ? "BERGABUNG..."
-                              : `GABUNG KELAS & CHAT (${student.classes[0].code})`}
-                          </Button>
-                        ) : (
-                          <span className="font-mono text-[10px] text-fluor/40">
-                            Belum terdaftar di kelas
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             )}

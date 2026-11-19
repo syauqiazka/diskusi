@@ -17,7 +17,7 @@ export async function ensureClassesAndClassmatesSeeded(): Promise<void> {
         displayName: "Budi Santoso",
         username: "pak_budi",
         email: "guru.budi@smkbazma.sch.id",
-        role: "MEMBER",
+        role: "ADMIN",
         bio: "Guru Produktif SIJA - Pengampu Jaringan Komputer, Server & Komputasi Awan SMK TI BAZMA.",
       },
     });
@@ -127,7 +127,7 @@ export async function ensureClassesAndClassmatesSeeded(): Promise<void> {
           username: s.username,
           email: s.email,
           bio: s.bio,
-          role: "MEMBER",
+          role: "USER",
         },
       });
     }

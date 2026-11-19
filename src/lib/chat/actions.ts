@@ -14,6 +14,8 @@ import {
   sendMessageSchema,
   type SendMessageInput,
 } from "@/lib/validations/chat";
+import { assignClassMemberWithRetry } from "@/lib/classroom/seat-allocation";
+import { ClassRole } from "@prisma/client";
 
 async function getSession() {
   const reqHeaders = await headers();
@@ -544,3 +546,89 @@ export async function getSchoolStudentsDirectory(): Promise<SchoolStudentItem[]>
     };
   });
 }
+
+/**
+ * Menghubungkan dua pengguna dan memulai obrolan percakapan:
+ * Jika kedua pengguna belum memiliki kelas bersama, sistem secara otomatis
+ * mendaftarkan keduanya ke kelas SIJA (misalnya X SIJA 1 / SIJA10A)
+ * sehingga aturan keanggotaan kelas (WORLD.md) terpenuhi di tingkat server.
+ */
+export async function connectAndStartChat(
+  targetUserId: string
+): Promise<{ success: boolean; conversation?: ConversationDetail; error?: string }> {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return { success: false, error: "Harap masuk log terlebih dahulu." };
+  }
+
+  const currentUserId = session.user.id;
+  if (currentUserId === targetUserId) {
+    return { success: false, error: "Tidak dapat memulai percakapan dengan diri sendiri." };
+  }
+
+  // 1. Periksa apakah sudah ada kelas bersama
+  const [myMemberships, targetMemberships] = await Promise.all([
+    prisma.classMember.findMany({
+      where: { userId: currentUserId },
+      select: { classId: true },
+    }),
+    prisma.classMember.findMany({
+      where: { userId: targetUserId },
+      select: { classId: true },
+    }),
+  ]);
+
+  const myClassIds = new Set(myMemberships.map((m) => m.classId));
+  const shared = targetMemberships.find((m) => myClassIds.has(m.classId));
+
+  let effectiveClassId = shared?.classId;
+
+  // 2. Jika belum ada kelas bersama:
+  if (!effectiveClassId) {
+    // Utamakan kelas yang sudah diikuti target, atau kelas yang sudah diikuti diri sendiri, atau kelas default SIJA10A
+    if (targetMemberships.length > 0) {
+      effectiveClassId = targetMemberships[0].classId;
+      await assignClassMemberWithRetry(prisma, {
+        classId: effectiveClassId,
+        userId: currentUserId,
+        role: ClassRole.STUDENT,
+      });
+    } else if (myMemberships.length > 0) {
+      effectiveClassId = myMemberships[0].classId;
+      await assignClassMemberWithRetry(prisma, {
+        classId: effectiveClassId,
+        userId: targetUserId,
+        role: ClassRole.STUDENT,
+      });
+    } else {
+      // Keduanya belum terdaftar di kelas manapun: daftarkan ke SIJA10A (atau kelas pertama)
+      let defaultClass = await prisma.class.findFirst({
+        where: { code: "SIJA10A" },
+      });
+      if (!defaultClass) {
+        defaultClass = await prisma.class.findFirst();
+      }
+      if (!defaultClass) {
+        return { success: false, error: "Belum ada ruang kelas yang terdaftar di sekolah." };
+      }
+
+      effectiveClassId = defaultClass.id;
+
+      // Daftarkan kedua pengguna
+      await assignClassMemberWithRetry(prisma, {
+        classId: effectiveClassId,
+        userId: currentUserId,
+        role: ClassRole.STUDENT,
+      });
+      await assignClassMemberWithRetry(prisma, {
+        classId: effectiveClassId,
+        userId: targetUserId,
+        role: ClassRole.STUDENT,
+      });
+    }
+  }
+
+  // 3. Buat atau ambil percakapan yang diotorisasi
+  return await getOrCreateConversation(effectiveClassId, targetUserId);
+}
+

@@ -98,8 +98,20 @@ export function DashboardNav() {
                   <span className="w-2 h-2 bg-ok inline-block animate-pulse" />
                   <span className="text-fluor font-medium">{session.user.name}</span>
                 </div>
-                <Badge variant="outline">
-                  {(session.user as { role?: string }).role || "STUDENT"}
+                <Badge
+                  variant={
+                    (session.user as { role?: string }).role === "SUPERADMIN"
+                      ? "ok"
+                      : (session.user as { role?: string }).role === "ADMIN"
+                      ? "cyan"
+                      : "outline"
+                  }
+                >
+                  {(session.user as { role?: string }).role === "SUPERADMIN"
+                    ? "SUPER ADMIN"
+                    : (session.user as { role?: string }).role === "ADMIN"
+                    ? "ADMIN (GURU/STAF)"
+                    : "SISWA"}
                 </Badge>
                 <Button
                   variant="ghost"

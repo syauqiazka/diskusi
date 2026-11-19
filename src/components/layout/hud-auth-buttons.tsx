@@ -40,6 +40,13 @@ export function HudAuthButtons() {
           <span className="truncate max-w-[100px] sm:max-w-[150px] uppercase">
             {session.user.name}
           </span>
+          <span className="text-[10px] px-1 py-0.5 border border-caution/40 bg-night text-fluor/90 font-normal">
+            {(session.user as { role?: string })?.role === "SUPERADMIN"
+              ? "SUPER ADMIN"
+              : (session.user as { role?: string })?.role === "ADMIN"
+              ? "GURU/STAF"
+              : "SISWA"}
+          </span>
         </Link>
 
         <button

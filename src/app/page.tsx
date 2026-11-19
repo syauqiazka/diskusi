@@ -50,7 +50,22 @@ async function AuthenticatedStudentHome({
               <Badge variant="ok">SESI AKTIF</Badge>
               <Badge variant="outline">SMK TI BAZMA</Badge>
               <Badge variant="cyan">PROGRAM SIJA</Badge>
-              <Badge variant="caution">PERAN: {(session.user.role || "SISWA").toUpperCase()}</Badge>
+              <Badge
+                variant={
+                  session.user.role === "SUPERADMIN"
+                    ? "ok"
+                    : session.user.role === "ADMIN"
+                    ? "cyan"
+                    : "outline"
+                }
+              >
+                PERAN:{" "}
+                {session.user.role === "SUPERADMIN"
+                  ? "SUPER ADMIN"
+                  : session.user.role === "ADMIN"
+                  ? "ADMIN (GURU/STAF)"
+                  : "SISWA"}
+              </Badge>
             </div>
             <h1 className="font-sign text-3xl sm:text-5xl uppercase tracking-wide text-fluor leading-tight">
               SELAMAT DATANG, {session.user.name}!

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/auth-client";
 import { getCerminCosmetics, updateUserActiveFrame } from "@/lib/classroom/object-actions";
+import { RoleSwitcher } from "@/components/profile/role-switcher";
 
 // Katalog Resmi Bingkai Avatar (DESIGN.md: Katalog saja, tanpa upload pengguna)
 const avatarFrames = [
@@ -115,8 +116,20 @@ export default function ProfilPage() {
                 <span className="font-sign text-2xl text-fluor uppercase">
                   {user?.name || "Siswa SMK TI BAZMA"}
                 </span>
-                <Badge variant="caution">
-                  {(user as { role?: string })?.role || "STUDENT"}
+                <Badge
+                  variant={
+                    (user as { role?: string })?.role === "SUPERADMIN"
+                      ? "ok"
+                      : (user as { role?: string })?.role === "ADMIN"
+                      ? "cyan"
+                      : "outline"
+                  }
+                >
+                  {(user as { role?: string })?.role === "SUPERADMIN"
+                    ? "SUPER ADMIN"
+                    : (user as { role?: string })?.role === "ADMIN"
+                    ? "ADMIN (GURU & STAF)"
+                    : "SISWA"}
                 </Badge>
               </div>
 
@@ -133,6 +146,9 @@ export default function ProfilPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* SECTION PENGELOLAAN PERAN (SUPERADMIN / ADMIN / USER) */}
+      <RoleSwitcher currentRole={(user as { role?: string })?.role} />
 
       {/* SECTION CERMIN: KATALOG RESMI BINGKAI & EFEK (DESIGN.md) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
