@@ -1,22 +1,13 @@
-import { redirect } from "next/navigation";
-import { getServerSession } from "@/lib/auth/session";
+import * as React from "react";
 
-export const instant = false;
-
-export default async function DuniaLayout({
+export default function DuniaLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession();
-  if (!session) {
-    redirect("/masuk");
-  }
-
   return (
     <div className="w-screen h-screen overflow-hidden bg-canvas text-text select-none relative">
       {children}
     </div>
   );
 }
-

@@ -3,23 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import { ArrowRight, Zap } from "lucide-react";
 import { useWorldStore } from "@/stores/use-world-store";
-import { CampusBlockout } from "./campus/campus-blockout";
-import { CampusTerrain } from "./campus/campus-terrain";
-import { CampusGrass } from "./campus/campus-grass";
-import { CampusPlayerController } from "./campus/campus-player-controller";
-import { InteractableMarkers } from "./campus/interactable-markers";
-import { InteractionRaycaster } from "./campus/interaction-raycaster";
-import { InteractionHud } from "./campus/interaction-hud";
-import { InteractionPanel } from "./campus/interaction-panel";
-import { TimeOfDayEnvironment } from "./environment/time-of-day-environment";
-import { TimeOfDayDebugPanel } from "./environment/time-of-day-debug-panel";
-import { PauseMenu } from "./pause-menu";
-import { TouchControls } from "./touch-controls";
 import { Button } from "@/components/ui/button";
-import { CAMPUS_LAYOUT } from "@/lib/world/campus-layout";
+import { SakuraCampusScene } from "./sakura/sakura-campus-scene";
+import { SakuraOverlayUI } from "./sakura/sakura-overlay-ui";
 
 function isWebGLAvailable(): boolean {
   if (typeof window === "undefined") return true;
@@ -34,41 +22,11 @@ function isWebGLAvailable(): boolean {
   }
 }
 
-function CampusScene({
-  showLabels,
-  cutawayMode,
-}: {
-  showLabels: boolean;
-  cutawayMode: boolean;
-}) {
-  const cameraMode = useWorldStore((s) => s.cameraMode);
-
-  return (
-    <>
-      <TimeOfDayEnvironment />
-      <CampusTerrain />
-      <CampusBlockout showLabels={showLabels} cutawayMode={cutawayMode} />
-      <CampusGrass />
-      <InteractableMarkers />
-      <InteractionRaycaster />
-      {cameraMode === "fps" ? (
-        <CampusPlayerController />
-      ) : (
-        <OrbitControls target={[0, -2, 0]} makeDefault />
-      )}
-    </>
-  );
-}
-
 export function WorldContainer() {
   const [hasWebGL] = React.useState<boolean>(() => isWebGLAvailable());
   const fastMode = useWorldStore((s) => s.worldSettings.fastMode);
-  const cutawayMode = useWorldStore((s) => s.cutawayMode);
-  const isPointerLocked = useWorldStore((s) => s.isPointerLocked);
-  const isPaused = useWorldStore((s) => s.isPaused);
-  const [showLabels] = React.useState(false);
 
-  // Fallback Otomatis Mode Cepat 2D
+  // Fallback Otomatis Mode Cepat 2D jika perangkat tidak mendukung WebGL atau user memilih mode cepat
   if (!hasWebGL || fastMode) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center p-6 bg-canvas text-text font-body">
@@ -106,57 +64,24 @@ export function WorldContainer() {
     );
   }
 
-  const spawnPos = CAMPUS_LAYOUT.playerSpawn.position;
-
-  // Tombol keluar hanya terlihat saat dijeda atau pointer tidak terkunci
-  const showExitButton = isPaused || !isPointerLocked;
-
   return (
     <div className="relative w-screen h-screen bg-canvas overflow-hidden select-none">
-      {/* Tombol Pintas Kembali ke Mode Cepat 2D — hanya tampil saat dijeda */}
-      {showExitButton && (
-        <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
-          <Link href="/kelas" tabIndex={isPointerLocked ? -1 : 0}>
-            <Button
-              variant="outline"
-              size="sm"
-              tabIndex={isPointerLocked ? -1 : 0}
-              className="bg-surface/95 hover:bg-surface text-text border-2 border-border shadow-md font-display font-bold text-sm tracking-wide rounded-full px-4 py-2 transition-transform hover:scale-105"
-            >
-              Kembali ke Mode 2D
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {/* 3D Canvas React Three Fiber */}
+      {/* 3D Canvas React Three Fiber - Sakura Academy Japanese Anime Campus */}
       <Canvas
         camera={{
-          position: [spawnPos[0], spawnPos[1] + 1.6, spawnPos[2]],
-          fov: 75,
-          near: 0.05,
-          far: 1200,
+          position: [-16, 26, 48],
+          fov: 55,
+          near: 0.1,
+          far: 600,
         }}
-        gl={{ antialias: false, powerPreference: "high-performance" }}
-        className="w-full h-full cursor-crosshair"
+        gl={{ antialias: true, powerPreference: "high-performance" }}
+        className="w-full h-full cursor-grab active:cursor-grabbing"
       >
-        <CampusScene showLabels={showLabels} cutawayMode={cutawayMode} />
+        <SakuraCampusScene />
       </Canvas>
 
-      {/* Layer HUD VHS Kamera (PLAY, PAUSE, Timer SP, Crosshair) */}
-      <InteractionHud />
-
-      {/* Layar Jeda / Pause Menu dengan Sakelar ON/OFF */}
-      <PauseMenu />
-
-      {/* Kontrol Sentuh Mobile (D-pad & Tombol Aksi) */}
-      <TouchControls />
-
-      {/* Panel Modal 2D Objek Interaktif (Pintu, Mading, Perpustakaan, Loker, Cermin) */}
-      <InteractionPanel />
-
-      {/* Panel Debug Pengaturan Waktu Realtime (Pagi, Siang, Sore, Malam) */}
-      <TimeOfDayDebugPanel />
+      {/* Layer Overlay UI Interaktif (Orbit/Walk, Cutaway Lantai, Mode Lapangan, Teleport, Waktu, Minimap) */}
+      <SakuraOverlayUI />
     </div>
   );
 }
