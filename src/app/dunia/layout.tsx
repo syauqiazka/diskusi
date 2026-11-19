@@ -14,7 +14,7 @@ export default async function DuniaLayout({
   }
 
   return (
-    <div className="w-screen h-screen overflow-hidden bg-night text-fluor select-none relative">
+    <div className="w-screen h-screen overflow-hidden bg-canvas text-text select-none relative">
       {children}
     </div>
   );

@@ -152,18 +152,20 @@ export default function PerpustakaanPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header Halaman Perpustakaan */}
-      <div className="border-b border-fluor/20 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-surface rounded-3xl border-2 border-border p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-caution mb-1">
-            <BookOpen className="w-5 h-5" />
-            <h1 className="font-sign text-2xl sm:text-3xl text-fluor tracking-wide uppercase">
+          <div className="flex items-center space-x-2.5 text-text mb-1">
+            <div className="w-10 h-10 rounded-2xl bg-secondary/30 flex items-center justify-center text-text">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <h1 className="font-display font-bold text-2xl sm:text-3xl text-text tracking-tight">
               Perpustakaan Digital
             </h1>
           </div>
-          <p className="font-body text-xs sm:text-sm text-fluor/70">
-            Koleksi buku teks, panduan konfigurasi lab, dan modul pembelajaran SIJA SMK TI BAZMA.
+          <p className="font-body text-sm text-text-muted mt-1">
+            Koleksi buku teks, panduan konfigurasi lab, dan modul pembelajaran sekolah.
           </p>
         </div>
 
@@ -173,15 +175,15 @@ export default function PerpustakaanPage() {
             <Button
               variant="default"
               onClick={() => setShowUploadDialog(true)}
-              className="space-x-2 font-hud tracking-wider text-xs sm:text-sm"
+              className="space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Materi</span>
             </Button>
           ) : (
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 border border-fluor/20 bg-fluor/[0.03] text-fluor/70 font-mono text-xs">
-              <ShieldCheck className="w-3.5 h-3.5 text-ok" />
-              <span>Kurasi Guru &amp; Staf</span>
+            <div className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-border bg-canvas/60 text-text-muted font-body text-xs font-medium">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <span>Dikelola Guru &amp; Staf</span>
             </div>
           )}
         </div>
@@ -189,7 +191,7 @@ export default function PerpustakaanPage() {
 
       {/* Notifikasi Download Toast */}
       {downloadNotice && (
-        <div className="border border-ok bg-ok/10 text-ok p-3 font-mono text-xs flex items-center space-x-2">
+        <div className="rounded-2xl border-2 border-ok/30 bg-ok/10 text-ok p-3.5 font-body text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4" />
           <span>{downloadNotice}</span>
         </div>
@@ -198,12 +200,12 @@ export default function PerpustakaanPage() {
       {/* Bar Pencarian & Filter Kategori */}
       <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
         <div className="relative flex-1 max-w-lg">
-          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-fluor/40" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-text-muted" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Cari materi, modul praktikum, atau topik..."
-            className="pl-10 h-10 text-xs sm:text-sm"
+            className="pl-10 h-11 text-xs sm:text-sm rounded-2xl border-2 border-border bg-canvas/40"
           />
         </div>
 
@@ -215,10 +217,10 @@ export default function PerpustakaanPage() {
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 border font-mono text-xs transition-colors cursor-pointer ${
+                className={`px-4 py-1.5 rounded-full font-display text-xs transition-all cursor-pointer ${
                   isSelected
-                    ? "border-caution text-caution bg-caution/10 font-bold"
-                    : "border-fluor/20 text-fluor/70 hover:border-fluor/50 hover:text-fluor bg-night"
+                    ? "bg-primary text-text font-bold shadow-sm"
+                    : "bg-surface text-text-muted hover:text-text border border-border"
                 }`}
               >
                 {cat}
@@ -230,52 +232,52 @@ export default function PerpustakaanPage() {
 
       {/* Grid Materi Pembelajaran */}
       {isLoading ? (
-        <div className="p-12 border border-fluor/20 bg-night text-center font-mono text-xs text-fluor/60 flex items-center justify-center space-x-2">
-          <Loader2 className="w-4 h-4 animate-spin text-caution" />
+        <div className="p-12 rounded-3xl border-2 border-border bg-surface text-center font-body text-xs text-text-muted flex items-center justify-center space-x-2">
+          <Loader2 className="w-4 h-4 animate-spin text-accent" />
           <span>Memuat koleksi materi pembelajaran...</span>
         </div>
       ) : filteredMaterials.length === 0 ? (
-        <div className="border border-fluor/20 bg-night p-10 text-center space-y-2">
-          <FileText className="w-10 h-10 text-fluor/30 mx-auto" />
-          <h3 className="font-sign text-lg uppercase text-fluor/80">
+        <div className="rounded-3xl border-2 border-border bg-surface p-12 text-center space-y-3 shadow-sm">
+          <FileText className="w-12 h-12 text-text-muted mx-auto" />
+          <h3 className="font-display font-bold text-lg text-text">
             Tidak Ada Materi yang Cocok
           </h3>
-          <p className="font-body text-xs text-fluor/60 max-w-md mx-auto">
+          <p className="font-body text-xs text-text-muted max-w-md mx-auto leading-relaxed">
             {searchTerm
               ? `Tidak ditemukan materi dengan kata kunci "${searchTerm}". Silakan periksa kembali kata pencarian atau pilih kategori lain.`
               : "Belum ada dokumen materi untuk kategori ini."}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredMaterials.map((item) => (
             <div
               key={item.id}
-              className="border border-fluor/25 bg-night p-5 flex flex-col justify-between space-y-4 hover:border-fluor/60 transition-colors"
+              className="rounded-3xl border-2 border-border bg-surface p-6 flex flex-col justify-between space-y-4 hover:border-primary transition-all shadow-sm group"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="cyan" className="text-[10px] uppercase">
+                  <Badge variant="mint" className="text-[10px]">
                     {item.category}
                   </Badge>
-                  <span className="font-mono text-[11px] text-fluor/50">
+                  <span className="font-body text-xs text-text-muted">
                     {item.fileFormat} • {item.fileSize}
                   </span>
                 </div>
 
                 <div>
-                  <h2 className="font-sign text-lg uppercase tracking-wide text-fluor line-clamp-2">
+                  <h2 className="font-display font-bold text-lg text-text line-clamp-2 group-hover:text-accent transition-colors">
                     {item.title}
                   </h2>
-                  <p className="font-body text-xs text-fluor/70 leading-relaxed mt-1 line-clamp-3">
-                    {item.description || "Dokumen materi pembelajaran SIJA SMK TI BAZMA."}
+                  <p className="font-body text-xs text-text-muted leading-relaxed mt-1.5 line-clamp-3">
+                    {item.description || "Dokumen materi pembelajaran sekolah."}
                   </p>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-fluor/15 flex items-center justify-between gap-2">
-                <div className="font-mono text-[11px] text-fluor/50 truncate">
-                  Oleh: <span className="text-fluor/80">{item.author.name}</span>
+              <div className="pt-4 border-t border-border/50 flex items-center justify-between gap-2">
+                <div className="font-body text-xs text-text-muted truncate">
+                  Oleh: <strong className="text-text">{item.author.name}</strong>
                 </div>
 
                 <div className="flex items-center space-x-2 shrink-0">
@@ -285,22 +287,22 @@ export default function PerpustakaanPage() {
                       size="sm"
                       onClick={() => handleDelete(item.id, item.title)}
                       disabled={deletingId === item.id}
-                      className="text-alert/80 hover:text-alert hover:bg-alert/10 px-2 h-8"
+                      className="text-alert hover:bg-alert/10 px-2 h-9 rounded-xl"
                       title="Hapus materi"
                     >
                       {deletingId === item.id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       )}
                     </Button>
                   )}
 
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="sm"
                     onClick={() => handleDownload(item.title)}
-                    className="space-x-1.5 h-8 font-hud text-xs tracking-wider"
+                    className="space-x-1.5 h-9 rounded-2xl font-display font-bold text-xs px-3.5"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Unduh</span>
@@ -314,40 +316,37 @@ export default function PerpustakaanPage() {
 
       {/* Dialog Modal Unggah Materi (Hanya Super Admin & Admin) */}
       {showUploadDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
-          <div className="border border-caution/60 bg-night w-full max-w-lg p-6 space-y-4 relative shadow-[0_0_30px_rgba(242,194,0,0.15)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
+          <div className="rounded-3xl border-2 border-border bg-surface w-full max-w-lg p-6 sm:p-8 space-y-5 relative shadow-2xl animate-in fade-in zoom-in-95">
             <button
               onClick={() => setShowUploadDialog(false)}
-              className="absolute top-4 right-4 text-fluor/60 hover:text-fluor"
+              className="absolute top-5 right-5 text-text-muted hover:text-text p-1.5 rounded-full hover:bg-canvas transition-colors"
               aria-label="Tutup"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="border-b border-fluor/20 pb-3">
-              <div className="flex items-center space-x-2 text-caution mb-0.5">
-                <BookOpen className="w-4 h-4" />
-                <span className="font-mono text-xs uppercase tracking-wider">
-                  Kelola Perpustakaan
-                </span>
-              </div>
-              <h3 className="font-sign text-2xl text-fluor uppercase">
+            <div className="border-b border-border/50 pb-3">
+              <span className="font-display font-semibold text-xs text-text-muted">
+                Kelola Perpustakaan
+              </span>
+              <h3 className="font-display font-bold text-2xl text-text mt-0.5">
                 Unggah Dokumen Materi Baru
               </h3>
             </div>
 
             {errorMsg && (
-              <div className="p-3 border border-alert bg-alert/10 text-alert text-xs font-mono flex items-center space-x-2">
+              <div className="p-3.5 rounded-2xl border-2 border-alert/30 bg-alert/10 text-alert text-xs font-body font-medium flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            <form onSubmit={handleUploadMaterial} className="space-y-4">
+            <form onSubmit={handleUploadMaterial} className="space-y-4 font-body text-xs">
               <div className="space-y-1">
                 <label
                   htmlFor="materialTitle"
-                  className="font-mono text-xs text-fluor/70 block"
+                  className="font-display font-semibold text-text block"
                 >
                   Judul Modul / Berkas
                 </label>
@@ -355,9 +354,10 @@ export default function PerpustakaanPage() {
                   id="materialTitle"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="Contoh: Modul Praktikum Troubleshooting VLAN 802.1Q"
+                  placeholder="Contoh: Modul Praktikum Troubleshooting VLAN"
                   required
                   autoFocus
+                  className="rounded-2xl border-2 border-border bg-canvas/40"
                 />
               </div>
 
@@ -365,7 +365,7 @@ export default function PerpustakaanPage() {
                 <div className="space-y-1">
                   <label
                     htmlFor="materialCat"
-                    className="font-mono text-xs text-fluor/70 block"
+                    className="font-display font-semibold text-text block"
                   >
                     Kategori
                   </label>
@@ -373,7 +373,7 @@ export default function PerpustakaanPage() {
                     id="materialCat"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full h-10 border border-fluor/30 bg-night px-3 font-mono text-xs text-fluor focus:border-caution focus:outline-none"
+                    className="w-full h-11 rounded-2xl border-2 border-border bg-canvas/40 px-3 font-body text-xs text-text focus:bg-surface focus:outline-none"
                   >
                     <option value="Jaringan & Server">Jaringan &amp; Server</option>
                     <option value="Virtualisasi">Virtualisasi</option>
@@ -385,7 +385,7 @@ export default function PerpustakaanPage() {
                 <div className="space-y-1">
                   <label
                     htmlFor="materialFmt"
-                    className="font-mono text-xs text-fluor/70 block"
+                    className="font-display font-semibold text-text block"
                   >
                     Format &amp; Ukuran
                   </label>
@@ -395,13 +395,14 @@ export default function PerpustakaanPage() {
                       value={newFormat}
                       onChange={(e) => setNewFormat(e.target.value)}
                       placeholder="PDF"
-                      className="w-20"
+                      className="w-20 rounded-2xl border-2 border-border bg-canvas/40"
                     />
                     <Input
                       id="materialSize"
                       value={newSize}
                       onChange={(e) => setNewSize(e.target.value)}
                       placeholder="2.5 MB"
+                      className="rounded-2xl border-2 border-border bg-canvas/40"
                     />
                   </div>
                 </div>
@@ -410,7 +411,7 @@ export default function PerpustakaanPage() {
               <div className="space-y-1">
                 <label
                   htmlFor="materialDesc"
-                  className="font-mono text-xs text-fluor/70 block"
+                  className="font-display font-semibold text-text block"
                 >
                   Ringkasan Materi
                 </label>
@@ -419,17 +420,18 @@ export default function PerpustakaanPage() {
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   rows={3}
-                  className="w-full border border-fluor/30 bg-night p-3 font-body text-xs text-fluor placeholder:text-fluor/40 focus:border-caution focus:outline-none"
+                  className="w-full rounded-2xl border-2 border-border bg-canvas/40 p-3.5 font-body text-xs text-text placeholder:text-text-muted focus:bg-surface focus:outline-none transition-colors"
                   placeholder="Ringkasan kompetensi atau topik yang dibahas dalam dokumen ini..."
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-fluor/15">
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-border/50">
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => setShowUploadDialog(false)}
+                  className="rounded-2xl font-display font-semibold"
                 >
                   Batal
                 </Button>
@@ -438,15 +440,15 @@ export default function PerpustakaanPage() {
                   variant="default"
                   size="sm"
                   disabled={isSubmitting}
-                  className="space-x-1.5"
+                  className="rounded-2xl font-display font-bold"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
                       <span>Menyimpan...</span>
                     </>
                   ) : (
-                    <span>Unggah ke Perpustakaan</span>
+                    <span>Unggah Materi</span>
                   )}
                 </Button>
               </div>

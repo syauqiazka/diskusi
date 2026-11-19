@@ -1,12 +1,12 @@
 /**
  * Konfigurasi Tunggal Modul Lingkungan Waktu Realtime
- * Kawasan SMK TI BAZMA
+ * Kawasan Sekolah Bernuansa Anime (Arah A: Kyoto Animation Daylight)
  *
- * Catatan Palet:
- * - Palet malam: Berdasarkan identitas proyek retro-liminal Cuchillo Midnight Video
- *   (latar --night, teks --fluor, aksen --caution dari DESIGN.md).
- * - Palet pagi, siang, sore: Desain konseptual netral (belum final), selaras
- *   dalam satu rumpun visual liminal (agak pucat, kontras tegas).
+ * Palet cerah, hangat, dan jernih:
+ * - Pagi: Semburat fajar peach cerah dengan langit biru sejuk.
+ * - Siang: Langit biru jenuh khas Kyoto Animation, awan putih tebal, bayangan lembut.
+ * - Sore: Golden hour hangat bernuansa oranye keemasan dan violet pastel.
+ * - Malam: Langit deep navy anime dengan pendaran jendela sekolah kuning hangat.
  */
 
 export type TimePhase = 'pagi' | 'siang' | 'sore' | 'malam';
@@ -32,17 +32,17 @@ export interface PhaseVisualConfig {
   // Bintang langit malam
   starsOpacity: number;
 
-  // Partikel debu / mote udara
+  // Partikel debu / kelopak bunga
   dustColor: string;
   dustOpacity: number;
 
-  // Lampu lorong & interior (LiminalLamp)
+  // Lampu lorong & jendela interior sekolah
   lampColor: string;
   lampIntensity: number;
   lampEmissiveColor: string;
   lampEmissiveIntensity: number;
 
-  // Lapisan awan langit (SkyClouds)
+  // Lapisan awan langit cumulus bergaya anime
   cloudColor: string;
   cloudOpacity: number;
 }
@@ -74,7 +74,7 @@ export interface TimeOfDayConfig {
   // Konfigurasi visual tiap fase
   visuals: Record<TimePhase, PhaseVisualConfig>;
 
-  // Konfigurasi lampu lorong liminal
+  // Konfigurasi lampu sekolah
   liminalLamp: {
     flickerProbability: number;
     flickerMinDamping: number;
@@ -125,102 +125,99 @@ export const TIME_OF_DAY_CONFIG: TimeOfDayConfig = {
   dampingLambda: 3.5,
 
   liminalLamp: {
-    flickerProbability: 0.015,
-    flickerMinDamping: 12.0,
-    flickerIntensityDip: 0.45,
+    flickerProbability: 0.005, // Tenang & stabil untuk suasana sekolah ramah
+    flickerMinDamping: 14.0,
+    flickerIntensityDip: 0.15,
   },
 
   visuals: {
-    // DESAIN KONSEPTUAL - belum final
-    // Palet pagi: Kabut fajar sejuk pucat, semburat fajar lembut
+    // Arah A: Kyoto Animation Daylight
+    // Pagi: Fajar peach cerah berseri
     pagi: {
-      skyTopColor: '#3a4d63',
-      skyBottomColor: '#c4b3a3',
-      skyExponent: 0.75,
-      celestialColor: '#eadecb',
-      celestialIntensity: 2.2,
-      ambientColor: '#6e7c8a',
-      ambientIntensity: 0.75,
-      fogColor: '#9aa8b5',
-      fogDensity: 0.005,
-      starsOpacity: 0.0,
-      dustColor: '#e8eff5',
-      dustOpacity: 0.16,
-      lampColor: '#F2C200',
-      lampIntensity: 0.6,
-      lampEmissiveColor: '#F2C200',
-      lampEmissiveIntensity: 0.4,
-      cloudColor: '#e6ded8',
-      cloudOpacity: 0.82,
-    },
-
-    // DESAIN KONSEPTUAL - belum final
-    // Palet siang: Terang benderang khas siang tropis namun bernuansa liminal pucat & kontras tegas
-    siang: {
-      skyTopColor: '#426b94',
-      skyBottomColor: '#a6c4dc',
-      skyExponent: 0.65,
-      celestialColor: '#f5f2e6',
-      celestialIntensity: 3.4,
-      ambientColor: '#9ab0c4',
-      ambientIntensity: 1.1,
-      fogColor: '#b0c7db',
+      skyTopColor: '#70B8F8',
+      skyBottomColor: '#FFE4C4',
+      skyExponent: 0.8,
+      celestialColor: '#FFF3D1',
+      celestialIntensity: 2.8,
+      ambientColor: '#D8E8F8',
+      ambientIntensity: 1.05,
+      fogColor: '#EAF2FA',
       fogDensity: 0.002,
       starsOpacity: 0.0,
-      dustColor: '#ffffff',
-      dustOpacity: 0.08,
-      lampColor: '#eee5c8',
-      lampIntensity: 0.1,
-      lampEmissiveColor: '#ded5b8',
-      lampEmissiveIntensity: 0.1,
-      cloudColor: '#f0f4f8',
+      dustColor: '#FFD1DC', // Nuansa kelopak bunga lembut
+      dustOpacity: 0.22,
+      lampColor: '#FFE8B2',
+      lampIntensity: 0.2,
+      lampEmissiveColor: '#FFE8B2',
+      lampEmissiveIntensity: 0.15,
+      cloudColor: '#FFFFFF',
+      cloudOpacity: 0.95,
+    },
+
+    // Siang: Langit biru jenuh cerah, bayangan lembut kebiruan
+    siang: {
+      skyTopColor: '#389BFF',
+      skyBottomColor: '#BAE0FD',
+      skyExponent: 0.7,
+      celestialColor: '#FFFFFA',
+      celestialIntensity: 3.6,
+      ambientColor: '#E0EFFF',
+      ambientIntensity: 1.25,
+      fogColor: '#CEE4FA',
+      fogDensity: 0.001,
+      starsOpacity: 0.0,
+      dustColor: '#FFFFFF',
+      dustOpacity: 0.12,
+      lampColor: '#FFFDF5',
+      lampIntensity: 0.05,
+      lampEmissiveColor: '#FFFDF5',
+      lampEmissiveIntensity: 0.05,
+      cloudColor: '#FFFFFF',
+      cloudOpacity: 0.98,
+    },
+
+    // Sore: Golden hour hangat, langit violet-oranye pastel
+    sore: {
+      skyTopColor: '#6058A8',
+      skyBottomColor: '#FF9E5E',
+      skyExponent: 0.75,
+      celestialColor: '#FFA64D',
+      celestialIntensity: 2.9,
+      ambientColor: '#FFDAC4',
+      ambientIntensity: 1.1,
+      fogColor: '#FFCEBA',
+      fogDensity: 0.003,
+      starsOpacity: 0.1,
+      dustColor: '#FFE3C2',
+      dustOpacity: 0.25,
+      lampColor: '#FFB84D',
+      lampIntensity: 1.5,
+      lampEmissiveColor: '#FFB84D',
+      lampEmissiveIntensity: 1.0,
+      cloudColor: '#FFCCAA',
       cloudOpacity: 0.92,
     },
 
-    // DESAIN KONSEPTUAL - belum final
-    // Palet sore: Senja tembaga liminal desaturasi, bayangan panjang hening
-    sore: {
-      skyTopColor: '#3d3345',
-      skyBottomColor: '#b5795b',
-      skyExponent: 0.72,
-      celestialColor: '#c96b3a',
-      celestialIntensity: 2.5,
-      ambientColor: '#665560',
-      ambientIntensity: 0.75,
-      fogColor: '#8c6b65',
-      fogDensity: 0.006,
-      starsOpacity: 0.15,
-      dustColor: '#d6a385',
-      dustOpacity: 0.22,
-      lampColor: '#F2C200',
-      lampIntensity: 1.6,
-      lampEmissiveColor: '#F2C200',
-      lampEmissiveIntensity: 1.0,
-      cloudColor: '#bf7d56',
-      cloudOpacity: 0.88,
-    },
-
-    // Nilai resmi dari DESIGN.md:
-    // --night: #0B0D12, --fluor: #E9F2E3, --caution: #F2C200, --neon-cyan: #5CE1FF
+    // Malam: Deep navy blue dengan jendela sekolah kuning hangat yang nyaman
     malam: {
-      skyTopColor: '#05070a',
-      skyBottomColor: '#0B0D12',
-      skyExponent: 1.2,
-      celestialColor: '#5CE1FF', // Sinar bulan keperakan neon cyan
-      celestialIntensity: 0.65,
-      ambientColor: '#0B0D12',
-      ambientIntensity: 0.22,
-      fogColor: '#0B0D12',
-      fogDensity: 0.024,
+      skyTopColor: '#151E3D',
+      skyBottomColor: '#2A3B68',
+      skyExponent: 1.1,
+      celestialColor: '#96B9F5', // Rembulan keperakan lembut
+      celestialIntensity: 0.95,
+      ambientColor: '#232B45',
+      ambientIntensity: 0.45,
+      fogColor: '#1A2445',
+      fogDensity: 0.008,
       starsOpacity: 0.95,
-      dustColor: '#E9F2E3', // Pendaran debu samar fluor
-      dustOpacity: 0.32,
-      lampColor: '#F2C200', // Lampu neon liminal caution
-      lampIntensity: 3.2,
-      lampEmissiveColor: '#F2C200',
-      lampEmissiveIntensity: 2.2,
-      cloudColor: '#0B0D12', // Memudar total di fase malam
-      cloudOpacity: 0.0,
+      dustColor: '#E0EAFF',
+      dustOpacity: 0.2,
+      lampColor: '#FFE28A', // Lampu jendela sekolah hangat ramah
+      lampIntensity: 2.8,
+      lampEmissiveColor: '#FFE28A',
+      lampEmissiveIntensity: 2.0,
+      cloudColor: '#202D52',
+      cloudOpacity: 0.65,
     },
   },
 };

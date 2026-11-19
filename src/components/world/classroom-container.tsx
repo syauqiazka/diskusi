@@ -53,7 +53,7 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
     }));
   }, [classroom.members]);
 
-  // Hook Real-Time Presence & Multiplayer Spasial (Tahap 8)
+  // Hook Real-Time Presence & Multiplayer Spasial
   const {
     activeSeatIndices,
     onlineUserIds,
@@ -72,17 +72,17 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
   // Fallback Otomatis Mode Cepat 2D
   if (!hasWebGL || fastMode) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-6 bg-night text-fluor font-mono">
-        <div className="max-w-xl w-full border-2 border-caution bg-night/95 p-8 space-y-6 text-center shadow-[0_0_25px_rgba(242,194,0,0.2)]">
-          <div className="w-16 h-16 border-2 border-caution mx-auto flex items-center justify-center bg-caution/10">
-            <Zap className="w-8 h-8 text-caution" />
+      <div className="min-h-[80vh] flex items-center justify-center p-6 bg-canvas text-text font-body">
+        <div className="max-w-xl w-full rounded-3xl border-2 border-border bg-surface p-8 space-y-6 text-center shadow-xl">
+          <div className="w-16 h-16 rounded-2xl bg-secondary/30 mx-auto flex items-center justify-center text-text">
+            <Zap className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <h2 className="font-sign text-3xl sm:text-4xl uppercase text-fluor tracking-wide">
-              {fastMode ? "MODE CEPAT (2D) AKTIF" : "WEBGL TIDAK TERDETEKSI"}
+            <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+              {fastMode ? "Mode Cepat (2D) Aktif" : "WebGL Tidak Terdeteksi"}
             </h2>
-            <p className="font-body text-xs sm:text-sm text-fluor/80 leading-relaxed">
+            <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
               {fastMode
                 ? `Navigasi antarmuka 2D aktif untuk ${classroom.name}. Anda dapat melihat denah meja, membaca papan pengumuman, dan mengirim pesan kepada rekan sekelas tanpa beban grafis.`
                 : "Perangkat atau peramban Anda tidak mendukung akselerasi grafis WebGL 3D. Dialihkan secara otomatis ke Mode Cepat 2D."}
@@ -91,15 +91,15 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
 
           <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
             <Link href={`/kelas/${classroom.id}`}>
-              <Button variant="default" size="lg" className="w-full sm:w-auto space-x-2">
-                <span className="font-hud text-lg tracking-wider">BUKA RUANG KELAS 2D</span>
+              <Button variant="default" size="lg" className="w-full sm:w-auto space-x-2 rounded-2xl font-display font-bold">
+                <span>Buka Ruang Kelas 2D</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <Link href="/dunia">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto space-x-1.5">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto space-x-1.5 rounded-2xl font-display font-semibold">
                 <DoorOpen className="w-4 h-4" />
-                <span>KELUAR KE LORONG</span>
+                <span>Keluar ke Lorong</span>
               </Button>
             </Link>
           </div>
@@ -109,16 +109,16 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
   }
 
   return (
-    <div className="relative w-full h-[85vh] sm:h-[88vh] bg-night overflow-hidden border border-fluor/30 select-none">
-      {/* Indikator Status Kehadiran Ruang Kelas (HUD Pojok) */}
-      <div className="absolute top-4 right-4 z-20 pointer-events-none flex items-center space-x-2 font-mono text-xs">
-        <div className="bg-night/85 border border-fluor/30 px-3 py-1 flex items-center space-x-2 text-fluor shadow-md">
-          <Users className="w-3.5 h-3.5 text-ok" />
-          <span>
-            {activeStudentCount} / {classroom.members.filter((m) => m.role === "STUDENT").length} ONLINE
+    <div className="relative w-full h-[85vh] sm:h-[88vh] bg-canvas overflow-hidden rounded-3xl border-2 border-border select-none shadow-sm">
+      {/* Indikator Status Kehadiran Ruang Kelas */}
+      <div className="absolute top-4 right-4 z-20 pointer-events-none flex items-center space-x-2 font-display text-xs">
+        <div className="bg-surface/90 border-2 border-border px-3.5 py-1.5 rounded-full flex items-center space-x-2 text-text shadow-sm backdrop-blur-md">
+          <Users className="w-3.5 h-3.5 text-accent" />
+          <span className="font-bold">
+            {activeStudentCount} / {classroom.members.filter((m) => m.role === "STUDENT").length} Online
           </span>
           <span className="w-2 h-2 rounded-full bg-ok animate-pulse inline-block" />
-          {isFallback && <span className="text-[10px] text-caution">(LOKAL)</span>}
+          {isFallback && <span className="text-[10px] text-text-muted">(Lokal)</span>}
         </div>
       </div>
 
@@ -144,13 +144,13 @@ export function ClassroomContainer({ classroom, currentUserId }: ClassroomContai
         <VhsEffects />
       </Canvas>
 
-      {/* Layer HUD VHS Kamera (PLAY, PAUSE, Timer SP, Crosshair) */}
+      {/* Layer HUD (PLAY, PAUSE, Timer, Crosshair) */}
       <WorldHud />
 
-      {/* Layar Jeda / Pause Menu dengan Sakelar ON/OFF */}
+      {/* Layar Jeda / Pause Menu */}
       <PauseMenu />
 
-      {/* Kontrol Sentuh Mobile (D-pad & Tombol Aksi) */}
+      {/* Kontrol Sentuh Mobile */}
       <TouchControls />
 
       {/* Panel Modal 2D Objek Interaktif Ruang Kelas */}

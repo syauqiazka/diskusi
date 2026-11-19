@@ -70,22 +70,22 @@ export function WorldContainer() {
   const isPaused = useWorldStore((s) => s.isPaused);
   const [showLabels] = React.useState(false);
 
-  // Fallback Otomatis Mode Cepat 2D (Review Focus 1 & WORLD.md)
+  // Fallback Otomatis Mode Cepat 2D
   if (!hasWebGL || fastMode) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-6 bg-night text-fluor font-mono">
-        <div className="max-w-xl w-full border-2 border-caution bg-night/95 p-8 space-y-6 text-center shadow-[0_0_25px_rgba(242,194,0,0.2)]">
-          <div className="w-16 h-16 border-2 border-caution mx-auto flex items-center justify-center bg-caution/10">
-            <Zap className="w-8 h-8 text-caution" />
+      <div className="min-h-[80vh] flex items-center justify-center p-6 bg-canvas text-text font-body">
+        <div className="max-w-xl w-full border-2 border-border bg-surface rounded-3xl p-8 space-y-6 text-center shadow-lg">
+          <div className="w-16 h-16 rounded-2xl border-2 border-primary/40 mx-auto flex items-center justify-center bg-primary/10">
+            <Zap className="w-8 h-8 text-primary" />
           </div>
 
           <div className="space-y-2">
-            <h2 className="font-sign text-3xl sm:text-4xl uppercase text-fluor tracking-wide">
-              {fastMode ? "MODE CEPAT (2D) AKTIF" : "WEBGL TIDAK TERDETEKSI"}
+            <h2 className="font-display font-bold text-2xl sm:text-3xl text-text tracking-wide">
+              {fastMode ? "Mode Cepat (2D) Aktif" : "WebGL Tidak Terdeteksi"}
             </h2>
-            <p className="font-body text-xs sm:text-sm text-fluor/80 leading-relaxed">
+            <p className="font-body text-sm sm:text-base text-text-muted leading-relaxed">
               {fastMode
-                ? "Anda memilih navigasi antarmuka 2D cepat. Seluruh fitur forum kelas, mading global, perpustakaan, dan pesan pribadi dapat diakses penuh tanpa beban grafis."
+                ? "Anda memilih navigasi antarmuka 2D cepat. Seluruh fitur forum kelas, mading global, perpustakaan, dan pesan pribadi dapat diakses penuh tanpa beban grafis 3D."
                 : "Perangkat atau peramban Anda tidak mendukung akselerasi grafis WebGL 3D. Sistem secara otomatis mengalihkan navigasi ke Mode Cepat 2D."}
             </p>
           </div>
@@ -93,13 +93,13 @@ export function WorldContainer() {
           <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/kelas">
               <Button variant="default" size="lg" className="w-full sm:w-auto space-x-2">
-                <span className="font-hud text-lg tracking-wider">MASUK KE RUANG KELAS 2D</span>
+                <span className="font-display font-bold text-base">Masuk ke Ruang Kelas 2D</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <Link href="/mading">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                BUKA MADING GLOBAL
+              <Button variant="outline" size="lg" className="w-full sm:w-auto font-display font-bold text-base">
+                Buka Mading Global
               </Button>
             </Link>
           </div>
@@ -114,18 +114,18 @@ export function WorldContainer() {
   const showExitButton = isPaused || !isPointerLocked;
 
   return (
-    <div className="relative w-screen h-screen bg-night overflow-hidden select-none">
+    <div className="relative w-screen h-screen bg-canvas overflow-hidden select-none">
       {/* Tombol Pintas Kembali ke Mode Cepat 2D — hanya tampil saat dijeda */}
       {showExitButton && (
-        <div className="absolute top-3 right-3 z-40 flex items-center gap-2">
+        <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
           <Link href="/kelas" tabIndex={isPointerLocked ? -1 : 0}>
             <Button
               variant="outline"
               size="sm"
               tabIndex={isPointerLocked ? -1 : 0}
-              className="bg-night/90 hover:bg-caution hover:text-night text-fluor border-fluor/40 hover:border-caution font-hud text-base tracking-wider uppercase transition-colors"
+              className="bg-surface/95 hover:bg-surface text-text border-2 border-border shadow-md font-display font-bold text-sm tracking-wide rounded-full px-4 py-2 transition-transform hover:scale-105"
             >
-              KELUAR KE MODE 2D
+              Kembali ke Mode 2D
             </Button>
           </Link>
         </div>

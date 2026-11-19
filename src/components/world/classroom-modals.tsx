@@ -52,7 +52,7 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
   const activeInteractable = useWorldStore((s) => s.activeInteractable);
   const closePanel = useWorldStore((s) => s.closePanel);
 
-  // State DM Meja Siswa (Riwayat Nyata)
+  // State DM Meja Siswa
   const [conversation, setConversation] = React.useState<ConversationDetail | null>(null);
   const [isLoadingDm, setIsLoadingDm] = React.useState(false);
   const [dmError, setDmError] = React.useState<string | null>(null);
@@ -98,58 +98,47 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
   // Load riwayat DM saat membuka meja siswa lain
   React.useEffect(() => {
     let isMounted = true;
-    if (activePanel !== "classroom-desk" || !targetMember || targetMember.user.id === currentUserId) {
+    if (activePanel === "classroom-desk" && targetMember && targetMember.user.id !== currentUserId) {
       Promise.resolve().then(() => {
         if (isMounted) {
-          setConversation(null);
+          setIsLoadingDm(true);
           setDmError(null);
+          setConversation(null);
         }
       });
-      return;
+
+      getOrCreateConversation(classroom.id, targetMember.user.id)
+        .then((res) => {
+          if (!isMounted) return;
+          if (res.success && res.conversation) {
+            setConversation(res.conversation);
+          } else {
+            setDmError(res.error || "Gagal memuat percakapan.");
+          }
+        })
+        .catch(() => {
+          if (isMounted) setDmError("Gagal menghubungkan DM.");
+        })
+        .finally(() => {
+          if (isMounted) setIsLoadingDm(false);
+        });
     }
-
-    Promise.resolve().then(() => {
-      if (isMounted) {
-        setIsLoadingDm(true);
-        setDmError(null);
-      }
-    });
-
-    getOrCreateConversation(classroom.id, targetMember.user.id)
-      .then((res) => {
-        if (!isMounted) return;
-        if (res.success && res.conversation) {
-          setConversation(res.conversation);
-        } else {
-          setDmError(res.error || "Gagal memuat percakapan.");
-        }
-      })
-      .catch(() => {
-        if (isMounted) setDmError("Terjadi kesalahan memuat DM.");
-      })
-      .finally(() => {
-        if (isMounted) setIsLoadingDm(false);
-      });
 
     return () => {
       isMounted = false;
     };
-  }, [activePanel, targetMember, currentUserId, classroom.id]);
+  }, [activePanel, targetMember, classroom.id, currentUserId]);
 
-  // Load data pengumuman / diskusi / materi saat panel bersangkutan dibuka
+  // Load Pengumuman, Thread, dan Materi saat panelnya dibuka
   React.useEffect(() => {
-    if (!activePanel) return;
-
+    let isMounted = true;
     if (
       activePanel === "classroom-blackboard" ||
       activePanel === "classroom-discussion" ||
       activePanel === "classroom-materials"
     ) {
-      let isMounted = true;
       Promise.resolve().then(() => {
-        if (isMounted) {
-          setIsLoadingObjects(true);
-        }
+        if (isMounted) setIsLoadingObjects(true);
       });
 
       Promise.all([
@@ -157,25 +146,23 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
         getThreads({ classId: classroom.id }),
         getMaterials({ classId: classroom.id }),
       ])
-        .then(([annRes, threadRes, matRes]) => {
+        .then(([ann, th, mat]) => {
           if (!isMounted) return;
-          setAnnouncements(annRes);
-          setThreads(threadRes.threads);
-          setMaterials(matRes);
-        })
-        .catch((err) => {
-          console.error("Gagal memuat data objek kelas 3D:", err);
+          setAnnouncements(ann);
+          setThreads(th.threads);
+          setMaterials(mat);
         })
         .finally(() => {
           if (isMounted) setIsLoadingObjects(false);
         });
-
-      return () => {
-        isMounted = false;
-      };
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [activePanel, classroom.id]);
 
+  // Kirim Pesan DM
   const handleSendDm = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dmMessage.trim() || !targetMember) return;
@@ -207,72 +194,71 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-night/85 backdrop-blur-xs flex items-center justify-center p-4 select-none animate-fadeIn"
+      className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 select-none animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) closePanel();
       }}
     >
-      <div className="max-w-2xl w-full border-2 border-fluor/40 bg-night p-6 sm:p-8 space-y-6 text-fluor relative shadow-[0_0_30px_rgba(11,13,18,0.95)] max-h-[90vh] overflow-y-auto">
+      <div className="max-w-2xl w-full rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-6 text-text relative shadow-2xl max-h-[88vh] overflow-y-auto animate-in zoom-in-95">
         {/* Tombol Tutup [X] */}
         <button
           onClick={closePanel}
-          className="absolute top-4 right-4 text-fluor/60 hover:text-caution p-1 transition-colors"
+          className="absolute top-5 right-5 text-text-muted hover:text-text p-1.5 rounded-full hover:bg-canvas transition-colors"
           aria-label="Tutup Panel"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
 
-        {/* 1. MODAL KARTU PROFIL MEJA SISWA (3.2 & WORLD.md Alur DM) */}
+        {/* 1. MODAL KARTU PROFIL MEJA SISWA */}
         {activePanel === "classroom-desk" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-caution">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-accent">
                 <User className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} INTERAKSI MEJA SISWA (3D)
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Meja Belajar Siswa
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
                 {targetMember
-                  ? `MEJA #${(targetMember.seatIndex ?? 0) + 1}: ${targetMember.user.displayName || targetMember.user.name}`
-                  : activeInteractable?.label || "MEJA SISWA KOSONG"}
+                  ? `Meja #${(targetMember.seatIndex ?? 0) + 1}: ${targetMember.user.displayName || targetMember.user.name}`
+                  : activeInteractable?.label || "Meja Siswa"}
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
-                Titik interaksi spasial antarmurid kelas {classroom.name}. Pesan langsung (DM) hanya
-                diizinkan bagi pengguna yang berada dalam satu kelas yang sama.
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
+                Titik interaksi spasial antarmurid kelas {classroom.name}. Kirim pesan ramah ke meja rekan sekelas Anda.
               </p>
             </div>
 
             {targetMember ? (
               <div className="space-y-5">
                 {/* Kartu Profil Pemilik Meja */}
-                <div className="border border-fluor/30 bg-night p-4 sm:p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                  <div className="w-16 h-16 border-2 border-caution bg-night flex items-center justify-center shadow-[0_0_12px_rgba(242,194,0,0.3)]">
-                    <User className="w-8 h-8 text-caution" />
+                <div className="rounded-2xl border-2 border-border bg-canvas/30 p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-secondary/30 border border-secondary/50 flex items-center justify-center font-display font-bold text-xl text-text">
+                    {targetMember.user.displayName?.charAt(0).toUpperCase() || "S"}
                   </div>
 
-                  <div className="space-y-1.5 text-center sm:text-left flex-1 font-mono text-xs">
+                  <div className="space-y-1.5 text-center sm:text-left flex-1 font-body text-xs">
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                      <span className="font-sign text-xl text-fluor uppercase">
+                      <span className="font-display font-bold text-lg text-text">
                         {targetMember.user.displayName || targetMember.user.name}
                       </span>
                       {targetMember.user.id === currentUserId ? (
-                        <Badge variant="ok">MEJA ANDA</Badge>
+                        <Badge variant="mint">Meja Anda</Badge>
                       ) : (
-                        <Badge variant="cyan">REKAN SEKELAS</Badge>
+                        <Badge variant="peach">Rekan Sekelas</Badge>
                       )}
                     </div>
 
-                    <div className="text-caution font-semibold">
-                      @{targetMember.user.username || "siswa"} {" // "} NO MEJA #{(targetMember.seatIndex ?? 0) + 1}
+                    <div className="text-accent font-semibold">
+                      @{targetMember.user.username || "siswa"} • Meja #{(targetMember.seatIndex ?? 0) + 1}
                     </div>
 
-                    <div className="text-[11px] text-fluor/60 pt-1">
-                      Status Kehadiran:{" "}
+                    <div className="text-[11px] text-text-muted pt-1">
+                      Status:{" "}
                       {onlineUserIds && !onlineUserIds.has(targetMember.user.id) ? (
-                        <span className="text-fluor/40">○ OFFLINE</span>
+                        <span>○ Tidak di Kelas</span>
                       ) : (
-                        <span className="text-ok font-bold">● ONLINE DI MEJA</span>
+                        <span className="text-ok font-bold">● Hadir di Meja</span>
                       )}
                     </div>
                   </div>
@@ -280,32 +266,32 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
 
                 {/* Formulir DM Intra-Kelas dengan Riwayat Obrolan Nyata */}
                 {targetMember.user.id !== currentUserId ? (
-                  <div className="border border-fluor/25 bg-fluor/[0.02] p-4 space-y-3 font-mono text-xs">
-                    <div className="flex items-center justify-between border-b border-fluor/10 pb-2">
-                      <span className="font-bold text-caution uppercase flex items-center space-x-1.5">
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        <span>PERCAKAPAN DM SPASIAL (INTRA-KELAS)</span>
+                  <div className="rounded-2xl border-2 border-border bg-canvas/20 p-5 space-y-3 font-body text-xs">
+                    <div className="flex items-center justify-between border-b border-border/40 pb-2.5">
+                      <span className="font-display font-bold text-text flex items-center space-x-1.5">
+                        <MessageSquare className="w-3.5 h-3.5 text-accent" />
+                        <span>Kirim Pesan ke Meja Rekan</span>
                       </span>
-                      <span className="text-ok text-[11px] flex items-center space-x-1">
+                      <span className="text-ok text-xs font-semibold flex items-center space-x-1">
                         <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>TERVERIFIKASI SEKELAS</span>
+                        <span>Sekelas</span>
                       </span>
                     </div>
 
                     {isLoadingDm ? (
-                      <div className="py-6 text-center text-fluor/50">
+                      <div className="py-8 text-center text-text-muted">
                         Memuat riwayat pesan meja...
                       </div>
                     ) : dmError ? (
-                      <div className="p-3 border border-alert bg-alert/10 text-alert text-xs">
+                      <div className="p-3.5 rounded-xl border border-alert/30 bg-alert/10 text-alert text-xs">
                         {dmError}
                       </div>
                     ) : (
                       <div className="space-y-3">
                         {/* Riwayat Percakapan */}
-                        <div className="border border-fluor/20 p-3 space-y-2 max-h-48 overflow-y-auto bg-night">
+                        <div className="rounded-xl border border-border p-3.5 space-y-2 max-h-48 overflow-y-auto bg-surface">
                           {!conversation || conversation.messages.length === 0 ? (
-                            <div className="text-center text-fluor/40 py-4 text-[11px]">
+                            <div className="text-center text-text-muted py-4 text-xs">
                               Belum ada percakapan dengan @{targetMember.user.username || targetMember.user.name}.
                             </div>
                           ) : (
@@ -315,13 +301,13 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
                                 className={`flex flex-col ${msg.isSelf ? "items-end" : "items-start"}`}
                               >
                                 <div
-                                  className={`p-2 max-w-[85%] text-xs font-body leading-relaxed ${
+                                  className={`p-2.5 rounded-2xl max-w-[85%] text-xs leading-relaxed ${
                                     msg.isSelf
-                                      ? "bg-caution/15 border border-caution/40 text-fluor"
-                                      : "bg-neon-cyan/15 border border-neon-cyan/40 text-fluor"
+                                      ? "bg-primary text-text font-medium rounded-tr-sm"
+                                      : "bg-canvas border border-border text-text rounded-tl-sm"
                                   }`}
                                 >
-                                  <div className="font-mono text-[10px] text-fluor/50 mb-0.5">
+                                  <div className="text-[10px] text-text-muted mb-0.5 font-medium">
                                     {msg.isSelf ? "Anda" : msg.senderName}
                                   </div>
                                   <div>{msg.content}</div>
@@ -336,8 +322,8 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
                           <Input
                             value={dmMessage}
                             onChange={(e) => setDmMessage(e.target.value)}
-                            placeholder={`Kirim pesan ke meja @${targetMember.user.username || targetMember.user.name}...`}
-                            className="font-mono text-xs flex-1"
+                            placeholder={`Kirim pesan ke @${targetMember.user.username || targetMember.user.name}...`}
+                            className="font-body text-xs flex-1 rounded-xl border-2 border-border bg-surface"
                             disabled={isSendingDm}
                           />
                           <Button
@@ -345,39 +331,39 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
                             variant="default"
                             size="sm"
                             disabled={isSendingDm || !dmMessage.trim()}
-                            className="space-x-1"
+                            className="space-x-1 rounded-xl font-display font-bold px-4"
                           >
                             <Send className="w-3.5 h-3.5" />
-                            <span>{isSendingDm ? "..." : "KIRIM"}</span>
+                            <span>{isSendingDm ? "..." : "Kirim"}</span>
                           </Button>
                         </form>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="p-4 border border-ok/40 bg-ok/5 text-xs font-mono text-ok text-center">
-                    Ini adalah meja belajar Anda di kelas {classroom.name}. Lampu meja Anda menyala untuk menandai kehadiran Anda kepada rekan sekelas.
+                  <div className="p-4 rounded-2xl border border-ok/30 bg-ok/10 text-xs font-body text-ok text-center font-medium">
+                    Ini adalah meja belajar Anda di kelas {classroom.name}. Lampu meja Anda menandai kehadiran Anda kepada rekan sekelas.
                   </div>
                 )}
 
                 <div className="flex justify-end gap-3 pt-2">
-                  <Button variant="outline" size="lg" onClick={closePanel}>
-                    TUTUP KARTU MEJA
+                  <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                    Tutup
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="border border-fluor/20 p-8 text-center space-y-3">
-                <div className="w-12 h-12 border border-fluor/30 mx-auto flex items-center justify-center text-fluor/40">
+              <div className="rounded-2xl border-2 border-dashed border-border p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-canvas border border-border mx-auto flex items-center justify-center text-text-muted">
                   <Lock className="w-6 h-6" />
                 </div>
-                <h3 className="font-sign text-xl uppercase text-fluor/80">MEJA BELUM BERPENGHUNI</h3>
-                <p className="font-body text-xs text-fluor/60 max-w-sm mx-auto">
-                  Meja ini belum ditempati oleh siswa. Nomor meja akan dialokasikan secara otomatis saat siswa baru bergabung dengan kode kelas.
+                <h3 className="font-display font-bold text-lg text-text">Meja Belum Berpenghuni</h3>
+                <p className="font-body text-xs text-text-muted max-w-sm mx-auto leading-relaxed">
+                  Meja ini belum ditempati oleh siswa. Nomor meja akan dialokasikan secara otomatis saat siswa baru bergabung.
                 </p>
                 <div className="pt-2">
-                  <Button variant="outline" size="sm" onClick={closePanel}>
-                    TUTUP
+                  <Button variant="outline" size="sm" onClick={closePanel} className="rounded-xl">
+                    Tutup
                   </Button>
                 </div>
               </div>
@@ -385,44 +371,44 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
           </div>
         )}
 
-        {/* 2. MODAL PAPAN TULIS KELAS (PENGUMUMAN NYATA) */}
+        {/* 2. MODAL PAPAN TULIS KELAS */}
         {activePanel === "classroom-blackboard" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-caution">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-accent">
                 <Pin className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} PAPAN TULIS KELAS
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Papan Tulis Kelas
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                PENGUMUMAN & AGENDA KELAS
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                Pengumuman &amp; Agenda Kelas
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
-                Papan tulis di depan kelas berisi agenda penting, jadwal praktik lab, dan pengumuman dari pengajar.
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
+                Papan tulis di depan kelas berisi agenda penting, jadwal praktik lab, dan pengumuman pengajar.
               </p>
             </div>
 
             {isLoadingObjects ? (
-              <div className="py-8 text-center font-mono text-xs text-fluor/50">
+              <div className="py-8 text-center font-body text-xs text-text-muted">
                 Memuat agenda papan tulis...
               </div>
             ) : announcements.length === 0 ? (
-              <div className="py-8 text-center font-mono text-xs text-fluor/50 border border-fluor/20">
+              <div className="py-8 text-center font-body text-xs text-text-muted rounded-2xl border-2 border-dashed border-border">
                 Belum ada pengumuman yang ditulis pada papan kelas.
               </div>
             ) : (
-              <div className="space-y-3 font-mono text-xs">
+              <div className="space-y-3.5 font-body text-xs">
                 {announcements.map((ann) => (
-                  <div key={ann.id} className="border border-caution/40 bg-caution/5 p-4 space-y-2">
-                    <div className="flex justify-between items-center text-caution font-bold">
-                      <span className="uppercase">{ann.title}</span>
-                      <Badge variant="caution">DIPIN OLEH PENGAJAR</Badge>
+                  <div key={ann.id} className="rounded-2xl border-2 border-border bg-canvas/30 p-4 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-display font-bold text-sm text-text">{ann.title}</span>
+                      <Badge variant="peach">Dipin Pengajar</Badge>
                     </div>
-                    <p className="font-body text-xs sm:text-sm text-fluor/90 leading-relaxed whitespace-pre-wrap">
+                    <p className="font-body text-xs text-text leading-relaxed whitespace-pre-wrap">
                       {ann.content}
                     </p>
-                    <div className="text-[10px] text-fluor/50 pt-1 border-t border-fluor/10">
+                    <div className="text-[11px] text-text-muted pt-2 border-t border-border/40 font-medium">
                       Oleh: {ann.author.name} • {new Date(ann.createdAt).toLocaleDateString("id-ID")}
                     </div>
                   </div>
@@ -434,60 +420,60 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
               <Button
                 variant="default"
                 size="lg"
-                className="flex-1 space-x-2"
+                className="flex-1 space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
                 onClick={() => {
                   closePanel();
                   router.push(`/kelas/${classroom.id}`);
                 }}
               >
-                <span className="font-hud text-lg tracking-wider">BUKA DETAIL KELAS 2D</span>
+                <span>Buka Detail Kelas 2D</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="lg" onClick={closePanel}>
-                KEMBALI KE KELAS
+              <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                Kembali ke Kelas
               </Button>
             </div>
           </div>
         )}
 
-        {/* 3. MODAL PAPAN DISKUSI KELAS (THREAD NYATA) */}
+        {/* 3. MODAL PAPAN DISKUSI KELAS */}
         {activePanel === "classroom-discussion" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-neon-cyan">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-accent">
                 <MessageSquare className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} PAPAN DISKUSI KELAS
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Papan Diskusi Kelas
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                THREAD DISKUSI KHUSUS KELAS
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                Topik Diskusi Kelas
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
                 Ruang tanya jawab internal seputar materi dan kendala tugas kelas {classroom.name}.
               </p>
             </div>
 
             {isLoadingObjects ? (
-              <div className="py-8 text-center font-mono text-xs text-fluor/50">
+              <div className="py-8 text-center font-body text-xs text-text-muted">
                 Memuat topik diskusi kelas...
               </div>
             ) : threads.length === 0 ? (
-              <div className="py-8 text-center font-mono text-xs text-fluor/50 border border-fluor/20">
+              <div className="py-8 text-center font-body text-xs text-text-muted rounded-2xl border-2 border-dashed border-border">
                 Belum ada topik diskusi di papan kelas ini.
               </div>
             ) : (
-              <div className="space-y-3 font-mono text-xs">
+              <div className="space-y-3 font-body text-xs">
                 {threads.map((thread) => (
-                  <div key={thread.id} className="border border-fluor/20 p-3 bg-night space-y-1">
-                    <div className="flex items-center justify-between text-neon-cyan font-bold">
-                      <span>[{thread.category}]</span>
-                      <span className="text-[11px] text-fluor/50">{thread.commentCount} Komentar</span>
+                  <div key={thread.id} className="rounded-2xl border-2 border-border p-4 bg-canvas/30 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="mint">{thread.category}</Badge>
+                      <span className="text-xs text-text-muted">{thread.commentCount} Komentar</span>
                     </div>
-                    <h4 className="font-sign text-base uppercase text-fluor mt-1">
+                    <h4 className="font-display font-bold text-sm text-text mt-1">
                       {thread.title}
                     </h4>
-                    <p className="font-body text-xs text-fluor/70 line-clamp-2">
+                    <p className="font-body text-xs text-text-muted line-clamp-2">
                       {thread.content}
                     </p>
                   </div>
@@ -499,62 +485,62 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
               <Button
                 variant="default"
                 size="lg"
-                className="flex-1 space-x-2"
+                className="flex-1 space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
                 onClick={() => {
                   closePanel();
                   router.push(`/kelas/${classroom.id}`);
                 }}
               >
-                <span className="font-hud text-lg tracking-wider">BUKA PAPAN DISKUSI (2D)</span>
+                <span>Buka Papan Diskusi (2D)</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="lg" onClick={closePanel}>
-                TUTUP
+              <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                Tutup
               </Button>
             </div>
           </div>
         )}
 
-        {/* 4. MODAL RAK MATERI KELAS (MATERI NYATA) */}
+        {/* 4. MODAL RAK MATERI KELAS */}
         {activePanel === "classroom-materials" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-ok">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-text">
                 <FileText className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} RAK MATERI KELAS
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Rak Materi Kelas
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                MODUL BELAJAR & DOKUMEN PRAKTIK
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                Modul &amp; Dokumen Praktikum
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
-                Repositori modul dan bahan tayang pembelajaran kelas {classroom.name}.
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
+                Koleksi modul dan bahan tayang pembelajaran kelas {classroom.name}.
               </p>
             </div>
 
             {downloadNotice && (
-              <div className="border border-ok bg-ok/10 text-ok p-2.5 font-mono text-xs flex items-center space-x-2 animate-fadeIn">
+              <div className="rounded-2xl border border-ok/30 bg-ok/10 text-ok p-3 font-body text-xs flex items-center space-x-2 animate-in fade-in">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>{downloadNotice}</span>
               </div>
             )}
 
             {isLoadingObjects ? (
-              <div className="py-8 text-center font-mono text-xs text-fluor/50">
-                Memuat berkas modul rak kelas...
+              <div className="py-8 text-center font-body text-xs text-text-muted">
+                Memuat modul kelas...
               </div>
             ) : materials.length === 0 ? (
-              <div className="py-8 text-center font-mono text-xs text-fluor/50 border border-fluor/20">
+              <div className="py-8 text-center font-body text-xs text-text-muted rounded-2xl border-2 border-dashed border-border">
                 Belum ada modul yang ditempatkan di rak materi kelas ini.
               </div>
             ) : (
-              <div className="space-y-2 font-mono text-xs max-h-56 overflow-y-auto">
+              <div className="space-y-2.5 font-body text-xs max-h-56 overflow-y-auto">
                 {materials.map((mat) => (
-                  <div key={mat.id} className="p-3 border border-fluor/20 flex items-center justify-between">
+                  <div key={mat.id} className="p-3.5 rounded-2xl border-2 border-border bg-canvas/30 flex items-center justify-between">
                     <div>
-                      <div className="text-fluor font-semibold">{mat.title}</div>
-                      <div className="text-fluor/50 text-[11px]">Format: {mat.fileFormat} ({mat.fileSize}) // {mat.category}</div>
+                      <div className="font-display font-bold text-sm text-text">{mat.title}</div>
+                      <div className="text-text-muted text-xs mt-0.5">{mat.fileFormat} ({mat.fileSize}) • {mat.category}</div>
                     </div>
                     <Button
                       variant="outline"
@@ -563,10 +549,10 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
                         setDownloadNotice(`Mempersiapkan unduhan: ${mat.title}...`);
                         setTimeout(() => setDownloadNotice(null), 2500);
                       }}
-                      className="space-x-1 text-xs"
+                      className="space-x-1.5 text-xs rounded-xl font-display font-semibold"
                     >
-                      <Download className="w-3 h-3" />
-                      <span>UNDUH</span>
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Unduh</span>
                     </Button>
                   </div>
                 ))}
@@ -577,17 +563,17 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
               <Button
                 variant="default"
                 size="lg"
-                className="flex-1 space-x-2"
+                className="flex-1 space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
                 onClick={() => {
                   closePanel();
                   router.push(`/kelas/${classroom.id}`);
                 }}
               >
-                <span className="font-hud text-lg tracking-wider">LIHAT DAFTAR MATERI LENGKAP</span>
+                <span>Lihat Rak Materi Lengkap</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="lg" onClick={closePanel}>
-                TUTUP
+              <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                Tutup
               </Button>
             </div>
           </div>
@@ -596,39 +582,39 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
         {/* 5. MODAL MEJA PENGAJAR */}
         {activePanel === "classroom-teacher" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-caution">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-text">
                 <GraduationCap className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} MEJA PENGAJAR / GURU
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Meja Pengajar
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                INSTRUKTUR KELAS
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                Instruktur Kelas
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
                 Meja instruktur dan asisten pembimbing ruang kelas {classroom.name}.
               </p>
             </div>
 
-            <div className="border border-fluor/20 p-4 font-mono text-xs space-y-2">
+            <div className="rounded-2xl border-2 border-border p-5 bg-canvas/30 font-body text-xs space-y-2.5">
               <div className="flex justify-between">
-                <span className="text-fluor/60">PENGAJAR KELAS:</span>
-                <span className="text-fluor font-bold">{teacher?.user.displayName || teacher?.user.name || "Belum ditentukan"}</span>
+                <span className="text-text-muted">Pengajar Kelas:</span>
+                <span className="text-text font-bold">{teacher?.user.displayName || teacher?.user.name || "Belum ditentukan"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-fluor/60">KODE KELAS:</span>
-                <span className="text-caution font-bold">{classroom.code}</span>
+                <span className="text-text-muted">Kode Kelas:</span>
+                <span className="text-text font-bold px-2 py-0.5 rounded-lg bg-surface border border-border">{classroom.code}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-fluor/60">TOTAL SISWA TERDAFTAR:</span>
-                <span className="text-neon-cyan font-bold">{classroom.members.filter((m) => m.role === "STUDENT").length} / 30 MEJA</span>
+                <span className="text-text-muted">Total Siswa Terdaftar:</span>
+                <span className="font-display font-bold text-accent">{classroom.members.filter((m) => m.role === "STUDENT").length} / 30 Meja</span>
               </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" size="lg" onClick={closePanel}>
-                KEMBALI KE KELAS
+              <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                Kembali ke Kelas
               </Button>
             </div>
           </div>
@@ -637,36 +623,36 @@ export function ClassroomModals({ classroom, currentUserId, onlineUserIds }: Cla
         {/* 6. MODAL PINTU KELUAR KE LORONG */}
         {activePanel === "classroom-exit" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-alert">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-accent">
                 <DoorOpen className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} PINTU KELUAR KELAS
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Pintu Keluar
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                KELUAR KE LORONG SEKOLAH
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                Keluar ke Lorong Sekolah
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
-                Pintu ini menghubungkan ruang kelas {classroom.name} kembali ke lorong utama lantai sekolah 3D.
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
+                Pintu ini menghubungkan ruang kelas {classroom.name} kembali ke lorong sekolah 3D.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Button
-                variant="danger"
+                variant="default"
                 size="lg"
-                className="flex-1 space-x-2"
+                className="flex-1 space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
                 onClick={() => {
                   closePanel();
                   router.push("/dunia");
                 }}
               >
-                <span className="font-hud text-lg tracking-wider">[E] KELUAR KE LORONG 3D</span>
+                <span>Keluar ke Lorong 3D</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="lg" onClick={closePanel}>
-                TETAP DI DALAM KELAS
+              <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                Tetap di Kelas
               </Button>
             </div>
           </div>

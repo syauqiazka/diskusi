@@ -1,23 +1,25 @@
 /**
- * Token warna dan tipografi resmi sesuai DESIGN.md (Ergonomic & Eye-Comfort update via ui-ux-pro-max)
- * Referensi: Sekolah Tengah Malam - SMK TI BAZMA
+ * Token warna dan tipografi resmi sesuai DESIGN.md
+ * Arah: Friendly Toy-Like & Anime Campus
+ * Palet: Fresh Mint & Peach | Font: Fredoka + Nunito
  */
 
 export const THEME_TOKENS = {
   colors: {
-    night: "#FFFFFF",
-    canvas: "#F8FAFC",
-    fluor: "#0F172A",
-    caution: "#B45309",
-    neonCyan: "#0284C7",
-    neonPink: "#E11D48",
-    alert: "#DC2626",
-    ok: "#16A34A",
+    canvas: "#F0FDF4",
+    surface: "#FFFFFF",
+    primary: "#34D399",
+    secondary: "#FDBA74",
+    accent: "#4F46E5",
+    text: "#0F172A",
+    textMuted: "#64748B",
+    border: "#E2E8F0",
+    destructive: "#EF4444",
+    success: "#10B981",
   },
   fonts: {
-    hud: "var(--font-vt323)",
-    sign: "var(--font-anton)",
-    body: "var(--font-instrument-sans)",
+    display: "var(--font-fredoka)",
+    body: "var(--font-nunito)",
     mono: "var(--font-jetbrains-mono)",
   },
 } as const;

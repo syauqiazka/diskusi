@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { User, Settings, CheckCircle2 } from "lucide-react";
+import { User, Settings, CheckCircle2, Smile } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -9,28 +9,28 @@ import { authClient } from "@/lib/auth/auth-client";
 import { getCerminCosmetics, updateUserActiveFrame } from "@/lib/classroom/object-actions";
 import { RoleSwitcher } from "@/components/profile/role-switcher";
 
-// Katalog Resmi Bingkai Avatar (DESIGN.md: Katalog saja, tanpa upload pengguna)
+// Katalog Resmi Bingkai Avatar (Palette Fresh Mint & Peach)
 const avatarFrames = [
-  { id: "frame-none", name: "Tanpa Bingkai", desc: "Tampilan avatar standar", borderClass: "border-fluor/30" },
-  { id: "frame-caution", name: "Neon Caution", desc: "Aksen kuning rambu menyala", borderClass: "border-caution shadow-[0_0_8px_rgba(242,194,0,0.5)]" },
-  { id: "frame-cyan", name: "Cyan Circuit", desc: "Garis sirkuit biru kehijauan", borderClass: "border-neon-cyan shadow-[0_0_8px_rgba(92,225,255,0.5)]" },
-  { id: "frame-vcr", name: "Monochrome VCR", desc: "Pola scanline retro tajam", borderClass: "border-fluor border-double border-4" },
+  { id: "frame-none", name: "Tanpa Bingkai", desc: "Tampilan avatar natural", borderClass: "border-border" },
+  { id: "frame-mint", name: "Fresh Mint", desc: "Aksen hijau mint cerah & segar", borderClass: "border-primary border-4 shadow-sm" },
+  { id: "frame-peach", name: "Warm Peach", desc: "Aksen peach hangat & ramah", borderClass: "border-secondary border-4 shadow-sm" },
+  { id: "frame-accent", name: "Indigo Spark", desc: "Aksen indigo ceria untuk siswa aktif", borderClass: "border-accent border-4 shadow-sm" },
 ];
 
-// Katalog Resmi Efek Profil GSAP (DESIGN.md: configKey ke komponen GSAP)
+// Katalog Resmi Efek Profil GSAP
 const profileEffects = [
   { id: "effect-none", name: "Tanpa Efek", desc: "Profil statis tanpa animasi latar" },
-  { id: "effect-moon", name: "Bulan Cincin", desc: "Efek cincin cahaya halus GSAP" },
-  { id: "effect-neon-pulse", name: "Neon Pulse", desc: "Denyut cahaya lampu lorong sekolah" },
-  { id: "effect-scanline", name: "CRT Scanline", desc: "Garis pendar layar tabung retro" },
+  { id: "effect-sun", name: "Sinar Pagi", desc: "Pendaran lembut hangat khas pagi hari" },
+  { id: "effect-breeze", name: "Kelopak Bunga", desc: "Gerak melayang lembut partikel bunga" },
+  { id: "effect-sparkle", name: "Pendar Ceria", desc: "Kerlip bintang lembut dan berseri" },
 ];
 
 export default function ProfilPage() {
   const { data: session } = authClient.useSession();
-  const [selectedFrame, setSelectedFrame] = React.useState("frame-caution");
-  const [selectedEffect, setSelectedEffect] = React.useState("effect-moon");
+  const [selectedFrame, setSelectedFrame] = React.useState("frame-mint");
+  const [selectedEffect, setSelectedEffect] = React.useState("effect-sun");
   const [fastMode, setFastMode] = React.useState(true);
-  const [nightMode, setNightMode] = React.useState(true);
+  const [nightMode, setNightMode] = React.useState(false);
   const [soundEnabled, setSoundEnabled] = React.useState(false);
   const [graphicsQuality, setGraphicsQuality] = React.useState<"low" | "medium" | "high">("medium");
   const [saveSuccess, setSaveSuccess] = React.useState(false);
@@ -45,7 +45,6 @@ export default function ProfilPage() {
   }, []);
 
   const handleSaveSettings = async () => {
-    // Simpan bingkai ke database jika user sudah login
     if (selectedFrame !== "frame-none") {
       await updateUserActiveFrame(selectedFrame);
     } else {
@@ -63,84 +62,84 @@ export default function ProfilPage() {
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       {/* Header Halaman Profil */}
-      <div className="border-b border-fluor/20 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-surface rounded-3xl border-2 border-border p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-caution mb-1">
-            <User className="w-5 h-5" />
-            <span className="font-hud text-lg tracking-widest uppercase">
-              {"//"} LOKER PRIBADI & CERMIN KOSMETIK
-            </span>
+          <div className="flex items-center space-x-2.5 text-text mb-1">
+            <div className="w-10 h-10 rounded-2xl bg-secondary/30 flex items-center justify-center text-text">
+              <Smile className="w-5 h-5" />
+            </div>
+            <h1 className="font-display font-bold text-2xl sm:text-3xl text-text tracking-tight">
+              Profil & Pengaturan
+            </h1>
           </div>
-          <h1 className="font-sign text-3xl sm:text-4xl text-fluor tracking-wide uppercase">
-            PENGATURAN AKUN & PROFIL
-          </h1>
-          <p className="font-body text-xs sm:text-sm text-fluor/70 mt-1">
-            Sesuaikan identitas virtual Anda, pilih bingkai avatar dari katalog resmi, dan atur
-            preferensi tampilan Mode Cepat / Dunia Sekolah.
+          <p className="font-body text-sm text-text-muted mt-1">
+            Sesuaikan identitas virtual Anda, pilih bingkai avatar resmi, dan atur preferensi tampilan sekolah.
           </p>
         </div>
 
-        <Badge variant="cyan" className="self-start sm:self-auto font-mono">
-          USER ID: {user?.id ? user.id.slice(0, 10) : "TAMU-01"}
+        <Badge variant="mint" className="self-start sm:self-auto font-display font-semibold">
+          ID: {user?.id ? user.id.slice(0, 8) : "Siswa"}
         </Badge>
       </div>
 
       {saveSuccess && (
-        <div className="p-3 border border-ok/60 bg-ok/10 text-ok text-xs font-mono flex items-center space-x-2">
+        <div className="p-4 rounded-2xl border-2 border-ok/30 bg-ok/10 text-ok text-xs font-body font-semibold flex items-center space-x-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-          <span>Pengaturan loker dan preferensi profil berhasil disimpan!</span>
+          <span>Pengaturan dan preferensi profil berhasil disimpan!</span>
         </div>
       )}
 
       {/* Kartu Profil / Kartu Meja Siswa (Preview) */}
-      <Card className="border-fluor/40">
-        <CardHeader>
+      <Card className="rounded-3xl border-2 border-border shadow-sm">
+        <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl text-caution">KARTU MEJA SISWA (PREVIEW)</CardTitle>
-            <Badge variant="outline">TAMPIL DI MEJA SISWA & CERMIN</Badge>
+            <CardTitle className="text-xl font-display font-bold text-text">
+              Kartu Siswa (Pratinjau)
+            </CardTitle>
+            <Badge variant="peach">Tampil di Meja & Cermin</Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-4 border border-fluor/15 bg-fluor/[0.02]">
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-2xl border-2 border-border bg-canvas/30">
             {/* Avatar Preview dengan Bingkai Terpilih */}
             <div
-              className={`w-24 h-24 bg-night flex items-center justify-center border-2 transition-all ${
-                activeFrameObj?.borderClass || "border-fluor/30"
+              className={`w-24 h-24 rounded-3xl bg-surface flex items-center justify-center transition-all shadow-sm ${
+                activeFrameObj?.borderClass || "border-2 border-border"
               }`}
             >
-              <User className="w-12 h-12 text-fluor/70" />
+              <User className="w-12 h-12 text-text" />
             </div>
 
-            <div className="space-y-2 text-center sm:text-left flex-1 font-mono">
+            <div className="space-y-2 text-center sm:text-left flex-1 font-body">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <span className="font-sign text-2xl text-fluor uppercase">
-                  {user?.name || "Siswa SMK TI BAZMA"}
+                <span className="font-display font-bold text-2xl text-text">
+                  {user?.name || "Siswa Sekolah"}
                 </span>
                 <Badge
                   variant={
                     (user as { role?: string })?.role === "SUPERADMIN"
                       ? "ok"
                       : (user as { role?: string })?.role === "ADMIN"
-                      ? "cyan"
-                      : "outline"
+                      ? "peach"
+                      : "mint"
                   }
                 >
                   {(user as { role?: string })?.role === "SUPERADMIN"
-                    ? "SUPER ADMIN"
+                    ? "Super Admin"
                     : (user as { role?: string })?.role === "ADMIN"
-                    ? "ADMIN (GURU & STAF)"
-                    : "SISWA"}
+                    ? "Admin (Guru & Staf)"
+                    : "Siswa"}
                 </Badge>
               </div>
 
-              <div className="text-xs text-neon-cyan">
-                @{(user as { username?: string })?.username || "ahmad_sija"} • {user?.email || "siswa@sekolah.id"}
+              <div className="text-xs text-text-muted">
+                <span className="text-accent font-semibold">@{(user as { username?: string })?.username || "ahmad"}</span> • {user?.email || "siswa@sekolah.id"}
               </div>
 
-              <div className="text-xs text-fluor/60 pt-2 border-t border-fluor/10">
-                Efek Aktif: <span className="text-fluor font-semibold">{selectedEffect.replace("effect-", "").toUpperCase()}</span>
+              <div className="text-xs text-text-muted pt-2 border-t border-border/40 font-medium">
+                Efek: <strong className="text-text">{selectedEffect.replace("effect-", "").toUpperCase()}</strong>
                 {" • "}
-                Bingkai: <span className="text-fluor font-semibold">{activeFrameObj?.name}</span>
+                Bingkai: <strong className="text-text">{activeFrameObj?.name}</strong>
               </div>
             </div>
           </div>
@@ -157,166 +156,173 @@ export default function ProfilPage() {
         }
       />
 
-      {/* SECTION CERMIN: KATALOG RESMI BINGKAI & EFEK (DESIGN.md) */}
+      {/* SECTION CERMIN: KATALOG RESMI BINGKAI & EFEK */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Katalog Bingkai Avatar */}
-        <div className="border border-fluor/30 bg-night p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-fluor/15 pb-2">
-            <span className="font-hud text-lg tracking-widest text-caution">
-              [CERMIN // BINGKAI AVATAR]
+        <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-5 shadow-sm">
+          <div className="flex items-center justify-between border-b border-border/50 pb-3">
+            <span className="font-display font-bold text-lg text-text">
+              Bingkai Avatar
             </span>
-            <span className="font-mono text-[11px] text-fluor/50">KATALOG RESMI</span>
+            <span className="font-body text-xs text-text-muted">Katalog Resmi</span>
           </div>
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {avatarFrames.map((frame) => (
               <label
                 key={frame.id}
                 onClick={() => setSelectedFrame(frame.id)}
-                className={`p-3 border block cursor-pointer transition-colors ${
+                className={`p-4 rounded-2xl border-2 block cursor-pointer transition-all ${
                   selectedFrame === frame.id
-                    ? "border-caution bg-caution/10"
-                    : "border-fluor/20 bg-night hover:border-fluor/40"
+                    ? "border-primary bg-primary/15 shadow-xs"
+                    : "border-border bg-canvas/30 hover:border-primary/50"
                 }`}
               >
-                <div className="flex items-center justify-between font-mono text-xs">
-                  <span className="font-bold text-fluor uppercase">{frame.name}</span>
-                  {selectedFrame === frame.id && <Badge variant="caution">DIPAKAI</Badge>}
+                <div className="flex items-center justify-between font-body text-xs">
+                  <span className="font-display font-bold text-sm text-text">{frame.name}</span>
+                  {selectedFrame === frame.id && <Badge variant="mint">Dipakai</Badge>}
                 </div>
-                <div className="font-body text-xs text-fluor/60 mt-1">{frame.desc}</div>
+                <div className="font-body text-xs text-text-muted mt-1">{frame.desc}</div>
               </label>
             ))}
           </div>
         </div>
 
         {/* Katalog Efek Profil */}
-        <div className="border border-fluor/30 bg-night p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-fluor/15 pb-2">
-            <span className="font-hud text-lg tracking-widest text-caution">
-              [CERMIN // EFEK PROFIL]
+        <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-5 shadow-sm">
+          <div className="flex items-center justify-between border-b border-border/50 pb-3">
+            <span className="font-display font-bold text-lg text-text">
+              Efek Profil
             </span>
-            <span className="font-mono text-[11px] text-fluor/50">KOMPONEN GSAP</span>
+            <span className="font-body text-xs text-text-muted">Animasi Lembut</span>
           </div>
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {profileEffects.map((effect) => (
               <label
                 key={effect.id}
                 onClick={() => setSelectedEffect(effect.id)}
-                className={`p-3 border block cursor-pointer transition-colors ${
+                className={`p-4 rounded-2xl border-2 block cursor-pointer transition-all ${
                   selectedEffect === effect.id
-                    ? "border-neon-cyan bg-neon-cyan/10"
-                    : "border-fluor/20 bg-night hover:border-fluor/40"
+                    ? "border-secondary bg-secondary/20 shadow-xs"
+                    : "border-border bg-canvas/30 hover:border-secondary/50"
                 }`}
               >
-                <div className="flex items-center justify-between font-mono text-xs">
-                  <span className="font-bold text-fluor uppercase">{effect.name}</span>
-                  {selectedEffect === effect.id && <Badge variant="cyan">DIPAKAI</Badge>}
+                <div className="flex items-center justify-between font-body text-xs">
+                  <span className="font-display font-bold text-sm text-text">{effect.name}</span>
+                  {selectedEffect === effect.id && <Badge variant="peach">Dipakai</Badge>}
                 </div>
-                <div className="font-body text-xs text-fluor/60 mt-1">{effect.desc}</div>
+                <div className="font-body text-xs text-text-muted mt-1">{effect.desc}</div>
               </label>
             ))}
           </div>
         </div>
       </div>
 
-      {/* SECTION LOKER: PENGATURAN DUNIA (worldSettings) */}
-      <div className="border border-fluor/30 bg-night p-6 space-y-5">
-        <div className="flex items-center justify-between border-b border-fluor/15 pb-3">
-          <div className="flex items-center space-x-2 text-caution">
-            <Settings className="w-5 h-5" />
-            <h3 className="font-sign text-xl uppercase tracking-wider">
-              LOKER PENGATURAN SISTEM (WORLD SETTINGS)
+      {/* SECTION PENGATURAN SISTEM (WORLD SETTINGS) */}
+      <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-6 shadow-sm">
+        <div className="flex items-center justify-between border-b border-border/50 pb-3">
+          <div className="flex items-center space-x-2.5 text-text">
+            <div className="w-9 h-9 rounded-2xl bg-secondary/30 flex items-center justify-center text-text">
+              <Settings className="w-5 h-5" />
+            </div>
+            <h3 className="font-display font-bold text-xl text-text">
+              Preferensi Eksplorasi
             </h3>
           </div>
-          <span className="font-mono text-xs text-fluor/60">KONFIGURASI PENGGUNA</span>
+          <span className="font-body text-xs text-text-muted">Pengaturan Pengguna</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-body text-xs">
           {/* Sakelar Mode Cepat */}
-          <div className="p-4 border border-fluor/20 bg-night flex items-center justify-between">
+          <div className="p-4 rounded-2xl border-2 border-border bg-canvas/30 flex items-center justify-between">
             <div>
-              <div className="font-bold text-fluor uppercase">MODE CEPAT (2D)</div>
-              <div className="text-fluor/60 text-[11px] mt-0.5">
-                Gunakan antarmuka panel 2D tanpa grafis 3D
+              <div className="font-display font-bold text-sm text-text">Mode Cepat (2D)</div>
+              <div className="text-text-muted text-xs mt-0.5">
+                Akses seluruh fitur kelas dalam format 2D
               </div>
             </div>
             <button
               type="button"
               onClick={() => setFastMode(!fastMode)}
-              className={`px-3 py-1 border font-bold uppercase transition-colors cursor-pointer ${
+              className={`px-3.5 py-1 rounded-xl font-display font-bold text-xs border transition-all cursor-pointer ${
                 fastMode
-                  ? "bg-caution text-night border-caution"
-                  : "bg-night text-fluor/60 border-fluor/30"
+                  ? "bg-primary text-text border-primary/60 shadow-xs"
+                  : "bg-surface text-text-muted border-border hover:text-text"
               }`}
             >
-              {fastMode ? "ON" : "OFF"}
+              {fastMode ? "Aktif" : "Mati"}
             </button>
           </div>
 
-          {/* Sakelar Mode Malam */}
-          <div className="p-4 border border-fluor/20 bg-night flex items-center justify-between">
+          {/* Sakelar Suasana Kawasan */}
+          <div className="p-4 rounded-2xl border-2 border-border bg-canvas/30 flex items-center justify-between">
             <div>
-              <div className="font-bold text-fluor uppercase">TEMA PENCAHAYAAN</div>
-              <div className="text-fluor/60 text-[11px] mt-0.5">
-                Sekolah Tengah Malam (Jam 02:00) vs Pagi
+              <div className="font-display font-bold text-sm text-text">Fase Suasana</div>
+              <div className="text-text-muted text-xs mt-0.5">
+                Pencahayaan anime: Siang / Malam
               </div>
             </div>
             <button
               type="button"
               onClick={() => setNightMode(!nightMode)}
-              className={`px-3 py-1 border font-bold uppercase transition-colors cursor-pointer ${
+              className={`px-3.5 py-1 rounded-xl font-display font-bold text-xs border transition-all cursor-pointer ${
                 nightMode
-                  ? "bg-neon-cyan text-night border-neon-cyan"
-                  : "bg-night text-fluor/60 border-fluor/30"
+                  ? "bg-secondary text-text border-secondary/60 shadow-xs"
+                  : "bg-surface text-text-muted border-border hover:text-text"
               }`}
             >
-              {nightMode ? "MALAM" : "PAGI"}
+              {nightMode ? "Malam" : "Siang"}
             </button>
           </div>
 
           {/* Sakelar Efek Suara */}
-          <div className="p-4 border border-fluor/20 bg-night flex items-center justify-between">
+          <div className="p-4 rounded-2xl border-2 border-border bg-canvas/30 flex items-center justify-between">
             <div>
-              <div className="font-bold text-fluor uppercase">EFEK SUARA AMBIENCE</div>
-              <div className="text-fluor/60 text-[11px] mt-0.5">
-                Dengung neon & suara lorong (default mati)
+              <div className="font-display font-bold text-sm text-text">Efek Suara Ambience</div>
+              <div className="text-text-muted text-xs mt-0.5">
+                Suara lingkungan sekolah (default mati)
               </div>
             </div>
             <button
               type="button"
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`px-3 py-1 border font-bold uppercase transition-colors cursor-pointer ${
+              className={`px-3.5 py-1 rounded-xl font-display font-bold text-xs border transition-all cursor-pointer ${
                 soundEnabled
-                  ? "bg-ok text-night border-ok"
-                  : "bg-night text-fluor/60 border-fluor/30"
+                  ? "bg-primary text-text border-primary/60 shadow-xs"
+                  : "bg-surface text-text-muted border-border hover:text-text"
               }`}
             >
-              {soundEnabled ? "ON" : "OFF"}
+              {soundEnabled ? "Aktif" : "Mati"}
             </button>
           </div>
 
           {/* Pilihan Kualitas Grafik */}
-          <div className="p-4 border border-fluor/20 bg-night flex items-center justify-between">
+          <div className="p-4 rounded-2xl border-2 border-border bg-canvas/30 flex items-center justify-between">
             <div>
-              <div className="font-bold text-fluor uppercase">KUALITAS GRAFIK 3D</div>
-              <div className="text-fluor/60 text-[11px] mt-0.5">
-                Resolusi tekstur dan pasca-proses VHS
+              <div className="font-display font-bold text-sm text-text">Kualitas Grafis 3D</div>
+              <div className="text-text-muted text-xs mt-0.5">
+                Resolusi bayangan & render kanvas
               </div>
             </div>
             <select
               value={graphicsQuality}
               onChange={(e) => setGraphicsQuality(e.target.value as "low" | "medium" | "high")}
-              className="border border-fluor/30 bg-night px-2 py-1 text-fluor text-xs font-mono uppercase focus:border-caution focus:outline-none"
+              className="rounded-xl border-2 border-border bg-surface px-3 py-1 font-display font-semibold text-xs text-text focus:outline-none"
             >
-              <option value="low">RENDAH</option>
-              <option value="medium">SEDANG</option>
-              <option value="high">TINGGI</option>
+              <option value="low">Rendah</option>
+              <option value="medium">Sedang</option>
+              <option value="high">Tinggi</option>
             </select>
           </div>
         </div>
 
-        <div className="pt-4 border-t border-fluor/15 flex justify-end">
-          <Button variant="default" size="default" onClick={handleSaveSettings}>
-            SIMPAN PENGATURAN LOKER
+        <div className="pt-4 border-t border-border/50 flex justify-end">
+          <Button
+            variant="default"
+            size="default"
+            onClick={handleSaveSettings}
+            className="rounded-2xl font-display font-bold text-sm shadow-sm px-6"
+          >
+            Simpan Pengaturan
           </Button>
         </div>
       </div>

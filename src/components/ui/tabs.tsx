@@ -54,7 +54,7 @@ export function TabsList({
     <div
       role="tablist"
       className={cn(
-        "flex flex-wrap items-center gap-1 border-b border-fluor/20 pb-1 font-mono text-xs",
+        "inline-flex flex-wrap items-center gap-1.5 p-1.5 rounded-full border-2 border-border bg-surface shadow-xs font-display text-xs",
         className
       )}
     >
@@ -84,10 +84,10 @@ export function TabsTrigger({
       aria-selected={isActive}
       onClick={() => context.setActiveTab(value)}
       className={cn(
-        "px-4 py-2 border uppercase tracking-wider font-semibold transition-all cursor-pointer",
+        "px-4 py-2 rounded-full font-display font-semibold transition-all cursor-pointer text-xs",
         isActive
-          ? "bg-caution text-night border-caution font-bold shadow-sm"
-          : "bg-night text-fluor/70 border-fluor/20 hover:border-fluor/50 hover:text-fluor",
+          ? "bg-primary text-text font-bold shadow-xs"
+          : "bg-transparent text-text-muted hover:text-text",
         className
       )}
     >
@@ -116,4 +116,3 @@ export function TabsContent({
     </div>
   );
 }
-

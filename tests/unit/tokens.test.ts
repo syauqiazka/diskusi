@@ -1,22 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { THEME_TOKENS } from "@/lib/tokens";
 
-describe("Token Desain (DESIGN.md)", () => {
-  it("harus memiliki token warna ergonomis sesuai spesifikasi DESIGN.md terbaru", () => {
-    expect(THEME_TOKENS.colors.night).toBe("#FFFFFF");
-    expect(THEME_TOKENS.colors.canvas).toBe("#F8FAFC");
-    expect(THEME_TOKENS.colors.fluor).toBe("#0F172A");
-    expect(THEME_TOKENS.colors.caution).toBe("#B45309");
-    expect(THEME_TOKENS.colors.neonCyan).toBe("#0284C7");
-    expect(THEME_TOKENS.colors.neonPink).toBe("#E11D48");
-    expect(THEME_TOKENS.colors.alert).toBe("#DC2626");
-    expect(THEME_TOKENS.colors.ok).toBe("#16A34A");
+describe("Token Desain (DESIGN.md - Fresh Mint & Peach)", () => {
+  it("harus memiliki token warna Fresh Mint & Peach sesuai spesifikasi DESIGN.md baru", () => {
+    expect(THEME_TOKENS.colors.canvas).toBe("#F0FDF4");
+    expect(THEME_TOKENS.colors.surface).toBe("#FFFFFF");
+    expect(THEME_TOKENS.colors.primary).toBe("#34D399");
+    expect(THEME_TOKENS.colors.secondary).toBe("#FDBA74");
+    expect(THEME_TOKENS.colors.accent).toBe("#4F46E5");
+    expect(THEME_TOKENS.colors.text).toBe("#0F172A");
+    expect(THEME_TOKENS.colors.textMuted).toBe("#64748B");
+    expect(THEME_TOKENS.colors.border).toBe("#E2E8F0");
+    expect(THEME_TOKENS.colors.destructive).toBe("#EF4444");
+    expect(THEME_TOKENS.colors.success).toBe("#10B981");
   });
 
-  it("harus memiliki variabel font yang tepat untuk HUD, Rambu, Body, dan Mono", () => {
-    expect(THEME_TOKENS.fonts.hud).toBe("var(--font-vt323)");
-    expect(THEME_TOKENS.fonts.sign).toBe("var(--font-anton)");
-    expect(THEME_TOKENS.fonts.body).toBe("var(--font-instrument-sans)");
+  it("harus memiliki variabel font Fredoka, Nunito, dan JetBrains Mono", () => {
+    expect(THEME_TOKENS.fonts.display).toBe("var(--font-fredoka)");
+    expect(THEME_TOKENS.fonts.body).toBe("var(--font-nunito)");
     expect(THEME_TOKENS.fonts.mono).toBe("var(--font-jetbrains-mono)");
   });
 });

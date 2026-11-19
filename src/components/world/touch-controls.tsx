@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Shield, Zap, Hand, Pause } from "lucide-react";
+import Link from "next/link";
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Shield, Zap, Hand, Pause, Laptop } from "lucide-react";
 import { useWorldStore } from "@/stores/use-world-store";
 
 export function TouchControls() {
@@ -9,6 +10,7 @@ export function TouchControls() {
   const isRunning = useWorldStore((s) => s.isRunning);
   const activeInteractable = useWorldStore((s) => s.activeInteractable);
   const activePanel = useWorldStore((s) => s.activePanel);
+  const [showNotice, setShowNotice] = React.useState(true);
 
   const setCrouching = useWorldStore((s) => s.setCrouching);
   const setRunning = useWorldStore((s) => s.setRunning);
@@ -27,18 +29,45 @@ export function TouchControls() {
   };
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-30 select-none flex flex-col justify-end p-4 md:hidden">
-      <div className="flex items-end justify-between w-full pointer-events-auto">
-        {/* D-Pad Virtual (Kiri Bawah) */}
-        <div className="grid grid-cols-3 gap-1.5 w-36 h-36 bg-night/80 border border-fluor/30 p-2">
+    <div className="absolute inset-0 pointer-events-none z-30 select-none flex flex-col justify-between p-4 md:hidden">
+      {/* Pesan Ramah Pengguna Sentuh (Mobile Banner) */}
+      {showNotice && (
+        <div className="pointer-events-auto bg-surface/95 border-2 border-border p-3.5 rounded-2xl shadow-lg backdrop-blur-md flex items-center justify-between gap-3 animate-in slide-in-from-top-2">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-secondary/30 flex items-center justify-center text-text shrink-0">
+              <Laptop className="w-4 h-4" />
+            </div>
+            <p className="font-body text-xs text-text leading-tight">
+              Dunia 3D dioptimalkan untuk keyboard & mouse di laptop. Gunakan Mode 2D untuk kenyamanan penuh di HP.
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Link href="/">
+              <button className="px-2.5 py-1 rounded-xl bg-primary text-text font-display font-bold text-xs shadow-xs">
+                Mode 2D
+              </button>
+            </Link>
+            <button
+              onClick={() => setShowNotice(false)}
+              className="text-text-muted hover:text-text px-1 text-xs"
+              aria-label="Tutup saran"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Kontrol Sentuh Bawah */}
+      <div className="flex items-end justify-between w-full pointer-events-auto mt-auto">
+        {/* D-Pad Virtual Membulat */}
+        <div className="grid grid-cols-3 gap-1.5 w-36 h-36 bg-surface/90 rounded-3xl border-2 border-border p-2 backdrop-blur-md shadow-lg">
           <div />
           <button
             aria-label="Maju"
-            className="flex items-center justify-center bg-night border border-fluor/40 active:bg-caution active:text-night text-fluor h-10"
+            className="flex items-center justify-center bg-canvas rounded-xl border border-border active:bg-primary active:text-text text-text h-10 shadow-xs"
             onTouchStart={() => simulateKey("KeyW", true)}
             onTouchEnd={() => simulateKey("KeyW", false)}
-            onMouseDown={() => simulateKey("KeyW", true)}
-            onMouseUp={() => simulateKey("KeyW", false)}
           >
             <ArrowUp className="w-5 h-5" />
           </button>
@@ -46,24 +75,20 @@ export function TouchControls() {
 
           <button
             aria-label="Kiri"
-            className="flex items-center justify-center bg-night border border-fluor/40 active:bg-caution active:text-night text-fluor h-10"
+            className="flex items-center justify-center bg-canvas rounded-xl border border-border active:bg-primary active:text-text text-text h-10 shadow-xs"
             onTouchStart={() => simulateKey("KeyA", true)}
             onTouchEnd={() => simulateKey("KeyA", false)}
-            onMouseDown={() => simulateKey("KeyA", true)}
-            onMouseUp={() => simulateKey("KeyA", false)}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex items-center justify-center font-hud text-xs text-caution">
+          <div className="flex items-center justify-center font-display font-bold text-[10px] text-text-muted">
             WASD
           </div>
           <button
             aria-label="Kanan"
-            className="flex items-center justify-center bg-night border border-fluor/40 active:bg-caution active:text-night text-fluor h-10"
+            className="flex items-center justify-center bg-canvas rounded-xl border border-border active:bg-primary active:text-text text-text h-10 shadow-xs"
             onTouchStart={() => simulateKey("KeyD", true)}
             onTouchEnd={() => simulateKey("KeyD", false)}
-            onMouseDown={() => simulateKey("KeyD", true)}
-            onMouseUp={() => simulateKey("KeyD", false)}
           >
             <ArrowRight className="w-5 h-5" />
           </button>
@@ -71,24 +96,22 @@ export function TouchControls() {
           <div />
           <button
             aria-label="Mundur"
-            className="flex items-center justify-center bg-night border border-fluor/40 active:bg-caution active:text-night text-fluor h-10"
+            className="flex items-center justify-center bg-canvas rounded-xl border border-border active:bg-primary active:text-text text-text h-10 shadow-xs"
             onTouchStart={() => simulateKey("KeyS", true)}
             onTouchEnd={() => simulateKey("KeyS", false)}
-            onMouseDown={() => simulateKey("KeyS", true)}
-            onMouseUp={() => simulateKey("KeyS", false)}
           >
             <ArrowDown className="w-5 h-5" />
           </button>
           <div />
         </div>
 
-        {/* Tombol Aksi Sentuh (Kanan Bawah) */}
+        {/* Tombol Aksi Sentuh Membulat */}
         <div className="flex flex-col gap-2 items-end">
           <div className="flex gap-2">
             {/* Tombol Jeda */}
             <button
               onClick={togglePause}
-              className="w-12 h-12 bg-night border border-fluor/40 text-fluor flex items-center justify-center active:bg-caution active:text-night"
+              className="w-11 h-11 bg-surface rounded-2xl border-2 border-border text-text flex items-center justify-center active:bg-canvas shadow-sm"
               title="Jeda"
             >
               <Pause className="w-5 h-5" />
@@ -97,10 +120,10 @@ export function TouchControls() {
             {/* Tombol Lari */}
             <button
               onClick={() => setRunning(!isRunning)}
-              className={`w-12 h-12 border flex items-center justify-center font-mono text-xs font-bold transition-colors ${
+              className={`w-11 h-11 rounded-2xl border-2 flex items-center justify-center font-display text-xs font-bold transition-all shadow-sm ${
                 isRunning
-                  ? "bg-caution text-night border-caution"
-                  : "bg-night text-fluor border-fluor/40 active:bg-caution active:text-night"
+                  ? "bg-primary text-text border-primary/60"
+                  : "bg-surface text-text border-border active:bg-canvas"
               }`}
               title="Lari"
             >
@@ -110,10 +133,10 @@ export function TouchControls() {
             {/* Tombol Jongkok */}
             <button
               onClick={() => setCrouching(!isCrouching)}
-              className={`w-12 h-12 border flex items-center justify-center font-mono text-xs font-bold transition-colors ${
+              className={`w-11 h-11 rounded-2xl border-2 flex items-center justify-center font-display text-xs font-bold transition-all shadow-sm ${
                 isCrouching
-                  ? "bg-neon-cyan text-night border-neon-cyan"
-                  : "bg-night text-fluor border-fluor/40 active:bg-neon-cyan active:text-night"
+                  ? "bg-secondary text-text border-secondary/60"
+                  : "bg-surface text-text border-border active:bg-canvas"
               }`}
               title="Jongkok"
             >
@@ -121,7 +144,7 @@ export function TouchControls() {
             </button>
           </div>
 
-          {/* Tombol Interaksi E (Berwarna Caution saat ada objek terdeteksi) */}
+          {/* Tombol Interaksi E */}
           <button
             disabled={!activeInteractable}
             onClick={() => {
@@ -129,14 +152,14 @@ export function TouchControls() {
                 openPanel(activeInteractable.type);
               }
             }}
-            className={`w-28 h-12 border flex items-center justify-center space-x-1.5 font-hud text-lg tracking-wider transition-all ${
+            className={`w-28 h-12 rounded-2xl border-2 flex items-center justify-center space-x-1.5 font-display font-bold text-sm tracking-wide transition-all shadow-sm ${
               activeInteractable
-                ? "bg-caution text-night border-caution animate-pulse shadow-[0_0_12px_rgba(242,194,0,0.6)]"
-                : "bg-night/50 text-fluor/30 border-fluor/20 cursor-not-allowed"
+                ? "bg-primary text-text border-primary animate-bounce shadow-md"
+                : "bg-surface/50 text-text-muted border-border/50 cursor-not-allowed"
             }`}
           >
             <Hand className="w-4 h-4" />
-            <span>[E] AKSI</span>
+            <span>[E] Aksi</span>
           </button>
         </div>
       </div>

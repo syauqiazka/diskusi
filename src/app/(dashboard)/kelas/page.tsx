@@ -17,24 +17,24 @@ async function KelasContent() {
   return (
     <div className="space-y-8">
       {/* Header Halaman Kelas */}
-      <div className="border-b border-fluor/20 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-surface rounded-3xl border-2 border-border p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-caution mb-1">
-            <GraduationCap className="w-5 h-5" />
-            <h1 className="font-sign text-2xl sm:text-3xl text-fluor tracking-wide uppercase">
+          <div className="flex items-center space-x-2.5 text-text mb-1">
+            <div className="w-10 h-10 rounded-2xl bg-secondary/30 flex items-center justify-center text-text">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <h1 className="font-display font-bold text-2xl sm:text-3xl text-text tracking-tight">
               Ruang Kelas
             </h1>
           </div>
-          <p className="font-body text-xs sm:text-sm text-fluor/70 mt-1">
-            Pusat belajar daring kejuruan SMK TI BAZMA: diskusi kelas, materi terpadu, dan alokasi meja belajar.
+          <p className="font-body text-sm text-text-muted mt-1">
+            Pusat belajar daring sekolah: diskusi kelas, materi terpadu, dan alokasi meja belajar.
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
           {canManage && <CreateClassForm />}
-          <div className="font-mono text-xs">
-            <Badge variant="cyan">{classes.length} KELAS SAYA</Badge>
-          </div>
+          <Badge variant="mint">{classes.length} Kelas Terdaftar</Badge>
         </div>
       </div>
 
@@ -42,13 +42,13 @@ async function KelasContent() {
       {session?.user ? (
         <JoinClassForm />
       ) : (
-        <div className="border border-alert/50 bg-alert/10 p-4 text-xs font-mono flex items-center justify-between">
+        <div className="rounded-2xl border-2 border-alert/30 bg-alert/10 p-4 text-xs font-body flex items-center justify-between">
           <div className="flex items-center space-x-2 text-alert">
             <ShieldAlert className="w-4 h-4 shrink-0" />
             <span>Silakan masuk ke akun terlebih dahulu untuk bergabung ke kelas.</span>
           </div>
           <Link href="/masuk">
-            <Button size="sm" variant="danger">
+            <Button size="sm" variant="danger" className="rounded-xl">
               Masuk Akun
             </Button>
           </Link>
@@ -58,64 +58,64 @@ async function KelasContent() {
       {/* Daftar Kelas Pengguna */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-sign text-xl uppercase tracking-wider text-fluor">
+          <h2 className="font-display font-bold text-xl text-text">
             Kelas yang Diikuti
           </h2>
-          <span className="font-mono text-xs text-fluor/50">
+          <span className="font-body text-xs text-text-muted">
             {classes.length} Terdaftar
           </span>
         </div>
 
         {classes.length === 0 ? (
-          <div className="border border-fluor/20 p-8 text-center space-y-3 bg-night">
-            <GraduationCap className="w-10 h-10 text-fluor/30 mx-auto" />
-            <h3 className="font-sign text-lg uppercase tracking-wide text-fluor/80">
+          <div className="rounded-3xl border-2 border-border p-8 text-center space-y-3 bg-surface shadow-sm">
+            <GraduationCap className="w-12 h-12 text-text-muted mx-auto" />
+            <h3 className="font-display font-bold text-lg text-text">
               Belum Terdaftar di Kelas Mana Pun
             </h3>
-            <p className="font-body text-xs text-fluor/60 max-w-md mx-auto">
+            <p className="font-body text-xs text-text-muted max-w-md mx-auto leading-relaxed">
               Anda belum bergabung ke kelas mana pun. Masukkan kode kelas pada formulir di atas
-              (misalnya ketik <code className="text-caution font-mono">SIJA-10A</code>) untuk
+              (misalnya ketik <code className="bg-canvas border border-border px-2 py-0.5 rounded-lg text-text font-bold">SIJA-10A</code>) untuk
               mendapatkan nomor meja dan membuka materi kelas.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {classes.map((cls) => (
               <div
                 key={cls.membershipId}
-                className="border border-fluor/25 bg-night p-5 space-y-4 hover:border-fluor/60 transition-colors flex flex-col justify-between"
+                className="rounded-3xl border-2 border-border bg-surface p-6 space-y-4 hover:border-primary transition-all shadow-sm flex flex-col justify-between group"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono text-xs px-2 py-0.5 border border-caution/50 text-caution bg-caution/10 font-bold tracking-wider">
+                    <span className="font-display font-bold text-xs px-2.5 py-1 rounded-xl border border-secondary/50 text-text bg-secondary/30">
                       {cls.classCode}
                     </span>
-                    <Badge variant={cls.role === "TEACHER" ? "cyan" : "outline"}>
-                      {cls.role === "TEACHER" ? "PENGAJAR" : "SISWA"}
+                    <Badge variant={cls.role === "TEACHER" ? "peach" : "mint"}>
+                      {cls.role === "TEACHER" ? "Pengajar" : "Siswa"}
                     </Badge>
                   </div>
 
                   <div>
-                    <h3 className="font-sign text-xl uppercase tracking-wide text-fluor">
+                    <h3 className="font-display font-bold text-xl text-text group-hover:text-accent transition-colors">
                       {cls.className}
                     </h3>
                     {cls.description && (
-                      <p className="font-body text-xs text-fluor/70 mt-1 line-clamp-2">
+                      <p className="font-body text-xs text-text-muted mt-1.5 line-clamp-2 leading-relaxed">
                         {cls.description}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-fluor/15 flex items-center justify-between">
-                  <div className="space-y-0.5 font-mono text-[11px] text-fluor/60">
+                <div className="pt-4 border-t border-border/50 flex items-center justify-between">
+                  <div className="space-y-0.5 font-body text-xs text-text-muted">
                     <div className="flex items-center space-x-1.5">
                       <Users className="w-3.5 h-3.5" />
                       <span>{cls.memberCount} Anggota</span>
                     </div>
                     <div>
                       Alokasi:{" "}
-                      <span className="text-caution font-semibold">
+                      <span className="text-text font-semibold">
                         {cls.seatIndex !== null
                           ? `Meja #${cls.seatIndex + 1}`
                           : "Meja Guru"}
@@ -124,7 +124,7 @@ async function KelasContent() {
                   </div>
 
                   <Link href={`/kelas/${cls.classId}`}>
-                    <Button variant="default" size="sm" className="space-x-1.5 font-hud text-xs tracking-wider">
+                    <Button variant="default" size="sm" className="space-x-1.5 rounded-2xl font-display font-bold text-xs">
                       <span>Buka Kelas</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Button>
@@ -143,7 +143,7 @@ export default function KelasIndexPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-8 border border-fluor/30 bg-night text-center font-mono text-xs text-caution">
+        <div className="p-8 rounded-3xl border-2 border-border bg-surface text-center font-body text-xs text-text-muted">
           Memuat daftar kelas...
         </div>
       }

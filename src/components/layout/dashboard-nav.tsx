@@ -31,7 +31,7 @@ const navItems = [
     icon: MessageSquare,
   },
   {
-    label: "Loker & Profil",
+    label: "Loker Profil",
     href: "/profil",
     icon: User,
   },
@@ -58,10 +58,10 @@ export function DashboardNav() {
   };
 
   return (
-    <div className="border-b border-fluor/20 bg-night/90">
+    <div className="border-b-2 border-border bg-surface/80 backdrop-blur-sm sticky top-16 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between py-3 gap-3">
-          {/* Navigasi Tab Mode 2D */}
+          {/* Navigasi Tab Mode 2D Bersahabat */}
           <nav className="flex flex-wrap items-center gap-2">
             {navItems.map((item) => {
               const isActive =
@@ -74,16 +74,16 @@ export function DashboardNav() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`inline-flex items-center space-x-2 px-3.5 py-1.5 border font-mono text-xs uppercase tracking-wider transition-colors ${
+                  className={`inline-flex items-center space-x-2 px-4 py-2 rounded-2xl font-body text-xs font-bold transition-all border-2 ${
                     isActive
-                      ? "border-caution text-caution bg-caution/10 font-bold"
-                      : "border-fluor/20 text-fluor/70 hover:border-fluor/50 hover:text-fluor bg-night"
+                      ? "bg-primary/20 text-emerald-900 border-primary shadow-xs"
+                      : "bg-surface text-text-muted hover:text-text hover:bg-canvas border-border"
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-4 h-4 shrink-0 text-primary" />
                   <span>{item.label}</span>
                   {item.href === "/pesan" && unreadCount > 0 && (
-                    <span className="ml-1 px-1.5 py-0.2 bg-alert text-night font-bold text-[10px] rounded-full animate-pulse shadow-[0_0_8px_rgba(224,65,47,0.7)]">
+                    <span className="ml-1 px-1.5 py-0.2 bg-destructive text-white font-bold text-[10px] rounded-full animate-bounce">
                       {unreadCount}
                     </span>
                   )}
@@ -93,57 +93,59 @@ export function DashboardNav() {
           </nav>
 
           {/* Switcher ke Dunia 3D & Status Pengguna */}
-          <div className="flex flex-wrap items-center gap-3 self-end lg:self-auto font-mono text-xs">
-            {/* Tombol Pemisah Tegas ke Dunia 3D */}
+          <div className="flex flex-wrap items-center gap-3 self-end lg:self-auto text-xs font-body">
+            {/* Tombol ke Dunia 3D */}
             <Link href="/dunia">
               <Button
-                variant="default"
+                variant="mint"
                 size="sm"
-                className="bg-caution text-white hover:bg-caution/90 border border-caution font-hud tracking-wider text-xs sm:text-sm flex items-center space-x-1.5 shadow-sm"
+                className="flex items-center space-x-1.5 px-4 rounded-xl"
               >
-                <Compass className="w-4 h-4" />
+                <Compass className="w-4 h-4 animate-spin-slow" />
                 <span>Dunia 3D</span>
               </Button>
             </Link>
 
             {isPending ? (
-              <span className="text-fluor/40">Memeriksa sesi...</span>
+              <span className="text-text-muted">Memeriksa akun...</span>
             ) : session?.user ? (
               <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-1.5 px-2 py-1 border border-fluor/20 bg-night">
-                  <span className="w-2 h-2 bg-ok inline-block animate-pulse" />
-                  <span className="text-fluor font-medium">{session.user.name}</span>
+                <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl border border-border bg-canvas">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                  <span className="text-text font-bold text-xs truncate max-w-[120px]">
+                    {session.user.name}
+                  </span>
                 </div>
                 <Badge
                   variant={
                     (session.user as { role?: string }).role === "SUPERADMIN"
-                      ? "ok"
+                      ? "mint"
                       : (session.user as { role?: string }).role === "ADMIN"
-                      ? "cyan"
-                      : "outline"
+                      ? "peach"
+                      : "default"
                   }
                 >
                   {(session.user as { role?: string }).role === "SUPERADMIN"
-                    ? "SUPER ADMIN"
+                    ? "Super Admin"
                     : (session.user as { role?: string }).role === "ADMIN"
-                    ? "ADMIN (GURU/STAF)"
-                    : "SISWA"}
+                    ? "Guru / Staf"
+                    : "Siswa"}
                 </Badge>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleSignOut}
-                  className="h-8 px-2 text-fluor/60 hover:text-alert"
-                  title="Keluar dari sesi"
+                  className="h-8 px-2 text-text-muted hover:text-destructive"
+                  title="Keluar dari akun"
                 >
-                  <LogOut className="w-3.5 h-3.5 mr-1" />
-                  <span>KELUAR</span>
+                  <LogOut className="w-4 h-4 mr-1" />
+                  <span>Keluar</span>
                 </Button>
               </div>
             ) : (
               <Link
                 href="/masuk"
-                className="text-caution hover:underline uppercase tracking-wider"
+                className="font-display text-accent hover:underline"
               >
                 Masuk Akun
               </Link>

@@ -41,9 +41,9 @@ export function QuickJoinButton({
 
   if (joined) {
     return (
-      <span className="inline-flex items-center space-x-1.5 text-ok font-mono text-xs border border-ok/40 bg-ok/10 px-2.5 py-1">
+      <span className="inline-flex items-center space-x-1.5 text-ok font-display font-semibold text-xs border border-ok/30 bg-ok/10 px-3 py-1 rounded-full">
         <Check className="w-3.5 h-3.5 text-ok" />
-        <span>TERDAFTAR DI KELAS</span>
+        <span>Terdaftar di Kelas</span>
       </span>
     );
   }
@@ -59,18 +59,18 @@ export function QuickJoinButton({
       >
         {isPending ? (
           <>
-            <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
-            <span>MENGHUBUNGKAN...</span>
+            <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5 text-accent" />
+            <span>Menghubungkan...</span>
           </>
         ) : (
           <>
-            <Plus className="w-3.5 h-3.5 mr-1.5 text-caution" />
-            <span>{label || `GABUNG ${classCode}`}</span>
+            <Plus className="w-3.5 h-3.5 mr-1.5 text-text" />
+            <span>{label || `Gabung ${classCode}`}</span>
           </>
         )}
       </Button>
       {errorMsg && (
-        <span className="font-mono text-[10px] text-alert">{errorMsg}</span>
+        <span className="font-body text-xs text-alert">{errorMsg}</span>
       )}
     </div>
   );

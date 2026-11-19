@@ -80,39 +80,41 @@ export default function DaftarPage() {
   };
 
   return (
-    <Card className="border-fluor/40">
-      <CardHeader>
+    <Card className="rounded-3xl border-2 border-border shadow-xl bg-surface/95 backdrop-blur-md">
+      <CardHeader className="space-y-2 pb-6 border-b border-border/50">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-3xl font-hud tracking-widest text-caution">
-            DAFTAR SISWA BARU
+          <CardTitle className="text-2xl sm:text-3xl font-display font-bold text-text">
+            Daftar Siswa Baru
           </CardTitle>
-          <span className="font-mono text-xs px-2 py-0.5 border border-fluor/30 text-fluor/70">
-            REGISTRASI
+          <span className="font-display font-medium text-xs px-3 py-1 rounded-full bg-secondary/30 text-text border border-secondary/50">
+            Registrasi
           </span>
         </div>
-        <CardDescription>
-          Buat akun untuk bergabung ke kawasan pembelajaran SMK TI BAZMA.
+        <CardDescription className="text-text-muted text-sm font-body">
+          Buat akun untuk bergabung ke lingkungan pembelajaran sekolah SMK TI BAZMA.
         </CardDescription>
       </CardHeader>
 
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           {serverError && (
-            <div className="p-3 border border-alert/60 bg-alert/10 text-alert text-xs font-mono flex items-start space-x-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div className="p-3.5 rounded-2xl border-2 border-alert/30 bg-alert/10 text-alert text-xs font-body font-medium flex items-start space-x-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-alert" />
               <span>{serverError}</span>
             </div>
           )}
 
           {isSuccess && (
-            <div className="p-3 border border-ok/60 bg-ok/10 text-ok text-xs font-mono flex items-start space-x-2">
-              <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>Pendaftaran berhasil! Mengalihkan ke halaman gerbang...</span>
+            <div className="p-3.5 rounded-2xl border-2 border-ok/30 bg-ok/10 text-ok text-xs font-body font-semibold flex items-start space-x-2">
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-ok" />
+              <span>Pendaftaran berhasil! Mengalihkan ke beranda...</span>
             </div>
           )}
 
-          <div className="space-y-1">
-            <Label htmlFor="name">Nama Lengkap</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="name" className="font-display font-semibold text-xs text-text">
+              Nama Lengkap
+            </Label>
             <Input
               id="name"
               type="text"
@@ -121,14 +123,17 @@ export default function DaftarPage() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Ahmad Rizky"
               disabled={isLoading || isSuccess}
+              className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
             />
             {errors.name && (
-              <p className="text-xs text-alert font-mono mt-1">{errors.name}</p>
+              <p className="text-xs text-alert font-body font-medium mt-1">{errors.name}</p>
             )}
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="username">Username (Opsional)</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="username" className="font-display font-semibold text-xs text-text">
+              Username (Opsional)
+            </Label>
             <Input
               id="username"
               type="text"
@@ -137,14 +142,17 @@ export default function DaftarPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="ahmad_sija"
               disabled={isLoading || isSuccess}
+              className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
             />
             {errors.username && (
-              <p className="text-xs text-alert font-mono mt-1">{errors.username}</p>
+              <p className="text-xs text-alert font-body font-medium mt-1">{errors.username}</p>
             )}
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="email">Alamat Email</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="font-display font-semibold text-xs text-text">
+              Alamat Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -153,14 +161,17 @@ export default function DaftarPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="ahmad@sekolah.id"
               disabled={isLoading || isSuccess}
+              className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
             />
             {errors.email && (
-              <p className="text-xs text-alert font-mono mt-1">{errors.email}</p>
+              <p className="text-xs text-alert font-body font-medium mt-1">{errors.email}</p>
             )}
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="password">Kata Sandi (Minimal 8 Karakter)</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="font-display font-semibold text-xs text-text">
+              Kata Sandi (Minimal 8 Karakter)
+            </Label>
             <Input
               id="password"
               type="password"
@@ -169,28 +180,29 @@ export default function DaftarPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               disabled={isLoading || isSuccess}
+              className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
             />
             {errors.password && (
-              <p className="text-xs text-alert font-mono mt-1">{errors.password}</p>
+              <p className="text-xs text-alert font-body font-medium mt-1">{errors.password}</p>
             )}
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter className="flex flex-col space-y-4 pt-4 border-t border-border/50">
           <Button
             type="submit"
-            className="w-full flex items-center justify-center space-x-2"
+            className="w-full flex items-center justify-center space-x-2 rounded-2xl font-display font-bold py-3 text-sm"
             disabled={isLoading || isSuccess}
           >
             <UserPlus className="w-4 h-4" />
-            <span>{isLoading ? "MENYIMPAN DATA..." : "DAFTAR SEKARANG"}</span>
+            <span>{isLoading ? "Menyimpan Data..." : "Daftar Sekarang"}</span>
           </Button>
 
-          <div className="text-xs font-mono text-fluor/60 text-center">
+          <div className="text-xs font-body text-text-muted text-center">
             Sudah memiliki akun?{" "}
             <Link
               href="/masuk"
-              className="text-caution hover:underline uppercase tracking-wider"
+              className="font-bold text-accent hover:underline ml-1"
             >
               Masuk di sini
             </Link>

@@ -89,7 +89,7 @@ export function ClassroomDoorObject() {
       <mesh position={[0.5, -0.1, 0.08]} material={brassHandleMaterial}>
         <boxGeometry args={[0.08, 0.22, 0.12]} />
       </mesh>
-      {/* Papan Rambu Nama Kelas (Font Sign Anton vibe) */}
+      {/* Papan Rambu Nama Kelas */}
       <mesh position={[0, 1.0, 0.07]}>
         <boxGeometry args={[1.1, 0.28, 0.03]} />
         <meshStandardMaterial color={COLORS.night} roughness={0.3} />
