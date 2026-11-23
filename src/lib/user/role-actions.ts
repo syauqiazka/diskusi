@@ -5,12 +5,6 @@ import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db";
 import { PlatformRole } from "@prisma/client";
 
-// Daftar email Super Admin bawaan sistem
-export const DEFAULT_SUPERADMIN_EMAILS = [
-  "admin@smkbazma.sch.id",
-  "muhammad.syauqi1869@smk.belajar.id",
-];
-
 async function getSession() {
   const reqHeaders = await headers();
   return await auth.api.getSession({
@@ -59,10 +53,6 @@ export async function checkIsSuperAdmin(): Promise<boolean> {
   const session = await getSession();
   if (!session?.user?.id) return false;
 
-  if (DEFAULT_SUPERADMIN_EMAILS.includes(session.user.email.toLowerCase())) {
-    return true;
-  }
-
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { role: true },
@@ -83,14 +73,10 @@ export async function switchMyRole(newRole: "SUPERADMIN" | "ADMIN" | "USER") {
 
   const currentUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { email: true, role: true },
+    select: { role: true },
   });
 
-  const isSuper =
-    currentUser?.role === "SUPERADMIN" ||
-    DEFAULT_SUPERADMIN_EMAILS.includes(currentUser?.email?.toLowerCase() || "");
-
-  if (!isSuper) {
+  if (currentUser?.role !== "SUPERADMIN") {
     return {
       success: false,
       error: "Akses Ditolak: Anda berstatus Siswa (USER). Hanya Super Admin yang berwenang menetapkan atau mengubah peran.",
@@ -102,11 +88,8 @@ export async function switchMyRole(newRole: "SUPERADMIN" | "ADMIN" | "USER") {
     return { success: false, error: "Peran tidak valid." };
   }
 
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { role: validRole },
-  });
-
+  // Peralihan ini hanya untuk simulasi UI. Jangan ubah role permanen
+  // akun Super Admin ketika mencoba tampilan role lain.
   return { success: true, role: validRole };
 }
 
@@ -176,24 +159,33 @@ export async function assignUserRole(
     };
   }
 
+  if (targetUserId === session.user.id) {
+    return {
+      success: false,
+      error: "Role akun yang sedang digunakan tidak dapat diubah dari panel ini.",
+    };
+  }
+
   const targetUser = await prisma.user.findUnique({
     where: { id: targetUserId },
-    select: { email: true },
+    select: { role: true },
   });
 
   if (!targetUser) {
     return { success: false, error: "Pengguna target tidak ditemukan." };
   }
 
-  // Lindungi akun Super Admin bawaan agar tidak terturunkan
-  if (
-    DEFAULT_SUPERADMIN_EMAILS.includes(targetUser.email.toLowerCase()) &&
-    newRole !== "SUPERADMIN"
-  ) {
-    return {
-      success: false,
-      error: "Akun Super Admin bawaan sistem tidak dapat diturunkan perannya.",
-    };
+  if (targetUser.role === "SUPERADMIN" && newRole !== "SUPERADMIN") {
+    const superAdminCount = await prisma.user.count({
+      where: { role: "SUPERADMIN" },
+    });
+
+    if (superAdminCount <= 1) {
+      return {
+        success: false,
+        error: "Role Super Admin terakhir tidak dapat diturunkan.",
+      };
+    }
   }
 
   const validRole = PlatformRole[newRole];
