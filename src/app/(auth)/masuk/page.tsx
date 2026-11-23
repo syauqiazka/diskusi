@@ -88,7 +88,7 @@ export default function MasukPage() {
           {/* Grup Email (Kaidah UX: Law of Proximity, Jarak Label-Input 6px, Jarak Antar Grup 20px) */}
           <div className="space-y-1.5">
             <Label htmlFor="email" className="font-display font-semibold text-xs text-text">
-              Alamat Email Sekolah
+              Alamat Email
             </Label>
             <Input
               id="email"
@@ -96,7 +96,7 @@ export default function MasukPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Contoh: nama@sekolah.id"
+              placeholder="Contoh: nama@email.com"
               disabled={isLoading}
               className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
             />
