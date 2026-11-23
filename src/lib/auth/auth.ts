@@ -39,21 +39,6 @@ export const auth = betterAuth({
         defaultValue: "USER",
         input: false,
       },
-      worldSettings: {
-        type: "string",
-        required: false,
-        input: false,
-      },
-      activeFrameId: {
-        type: "string",
-        required: false,
-        input: false,
-      },
-      activeEffectId: {
-        type: "string",
-        required: false,
-        input: false,
-      },
     },
   },
   secret: env.BETTER_AUTH_SECRET,
