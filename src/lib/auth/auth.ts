@@ -3,6 +3,21 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 
+const trustedOrigins = Array.from(
+  new Set(
+    [
+      env.BETTER_AUTH_URL,
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+      process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : undefined,
+      process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : undefined,
+      process.env.NEXT_PUBLIC_APP_URL,
+      process.env.NODE_ENV !== "production" ? "http://localhost:3000" : undefined,
+    ].filter((origin): origin is string => Boolean(origin))
+  )
+);
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -43,5 +58,6 @@ export const auth = betterAuth({
   },
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
+  trustedOrigins,
 });
 
