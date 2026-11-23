@@ -89,6 +89,17 @@ export default function PesanPage() {
     };
   }, [fetchConversations]);
 
+  // Kunci scroll halaman belakang saat dialog obrolan terbuka
+  React.useEffect(() => {
+    if (showNewChatDialog) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showNewChatDialog]);
+
   // Load dialog rekan sekelas & direktori siswa saat dialog dibuka
   const handleOpenNewChatDialog = async () => {
     setShowNewChatDialog(true);
@@ -531,8 +542,16 @@ export default function PesanPage() {
 
       {/* DIALOG PILIH REKAN SEKELAS (MULAI PESAN BARU) */}
       {showNewChatDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
-          <div className="rounded-3xl border-2 border-border bg-surface w-full max-w-lg p-6 space-y-5 relative max-h-[85vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowNewChatDialog(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm overscroll-contain"
+        >
+          <div
+            className="rounded-3xl border-2 border-border bg-surface w-full max-w-lg p-5 sm:p-6 space-y-4 relative max-h-[85vh] h-[600px] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden overscroll-contain"
+            onWheel={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setShowNewChatDialog(false)}
               className="absolute top-5 right-5 text-text-muted hover:text-text p-1.5 rounded-full hover:bg-canvas transition-colors"
@@ -541,7 +560,7 @@ export default function PesanPage() {
               <X className="w-5 h-5" />
             </button>
 
-            <div className="border-b border-border/50 pb-4">
+            <div className="border-b border-border/50 pb-3 shrink-0">
               <div className="flex items-center space-x-2 text-text mb-1">
                 <div className="w-7 h-7 rounded-full bg-secondary/30 flex items-center justify-center">
                   <Users className="w-3.5 h-3.5 text-text" />
@@ -585,7 +604,7 @@ export default function PesanPage() {
             </div>
 
             {/* Input Pencarian Rekan */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <Search className="w-4 h-4 absolute left-3 top-3.5 text-text-muted" />
               <Input
                 value={searchClassmate}
@@ -602,7 +621,7 @@ export default function PesanPage() {
 
             {/* Konten Tab 1: Rekan Sekelas */}
             {dialogTab === "classmates" && (
-              <div className="flex-1 overflow-y-auto divide-y divide-border/30 max-h-64 rounded-2xl border-2 border-border p-1 bg-canvas/20">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain divide-y divide-border/30 rounded-2xl border-2 border-border p-1 bg-canvas/20 focus:outline-hidden">
                 {isLoadingClassmates ? (
                   <div className="p-8 text-center font-body text-xs text-text-muted">
                     Memuat daftar rekan sekelas...
@@ -671,7 +690,7 @@ export default function PesanPage() {
 
             {/* Konten Tab 2: Direktori Siswa Sekolah */}
             {dialogTab === "directory" && (
-              <div className="flex-1 overflow-y-auto divide-y divide-border/30 max-h-64 rounded-2xl border-2 border-border p-1 bg-canvas/20">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain divide-y divide-border/30 rounded-2xl border-2 border-border p-1 bg-canvas/20 focus:outline-hidden">
                 {isLoadingClassmates ? (
                   <div className="p-8 text-center font-body text-xs text-text-muted">
                     Memuat direktori seluruh siswa...
@@ -766,7 +785,7 @@ export default function PesanPage() {
               </div>
             )}
 
-            <div className="flex justify-between items-center pt-3 border-t border-border/50">
+            <div className="flex justify-between items-center pt-3 border-t border-border/50 shrink-0">
               <span className="font-body text-xs text-text-muted">
                 Pesan terhubung langsung dengan otorisasi kelas sekolah.
               </span>
