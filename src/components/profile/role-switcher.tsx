@@ -431,7 +431,7 @@ export function RoleSwitcher({
                               Edit
                             </Button>
                             <Button
-                              variant="destructive"
+                              variant="danger"
                               size="sm"
                               onClick={() => handleDeleteUser(u)}
                               className="rounded-xl text-xs"
