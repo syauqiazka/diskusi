@@ -233,7 +233,7 @@ export default function DaftarPage() {
             <div className="space-y-5 animate-in fade-in">
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="font-display font-semibold text-xs text-text">
-                  Alamat Email Sekolah
+                  Alamat Email
                 </Label>
                 <Input
                   id="email"
@@ -241,7 +241,7 @@ export default function DaftarPage() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Contoh: ahmad@sekolah.id"
+                  placeholder="Contoh: nama@email.com"
                   disabled={isLoading || isSuccess}
                   className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
                 />
