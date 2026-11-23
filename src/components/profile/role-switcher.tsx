@@ -313,7 +313,7 @@ export function RoleSwitcher({
               <Users className="w-5 h-5 text-accent" />
             </div>
             <span className="font-display font-bold text-lg text-text">
-              Kelola Peran Siswa &amp; Guru (Direktori Sekolah)
+              Kelola Akun &amp; Peran Pengguna
             </span>
           </div>
           <span className="font-body text-xs text-text-muted">
@@ -326,7 +326,7 @@ export function RoleSwitcher({
           <Input
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
-            placeholder="Cari nama atau email pengguna untuk mengatur peran..."
+            placeholder="Cari nama, email, atau username..."
             className="pl-10 h-10 text-xs rounded-2xl border-2 border-border bg-canvas/40"
           />
         </div>
@@ -334,6 +334,10 @@ export function RoleSwitcher({
         {isLoadingUsers ? (
           <div className="p-8 text-center font-body text-xs text-text-muted">
             Memuat daftar pengguna sekolah...
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="p-8 text-center font-body text-xs text-text-muted">
+            {userList.length === 0 ? "Belum ada akun terdaftar." : "Tidak ada akun yang cocok dengan pencarian."}
           </div>
         ) : (
           <div className="divide-y divide-border/30 rounded-2xl border-2 border-border max-h-80 overflow-y-auto bg-canvas/20">
@@ -389,7 +393,7 @@ export function RoleSwitcher({
                   )}
 
                   {/* Tombol Pengubah Peran oleh Super Admin */}
-                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <div className="flex flex-wrap items-center justify-end gap-2 self-end sm:self-auto shrink-0">
                     {isUpdating ? (
                       <div className="flex items-center space-x-1.5 font-body text-xs text-text-muted">
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
