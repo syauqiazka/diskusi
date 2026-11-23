@@ -8,6 +8,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/auth-client";
 import { getCerminCosmetics, updateUserActiveFrame } from "@/lib/classroom/object-actions";
 import { RoleSwitcher } from "@/components/profile/role-switcher";
+import { animateProfileEffect } from "@/lib/animations";
+import { ImageUploader } from "@/components/ui/image-uploader";
 
 // Katalog Resmi Bingkai Avatar (Palette Fresh Mint & Peach)
 const avatarFrames = [
@@ -29,19 +31,32 @@ export default function ProfilPage() {
   const { data: session } = authClient.useSession();
   const [selectedFrame, setSelectedFrame] = React.useState("frame-mint");
   const [selectedEffect, setSelectedEffect] = React.useState("effect-sun");
+  const [customAvatar, setCustomAvatar] = React.useState<string | null>(null);
   const [fastMode, setFastMode] = React.useState(true);
   const [nightMode, setNightMode] = React.useState(false);
   const [soundEnabled, setSoundEnabled] = React.useState(false);
   const [graphicsQuality, setGraphicsQuality] = React.useState<"low" | "medium" | "high">("medium");
   const [saveSuccess, setSaveSuccess] = React.useState(false);
+  const avatarRef = React.useRef<HTMLDivElement>(null);
 
-  // Sinkronkan bingkai aktif dari database
+  // Jalankan animasi GSAP untuk efek profil terpilih
+  React.useEffect(() => {
+    if (!avatarRef.current) return;
+    const cleanup = animateProfileEffect(avatarRef.current, selectedEffect);
+    return cleanup;
+  }, [selectedEffect]);
+
+  // Sinkronkan bingkai aktif dari database & avatar lokal
   React.useEffect(() => {
     getCerminCosmetics().then((res) => {
       if (res.activeFrameId) {
         setSelectedFrame(res.activeFrameId);
       }
     });
+    const savedAvatar = localStorage.getItem("sakura_custom_avatar");
+    if (savedAvatar) {
+      setCustomAvatar(savedAvatar);
+    }
   }, []);
 
   const handleSaveSettings = async () => {
@@ -101,13 +116,39 @@ export default function ProfilPage() {
         </CardHeader>
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-2xl border-2 border-border bg-canvas/30">
-            {/* Avatar Preview dengan Bingkai Terpilih */}
-            <div
-              className={`w-24 h-24 rounded-3xl bg-surface flex items-center justify-center transition-all shadow-sm ${
-                activeFrameObj?.borderClass || "border-2 border-border"
-              }`}
-            >
-              <User className="w-12 h-12 text-text" />
+            {/* Avatar Preview dengan Bingkai Terpilih & Efek GSAP Animasi */}
+            <div ref={avatarRef} className="relative">
+              {selectedEffect === "effect-sun" && (
+                <div className="profile-aura absolute -inset-2.5 rounded-3xl bg-amber-400/30 blur-md pointer-events-none" />
+              )}
+              {selectedEffect === "effect-breeze" && (
+                <>
+                  <span className="profile-particle absolute -top-2.5 -left-2 text-pink-400 text-sm select-none pointer-events-none">🌸</span>
+                  <span className="profile-particle absolute -bottom-1 -right-2 text-pink-400 text-xs select-none pointer-events-none">🌸</span>
+                </>
+              )}
+              {selectedEffect === "effect-sparkle" && (
+                <>
+                  <span className="profile-sparkle absolute -top-2.5 -right-1 text-amber-400 text-sm select-none pointer-events-none">✨</span>
+                  <span className="profile-sparkle absolute -bottom-2 -left-1 text-amber-400 text-xs select-none pointer-events-none">✨</span>
+                </>
+              )}
+              <div
+                className={`w-24 h-24 rounded-3xl bg-surface flex items-center justify-center transition-all shadow-sm relative z-10 overflow-hidden ${
+                  activeFrameObj?.borderClass || "border-2 border-border"
+                }`}
+              >
+                {customAvatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={customAvatar}
+                    alt="Foto Profil Siswa"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-12 h-12 text-text" />
+                )}
+              </div>
             </div>
 
             <div className="space-y-2 text-center sm:text-left flex-1 font-body">
@@ -215,6 +256,35 @@ export default function ProfilPage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* SECTION UNGGAH FOTO AVATAR (VERCEL BLOB STORAGE) */}
+      <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-border/50 pb-3">
+          <div>
+            <h3 className="font-display font-bold text-xl text-text">
+              Foto Avatar Pribadi
+            </h3>
+            <p className="font-body text-xs text-text-muted mt-0.5">
+              Unggah foto profil karakter kamu langsung ke Vercel Blob Storage awan.
+            </p>
+          </div>
+          <Badge variant="mint" className="font-display text-xs">Vercel Blob Active</Badge>
+        </div>
+
+        <ImageUploader
+          value={customAvatar}
+          onChange={(url) => {
+            setCustomAvatar(url);
+            if (url) {
+              localStorage.setItem("sakura_custom_avatar", url);
+            } else {
+              localStorage.removeItem("sakura_custom_avatar");
+            }
+          }}
+          label="Foto Profil Siswa"
+          description="Format JPG, PNG, atau WebP (Maksimal 10 MB). Foto otomatis tampil di kartu siswa, cermin kelas, dan meja."
+        />
       </div>
 
       {/* SECTION PENGATURAN SISTEM (WORLD SETTINGS) */}

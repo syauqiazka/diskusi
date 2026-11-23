@@ -5,6 +5,7 @@ import { X, Volume2, VolumeX, Monitor, LifeBuoy, RotateCcw, Check, Sparkles } fr
 import { Button } from "@/components/ui/button";
 import { useWorldStore, STANDING_HEIGHT } from "@/stores/use-world-store";
 import { useAchievementStore } from "@/stores/use-achievement-store";
+import { useModalAnimation } from "@/components/animations/gsap-animate";
 
 interface OptionsModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export function OptionsModal({ isOpen, onClose }: OptionsModalProps) {
   const updateWorldSettings = useWorldStore((s) => s.updateWorldSettings);
   const setPlayerPosition = useWorldStore((s) => s.setPlayerPosition);
   const unlockAchievement = useAchievementStore((s) => s.unlockAchievement);
+  const { backdropRef, cardRef } = useModalAnimation(isOpen);
 
   const [rescueNotice, setRescueNotice] = React.useState<string | null>(null);
 
@@ -50,8 +52,8 @@ export function OptionsModal({ isOpen, onClose }: OptionsModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-surface w-full max-w-lg p-6 sm:p-8 space-y-6 rounded-3xl border-2 border-border shadow-2xl relative">
+    <div ref={backdropRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+      <div ref={cardRef} className="bg-surface w-full max-w-lg p-6 sm:p-8 space-y-6 rounded-3xl border-2 border-border shadow-2xl relative">
         {/* Tombol Tutup */}
         <button
           onClick={onClose}

@@ -105,46 +105,46 @@ export function CreateClassForm() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-3 font-body text-xs">
-              <div className="space-y-1">
-                <label className="text-text font-display font-semibold block">Nama Kelas</label>
+            <form onSubmit={handleSubmit} className="space-y-4 font-body text-xs">
+              <div className="space-y-1.5">
+                <label className="text-text font-display font-semibold block text-xs">Nama Kelas</label>
                 <Input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Misal: XII SIJA 3 - Cloud & DevOps"
+                  placeholder="Contoh: XII SIJA 3 - Cloud & DevOps"
                   required
                   disabled={isLoading}
-                  className="rounded-2xl border-2 border-border bg-canvas/40"
+                  className="rounded-2xl border-2 border-border bg-canvas/40 h-11"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-text font-display font-semibold block">Kode Kelas (Akses Siswa)</label>
+              <div className="space-y-1.5">
+                <label className="text-text font-display font-semibold block text-xs">Kode Kelas (Akses Siswa)</label>
                 <Input
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="Misal: SIJA-12C"
+                  placeholder="Contoh: SIJA-12C"
                   required
                   disabled={isLoading}
-                  className="uppercase font-display font-bold rounded-2xl border-2 border-border bg-canvas/40"
+                  className="uppercase font-display font-bold rounded-2xl border-2 border-border bg-canvas/40 h-11 tracking-wider"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-text font-display font-semibold block">Deskripsi Kelas (Opsional)</label>
+              <div className="space-y-1.5">
+                <label className="text-text font-display font-semibold block text-xs">Deskripsi Kelas (Opsional)</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Catatan ringkas atau tujuan silabus mata pelajaran..."
                   rows={3}
                   disabled={isLoading}
-                  className="w-full rounded-2xl border-2 border-border bg-canvas/40 p-3 font-body text-xs text-text placeholder:text-text-muted focus:bg-surface focus:outline-none transition-colors"
+                  className="w-full rounded-2xl border-2 border-border bg-canvas/40 p-3.5 font-body text-xs text-text placeholder:text-text-muted focus:bg-surface focus:outline-none transition-colors"
                 />
               </div>
 
-              <div className="pt-3 flex justify-end gap-2 border-t border-border/50">
+              <div className="pt-4 flex justify-end gap-2.5 border-t border-border/50">
                 <Button
                   type="button"
                   variant="outline"

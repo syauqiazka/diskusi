@@ -1,0 +1,850 @@
+{
+  "units": "meters (1 unit = 1 m), Y up, origin (0,0)=center of main gate, +Z=north (into campus), +X=east",
+  "fence": {
+    "x0": -100,
+    "x1": 100,
+    "z0": 0,
+    "z1": 240
+  },
+  "gate": {
+    "x": 0,
+    "z": 0,
+    "width": 10
+  },
+  "buildings": [
+    {
+      "id": "main",
+      "label": "Gedung utama",
+      "x0": -46,
+      "x1": 46,
+      "z0": 100,
+      "z1": 120,
+      "floors": 3,
+      "floorHeight": 4.0,
+      "facing": "south",
+      "doors": [
+        {
+          "id": "main_S",
+          "x": 0,
+          "z": 100
+        },
+        {
+          "id": "main_E",
+          "x": 46,
+          "z": 110
+        },
+        {
+          "id": "main_W",
+          "x": -46,
+          "z": 110
+        },
+        {
+          "id": "main_N",
+          "x": 0,
+          "z": 120
+        }
+      ],
+      "atrium": {
+        "x0": -5,
+        "x1": 5,
+        "doubleHeight": true
+      },
+      "grid": {
+        "bayWidth": 9,
+        "bayDepth": 8,
+        "corridorWidth": 3,
+        "wallThickness": 0.5,
+        "wingBays": 4,
+        "endStairBlockWidth": 5,
+        "corridorAxis": "X",
+        "note": "bayWidth runs ALONG the corridor (X). South row faces the forecourt, NORTH row faces the sports field."
+      },
+      "roof": {
+        "clockTower": {
+          "x": 0,
+          "z": 110,
+          "size": 6,
+          "height": 9
+        },
+        "observatory": {
+          "x": -32,
+          "z": 110,
+          "diameter": 6
+        },
+        "terrace": true,
+        "solar": true
+      },
+      "rooms": [
+        {
+          "floor": 1,
+          "wing": "west",
+          "row": "S",
+          "bays": [
+            {
+              "name": "Kepala sekolah",
+              "span": 1
+            },
+            {
+              "name": "Ruang guru",
+              "span": 2
+            },
+            {
+              "name": "UKS",
+              "span": 1
+            }
+          ]
+        },
+        {
+          "floor": 1,
+          "wing": "west",
+          "row": "N",
+          "bays": [
+            {
+              "name": "Perpustakaan",
+              "span": 2
+            },
+            {
+              "name": "Lab IPA",
+              "span": 1
+            },
+            {
+              "name": "Ruang seni",
+              "span": 1
+            }
+          ]
+        },
+        {
+          "floor": 1,
+          "wing": "east",
+          "row": "N",
+          "bays": [
+            {
+              "name": "Kelas 1-A",
+              "span": 1
+            },
+            {
+              "name": "Kelas 1-B",
+              "span": 1
+            },
+            {
+              "name": "Kelas 1-C",
+              "span": 1
+            },
+            {
+              "name": "Kelas 1-D",
+              "span": 1
+            }
+          ]
+        },
+        {
+          "floor": 1,
+          "wing": "east",
+          "row": "S",
+          "bays": [
+            {
+              "name": "Toilet pria",
+              "span": 1
+            },
+            {
+              "name": "Toilet wanita",
+              "span": 1
+            },
+            {
+              "name": "Ruang OSIS",
+              "span": 1
+            },
+            {
+              "name": "Ruang serbaguna",
+              "span": 1
+            }
+          ]
+        },
+        {
+          "floor": 2,
+          "wing": "west",
+          "row": "N",
+          "bays": [
+            {
+              "name": "Kelas 2-A",
+              "span": 1
+            },
+            {
+              "name": "Kelas 2-B",
+              "span": 1
+            },
+            {
+              "name": "Kelas 2-C",
+              "span": 1
+            },
+            {
+              "name": "Kelas 2-D",
+              "span": 1
+            }
+          ]
+        },
+        {
+          "floor": 2,
+          "wing": "west",
+          "row": "S",
+          "bays": [
+            {
+              "name": "Ruang musik",
+              "span": 1
+            },
+            {
+              "name": "Ruang komputer",
+              "span": 1
+            },
+            {
+              "name": "Ruang seminar",
+              "span": 2
+            }
+          ]
+        },
+        {
+          "floor": 2,
+          "wing": "east",
+          "row": "N",
+          "bays": [
+            {
+              "name": "Kafetaria",
+              "span": 2
+            },
+            {
+              "name": "Konseling",
+              "span": 1
+            },
+            {
+              "name": "Lab bahasa",
+              "span": 1
+            }
+          ]
+        },
+        {
+          "floor": 2,
+          "wing": "east",
+          "row": "S",
+          "bays": [
+            {
+              "name": "Toilet pria",
+              "span": 1
+            },
+            {
+              "name": "Toilet wanita",
+              "span": 1
+            },
+            {
+              "name": "Ruang rapat",
+              "span": 1
+            },
+            {
+              "name": "Ruang belajar mandiri",
+              "span": 1
+            }
+          ]
+        },
+        {
+          "floor": 3,
+          "wing": "west",
+          "row": "N",
+          "bays": [
+            {
+              "name": "Kelas 3-A",
+              "span": 1
+            },
+            {
+              "name": "Kelas 3-B",
+              "span": 1
+            },
+            {
+              "name": "Kelas 3-C",
+              "span": 1
+            },
+            {
+              "name": "Kelas 3-D",
+              "span": 1
+            }
+          ]
+        },
+        {
+          "floor": 3,
+          "wing": "west",
+          "row": "S",
+          "bays": [
+            {
+              "name": "Ruang karier",
+              "span": 1
+            },
+            {
+              "name": "Studio rekaman",
+              "span": 1
+            },
+            {
+              "name": "Ruang kuliah",
+              "span": 2
+            }
+          ]
+        },
+        {
+          "floor": 3,
+          "wing": "east",
+          "row": "N",
+          "bays": [
+            {
+              "name": "Lab robotik",
+              "span": 2
+            },
+            {
+              "name": "Ruang klub",
+              "span": 1
+            },
+            {
+              "name": "Ruang sastra",
+              "span": 1
+            }
+          ]
+        },
+        {
+          "floor": 3,
+          "wing": "east",
+          "row": "S",
+          "bays": [
+            {
+              "name": "Toilet pria",
+              "span": 1
+            },
+            {
+              "name": "Toilet wanita",
+              "span": 1
+            },
+            {
+              "name": "Ruang bimbingan",
+              "span": 1
+            },
+            {
+              "name": "Ruang belajar",
+              "span": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aula",
+      "label": "Aula teater",
+      "x0": 36,
+      "x1": 88,
+      "z0": 40,
+      "z1": 76,
+      "floors": 1,
+      "floorHeight": 14,
+      "facing": "west",
+      "doors": [
+        {
+          "id": "aula_W",
+          "x": 36,
+          "z": 58
+        }
+      ],
+      "seats": 800
+    },
+    {
+      "id": "gym",
+      "label": "Gimnasium + kolam",
+      "x0": 50,
+      "x1": 98,
+      "z0": 90,
+      "z1": 130,
+      "floors": 1,
+      "floorHeight": 12,
+      "facing": "west",
+      "doors": [
+        {
+          "id": "gym_W",
+          "x": 50,
+          "z": 111
+        }
+      ]
+    },
+    {
+      "id": "asrama",
+      "label": "Asrama",
+      "x0": -92,
+      "x1": -40,
+      "z0": 48,
+      "z1": 66,
+      "floors": 4,
+      "floorHeight": 3.4,
+      "facing": "east",
+      "doors": [
+        {
+          "id": "asrama_E",
+          "x": -40,
+          "z": 57
+        }
+      ],
+      "students": 200
+    },
+    {
+      "id": "budaya",
+      "label": "Gedung budaya",
+      "x0": -98,
+      "x1": -50,
+      "z0": 92,
+      "z1": 120,
+      "floors": 2,
+      "floorHeight": 4.0,
+      "facing": "east",
+      "doors": [
+        {
+          "id": "budaya_E",
+          "x": -50,
+          "z": 106
+        }
+      ]
+    },
+    {
+      "id": "kyudo",
+      "label": "Dojo kyudo",
+      "x0": 76,
+      "x1": 96,
+      "z0": 140,
+      "z1": 180,
+      "floors": 1,
+      "floorHeight": 6,
+      "facing": "west",
+      "doors": [
+        {
+          "id": "kyudo_W",
+          "x": 76,
+          "z": 160
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "label": "Pos satpam",
+      "x0": -16,
+      "x1": -12,
+      "z0": 2,
+      "z1": 6,
+      "floors": 1,
+      "floorHeight": 3,
+      "facing": "east",
+      "doors": [
+        {
+          "id": "guard_E",
+          "x": -12,
+          "z": 4
+        }
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "bike",
+      "label": "Parkir sepeda",
+      "x0": -88,
+      "x1": -28,
+      "z0": 10,
+      "z1": 30,
+      "entry": {
+        "x": -28,
+        "z": 18
+      }
+    },
+    {
+      "id": "guest",
+      "label": "Parkir tamu",
+      "x0": 28,
+      "x1": 88,
+      "z0": 10,
+      "z1": 30,
+      "entry": {
+        "x": 28,
+        "z": 18
+      }
+    },
+    {
+      "id": "koi",
+      "label": "Taman koi",
+      "x0": -98,
+      "x1": -66,
+      "z0": 124,
+      "z1": 146,
+      "entry": {
+        "x": -66,
+        "z": 135
+      }
+    },
+    {
+      "id": "tennis",
+      "label": "Tenis (2 lapangan)",
+      "x0": -94,
+      "x1": -74,
+      "z0": 150,
+      "z1": 216,
+      "entry": {
+        "x": -74,
+        "z": 160
+      }
+    },
+    {
+      "id": "field",
+      "label": "Lapangan + lintasan",
+      "x0": -61,
+      "x1": 61,
+      "z0": 136,
+      "z1": 220,
+      "entry": null
+    }
+  ],
+  "avenue": {
+    "x0": -6,
+    "x1": 6,
+    "z0": 0,
+    "z1": 38,
+    "sakuraEvery": 6,
+    "sakuraOffsetX": 9
+  },
+  "fountain": {
+    "cx": 0,
+    "cz": 62,
+    "roadOuterR": 24,
+    "roadInnerR": 18,
+    "plazaR": 18,
+    "sakuraBandR": [
+      11,
+      16
+    ],
+    "basinR": 8,
+    "jets": 8,
+    "centerJet": true
+  },
+  "field": {
+    "center": {
+      "x": 0,
+      "z": 178
+    },
+    "soccer": {
+      "width": 105,
+      "height": 68,
+      "x0": -52.5,
+      "x1": 52.5,
+      "z0": 144,
+      "z1": 212
+    },
+    "track": {
+      "ring": 8,
+      "outer": {
+        "x0": -61,
+        "x1": 61,
+        "z0": 136,
+        "z1": 220
+      }
+    },
+    "baseball": {
+      "homePlate": {
+        "x": 0,
+        "z": 147
+      },
+      "opens": "+Z",
+      "baseDistance": 27.4,
+      "first": {
+        "x": 19.4,
+        "z": 166.4
+      },
+      "second": {
+        "x": 0,
+        "z": 186.8
+      },
+      "third": {
+        "x": -19.4,
+        "z": 166.4
+      },
+      "mound": {
+        "x": 0,
+        "z": 160.4,
+        "retractable": true
+      },
+      "outfieldRadius": 60,
+      "infieldSkin": {
+        "note": "dirt ONLY as: 5 m wide strip along the base lines + circle r=2.7 m around the mound + circle r=1.5 m around home plate + base cut-outs. NEVER fill the diamond polygon with dirt and NEVER scale it beyond 27.4 m between bases.",
+        "grassInfield": true
+      }
+    },
+    "pathsMustNotEnterTrack": true
+  },
+  "nodes": {
+    "gate": [
+      0,
+      0
+    ],
+    "av_mid": [
+      0,
+      18
+    ],
+    "ring_s": [
+      0,
+      38
+    ],
+    "ring_e": [
+      24,
+      62
+    ],
+    "ring_w": [
+      -24,
+      62
+    ],
+    "ring_n": [
+      0,
+      86
+    ],
+    "forecourt": [
+      0,
+      98
+    ],
+    "back_plaza": [
+      0,
+      133
+    ],
+    "track_e": [
+      66,
+      160
+    ],
+    "track_w": [
+      -66,
+      160
+    ],
+    "bike_entry": [
+      -28,
+      18
+    ],
+    "guest_entry": [
+      28,
+      18
+    ],
+    "main_S": [
+      0,
+      100
+    ],
+    "main_E": [
+      46,
+      110
+    ],
+    "main_W": [
+      -46,
+      110
+    ],
+    "main_N": [
+      0,
+      120
+    ],
+    "aula_W": [
+      36,
+      58
+    ],
+    "gym_W": [
+      50,
+      111
+    ],
+    "asrama_E": [
+      -40,
+      57
+    ],
+    "budaya_E": [
+      -50,
+      106
+    ],
+    "kyudo_W": [
+      76,
+      160
+    ],
+    "guard_E": [
+      -12,
+      4
+    ],
+    "koi_entry": [
+      -66,
+      135
+    ],
+    "tennis_entry": [
+      -74,
+      160
+    ],
+    "path_ne": [
+      66,
+      133
+    ]
+  },
+  "edges": [
+    [
+      "gate",
+      "guard_E"
+    ],
+    [
+      "gate",
+      "av_mid"
+    ],
+    [
+      "av_mid",
+      "ring_s"
+    ],
+    [
+      "av_mid",
+      "bike_entry"
+    ],
+    [
+      "av_mid",
+      "guest_entry"
+    ],
+    [
+      "ring_s",
+      "ring_e"
+    ],
+    [
+      "ring_s",
+      "ring_w"
+    ],
+    [
+      "ring_e",
+      "ring_n"
+    ],
+    [
+      "ring_w",
+      "ring_n"
+    ],
+    [
+      "ring_e",
+      "aula_W"
+    ],
+    [
+      "ring_w",
+      "asrama_E"
+    ],
+    [
+      "ring_n",
+      "forecourt"
+    ],
+    [
+      "forecourt",
+      "main_S"
+    ],
+    [
+      "main_E",
+      "gym_W"
+    ],
+    [
+      "main_W",
+      "budaya_E"
+    ],
+    [
+      "main_N",
+      "back_plaza"
+    ],
+    [
+      "track_e",
+      "kyudo_W"
+    ],
+    [
+      "track_w",
+      "tennis_entry"
+    ],
+    [
+      "main_S",
+      "main_E"
+    ],
+    [
+      "main_S",
+      "main_W"
+    ],
+    [
+      "main_S",
+      "main_N"
+    ],
+    [
+      "back_plaza",
+      "path_ne"
+    ],
+    [
+      "path_ne",
+      "track_e"
+    ],
+    [
+      "back_plaza",
+      "koi_entry"
+    ],
+    [
+      "koi_entry",
+      "track_w"
+    ]
+  ],
+  "rules": {
+    "minBuildingGap": 3,
+    "minFenceMargin": 2
+  },
+  "classroom": {
+    "size": {
+      "alongCorridor": 9,
+      "depth": 8,
+      "clearHeight": 3.4
+    },
+    "axes": "local u = 0..9 from the blackboard (west) wall toward the rear (east) wall; local v = 0..8 from the corridor wall (south) to the window wall (north)",
+    "windowWall": "north (faces the sports field, large sliding windows, 1.0 m sill, 1.8 m tall, continuous band)",
+    "corridorWall": "south (two sliding doors + upper clerestory windows)",
+    "blackboardWall": "west (short wall). Students face WEST, the field/windows are on their RIGHT",
+    "doors": {
+      "type": "hikido (Japanese sliding door)",
+      "count": 2,
+      "front": {
+        "uStart": 0.6,
+        "uEnd": 2.4
+      },
+      "rear": {
+        "uStart": 6.6,
+        "uEnd": 8.4
+      },
+      "doorwayWidth": 1.8,
+      "panelsPerDoorway": 2,
+      "height": 2.0,
+      "panel": "aluminium frame, glass in upper half, solid lower half, brass handle recess, slides along the wall on a rail (NOT a swing door)",
+      "transomAbove": "fixed glass 0.9 m tall above each door",
+      "slideKey": "E",
+      "slideSeconds": 0.5
+    },
+    "blackboard": {
+      "wall": "west",
+      "width": 5.4,
+      "height": 1.2,
+      "bottomHeight": 0.9,
+      "centerV": 4.0,
+      "withChalkTray": true,
+      "withProjectorScreen": true
+    },
+    "teacherDesk": {
+      "u": 1.2,
+      "v": 2.0
+    },
+    "desks": {
+      "rows": 6,
+      "columns": 6,
+      "facing": "west",
+      "firstRowU": 2.8,
+      "rowSpacingU": 0.9,
+      "firstColumnV": 1.4,
+      "columnSpacingV": 1.0,
+      "note": "rows go front(west)->back(east); columns go from the corridor side to the window side; aisle v<1.0 next to the corridor wall"
+    },
+    "lockers": {
+      "wall": "east",
+      "note": "rear lockers 36 cubbies + cleaning-tool locker; umbrella stand next to the rear door"
+    },
+    "extras": [
+      "wall clock above blackboard",
+      "speaker",
+      "ceiling lights in 3 rows",
+      "class bulletin board on the corridor wall between the doors",
+      "plants on the window sill"
+    ]
+  }
+}

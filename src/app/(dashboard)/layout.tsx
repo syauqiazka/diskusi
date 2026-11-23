@@ -4,6 +4,7 @@ import { getServerSession } from "@/lib/auth/session";
 import { HudHeader } from "@/components/layout/hud-header";
 import { HudFooter } from "@/components/layout/hud-footer";
 import { DashboardNav } from "@/components/layout/dashboard-nav";
+import { GsapFadeUp } from "@/components/animations/gsap-animate";
 
 export const instant = false;
 
@@ -37,7 +38,9 @@ export default async function DashboardLayout({
             </div>
           }
         >
-          {children}
+          <GsapFadeUp>
+            {children}
+          </GsapFadeUp>
         </Suspense>
       </main>
       <HudFooter />

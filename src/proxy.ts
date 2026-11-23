@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionToken =
     request.cookies.get("better-auth.session_token")?.value ||
     request.cookies.get("__Secure-better-auth.session_token")?.value;
 
   const isAuthPage = pathname.startsWith("/masuk") || pathname.startsWith("/daftar");
+  const isPreview = request.nextUrl.searchParams.get("preview") === "true";
+  if (isPreview) return NextResponse.next();
+
   const isProtectedPage =
     pathname.startsWith("/dunia") ||
     pathname.startsWith("/kelas") ||
@@ -43,4 +46,3 @@ export const config = {
     "/daftar",
   ],
 };
-

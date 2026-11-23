@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getThreads,
   getThreadDetail,
@@ -360,10 +361,29 @@ export default function MadingPage() {
         </button>
       </div>
 
-      {/* Status Memuat Data */}
+      {/* Status Memuat Data (Skeleton Loading Berstruktur) */}
       {isLoading ? (
-        <div className="p-12 rounded-3xl border-2 border-border bg-surface text-center font-body text-xs text-text-muted">
-          Memuat diskusi mading...
+        <div className="space-y-4">
+          {[1, 2, 3, 4].map((idx) => (
+            <div
+              key={idx}
+              className="rounded-3xl border-2 border-border/80 bg-surface/60 p-6 space-y-3 shadow-xs"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Skeleton className="w-28 h-6 rounded-full" />
+                  <Skeleton className="w-20 h-4 rounded-xl" />
+                </div>
+                <Skeleton className="w-16 h-4 rounded-xl" />
+              </div>
+              <Skeleton className="w-3/4 h-6 rounded-xl" />
+              <Skeleton className="w-full h-4 rounded-xl" />
+              <div className="pt-2 flex items-center justify-between">
+                <Skeleton className="w-32 h-4 rounded-xl" />
+                <Skeleton className="w-24 h-8 rounded-xl" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : filteredThreads.length === 0 ? (
         <div className="p-12 rounded-3xl border-2 border-border bg-surface text-center font-body text-xs text-text-muted">

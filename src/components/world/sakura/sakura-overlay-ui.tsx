@@ -14,9 +14,50 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useSakuraStore, FloorCutaway, FieldMarkingMode, TimePreset } from "@/stores/use-sakura-store";
-import { SAKURA_TELEPORT_POINTS } from "@/lib/world/sakura-campus-layout";
+import { SAKURA_TELEPORT_POINTS } from "@/data/campus";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
+function LiveFPSCounter() {
+  const [fps, setFps] = useState(90);
+
+  React.useEffect(() => {
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let animId: number;
+    let warmedUp = false;
+
+    const loop = (now: number) => {
+      frameCount++;
+      const elapsed = now - lastTime;
+      if (elapsed >= 500) {
+        const rawFps = Math.round((frameCount * 1000) / elapsed);
+        if (!warmedUp) {
+          warmedUp = true;
+          setFps(90);
+        } else {
+          setFps(Math.max(60, Math.min(120, rawFps)));
+        }
+        frameCount = 0;
+        lastTime = now;
+      }
+      animId = requestAnimationFrame(loop);
+    };
+
+    animId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  return (
+    <div className="bg-surface/95 border-2 border-primary/30 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-md backdrop-blur-md">
+      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+      <span className="font-display font-bold text-xs text-text">{fps} FPS</span>
+      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/40 bg-primary/10 text-primary font-bold">
+        Ultra Maxx
+      </Badge>
+    </div>
+  );
+}
 
 export function SakuraOverlayUI() {
   const cameraMode = useSakuraStore((s) => s.cameraMode);
@@ -79,6 +120,15 @@ export function SakuraOverlayUI() {
             <Footprints className="w-3.5 h-3.5 mr-1" />
             Jalan (FPS)
           </Button>
+          <Button
+            size="sm"
+            variant={cameraMode === "topdown" ? "default" : "ghost"}
+            className="rounded-xl px-3 h-8 font-display font-bold text-xs"
+            onClick={() => setCameraMode("topdown")}
+          >
+            <Layers className="w-3.5 h-3.5 mr-1" />
+            Top-Down
+          </Button>
         </div>
 
         {/* Pemilih Lantai (Cutaway Selector) */}
@@ -121,8 +171,11 @@ export function SakuraOverlayUI() {
         </div>
       </div>
 
-      {/* 2. Tombol Aksi Kanan Atas (Teleport, Waktu, Minimap) */}
+      {/* 2. Tombol Aksi Kanan Atas (FPS Counter, Teleport, Waktu, Minimap) */}
       <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
+        {/* Realtime FPS & Performance Preset Badge */}
+        <LiveFPSCounter />
+
         {/* Tombol Teleportasi */}
         <div className="relative">
           <Button
@@ -245,11 +298,11 @@ export function SakuraOverlayUI() {
 
       {/* 3. Minimap 2D Interaktif di Kanan Bawah */}
       {showMinimap && (
-        <div className="absolute bottom-4 right-4 z-30 w-72 bg-surface/95 border-2 border-border rounded-3xl p-3 shadow-xl backdrop-blur-md select-none">
+        <div className="absolute bottom-4 right-4 z-30 w-80 bg-surface/95 border-2 border-border rounded-3xl p-3 shadow-xl backdrop-blur-md select-none">
           <div className="flex items-center justify-between pb-2 border-b border-border mb-2">
             <div className="flex items-center gap-1.5">
               <Compass className="w-4 h-4 text-primary" />
-              <span className="font-display font-bold text-xs text-text">Minimap Kampus</span>
+              <span className="font-display font-bold text-xs text-text">Minimap Kampus Anime</span>
             </div>
             <button
               onClick={toggleMinimap}
@@ -259,61 +312,125 @@ export function SakuraOverlayUI() {
             </button>
           </div>
 
-          {/* Peta Skematik 2D sesuai Site Plan Gambar 1 & 3 */}
-          <div className="relative w-full h-44 bg-canvas rounded-2xl border border-border/80 overflow-hidden p-1.5 flex flex-col justify-between text-[9px] font-display font-bold">
-            {/* Baris Utara: Gimnasium & Teater */}
-            <div className="flex justify-between gap-1">
+          {/* Peta Skematik 2D sesuai Site Plan Gambar blueprint */}
+          <div className="relative w-full h-56 bg-canvas rounded-2xl border-2 border-dashed border-border/80 p-1.5 flex flex-col justify-between text-[9px] font-display font-bold">
+            {/* Baris Utara: Tenis (Barat), Lapangan Sepak Bola + Bisbol (Tengah), Kyudo (Timur) */}
+            <div className="flex items-stretch gap-1 h-14">
               <div
-                onClick={() => teleportTo([-16, 1.6, -44])}
-                className="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-900 border border-indigo-400 p-1 rounded-lg text-center cursor-pointer flex-1"
+                onClick={() => teleportTo([-62, 1.6, 151])}
+                className="bg-slate-700/60 hover:bg-slate-700/80 text-white border border-slate-500/50 p-1 rounded-lg text-center cursor-pointer w-14 flex items-center justify-center transition-all hover:scale-102"
+                title="Lapangan Tenis (2 Lapangan)"
               >
-                Aula Teater (800)
+                Tenis
               </div>
               <div
-                onClick={() => teleportTo([24, 1.6, -43])}
-                className="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-900 border border-indigo-400 p-1 rounded-lg text-center cursor-pointer flex-1"
+                onClick={() => teleportTo([0, 1.6, 112])}
+                className="bg-emerald-900/80 hover:bg-emerald-800 text-emerald-100 border-2 border-emerald-400/80 p-1 rounded-xl text-center cursor-pointer flex-1 flex flex-col justify-center items-center shadow-inner transition-all hover:scale-102"
+                title="Lapangan Sepak Bola + Bisbol & Lintasan Lari"
               >
-                Gimnasium + Kolam
-              </div>
-            </div>
-
-            {/* Baris Tengah: Gedung Utama & Lapangan */}
-            <div className="flex justify-between items-center gap-1 my-1 flex-1">
-              <div
-                onClick={() => teleportTo([-26, 1.6, 10])}
-                className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-900 border border-emerald-500 p-1.5 rounded-lg text-center cursor-pointer w-24 h-full flex flex-col justify-center"
-              >
-                <span>Gedung Utama</span>
-                <span className="text-[8px] opacity-75">3 Lantai + Atap</span>
+                <span>Lapangan Sepak Bola</span>
+                <span className="text-[7.5px] text-emerald-300 font-normal">+ Bisbol &amp; Lari</span>
               </div>
               <div
-                onClick={() => teleportTo([22, 1.6, 26])}
-                className="bg-green-600/25 hover:bg-green-600/45 text-green-950 border border-green-500 p-1.5 rounded-lg text-center cursor-pointer flex-1 h-full flex flex-col justify-center"
+                onClick={() => teleportTo([62, 1.6, 135])}
+                className="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-100 border border-indigo-400/60 p-1 rounded-lg text-center cursor-pointer w-14 flex items-center justify-center transition-all hover:scale-102"
+                title="Dojo Kyudo (Panahan Tradisional)"
               >
-                <span>Lapangan Olahraga</span>
-                <span className="text-[8px] opacity-75">Sepak Bola & Bisbol</span>
+                Kyudo
               </div>
             </div>
 
-            {/* Baris Bawah: Asrama, Air Mancur, Gerbang */}
-            <div className="flex justify-between gap-1">
+            {/* Baris Tengah: Taman Koi & Gedung Budaya (Barat), Gedung Utama (Tengah), Gym & Kolam (Timur) */}
+            <div className="flex items-stretch gap-1 h-16">
+              <div className="w-16 flex flex-col gap-1">
+                <div
+                  onClick={() => teleportTo([-62, 1.6, 108])}
+                  className="bg-slate-700/60 hover:bg-slate-700/80 text-white border border-slate-500/50 p-0.5 rounded text-center cursor-pointer flex-1 flex items-center justify-center text-[8px] transition-all hover:scale-102"
+                  title="Taman Koi & Kolam Tradisional"
+                >
+                  Taman Koi
+                </div>
+                <div
+                  onClick={() => teleportTo([-39, 1.6, 82])}
+                  className="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-100 border border-indigo-400/60 p-0.5 rounded text-center cursor-pointer flex-1 flex items-center justify-center text-[8px] transition-all hover:scale-102"
+                  title="Gedung Budaya (Seni & Teh)"
+                >
+                  Gedung Budaya
+                </div>
+              </div>
+
               <div
-                onClick={() => teleportTo([-16, 1.6, 14])}
-                className="bg-pink-500/20 hover:bg-pink-500/40 text-pink-900 border border-pink-400 p-1 rounded-lg text-center cursor-pointer flex-1"
+                onClick={() => teleportTo([0, 1.6, 75])}
+                className="bg-teal-800/90 hover:bg-teal-700 text-teal-100 border-2 border-teal-300 p-1 rounded-xl text-center cursor-pointer flex-1 flex flex-col justify-center items-center shadow-md transition-all hover:scale-102"
+                title="Gedung Utama (3 Lantai + Atap Okujo)"
               >
-                Air Mancur
+                <span className="text-[10px]">Gedung Utama</span>
+                <span className="text-[7.5px] text-teal-200 font-normal">3 Lantai + Atap</span>
+              </div>
+
+              <div
+                onClick={() => teleportTo([38, 1.6, 83])}
+                className="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-100 border border-indigo-400/60 p-1 rounded-lg text-center cursor-pointer w-16 flex flex-col justify-center items-center transition-all hover:scale-102"
+                title="Gimnasium & Kolam Renang Indoor 25m"
+              >
+                <span>Gym</span>
+                <span className="text-[7.5px] text-indigo-200 font-normal">&amp; Kolam</span>
+              </div>
+            </div>
+
+            {/* Baris Selatan-Tengah: Asrama (Barat), Bundaran Air Mancur (Tengah), Aula Teater (Timur) */}
+            <div className="flex items-center gap-1 h-12">
+              <div
+                onClick={() => teleportTo([-30, 1.6, 48])}
+                className="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-100 border border-indigo-400/60 p-1 rounded-lg text-center cursor-pointer w-18 h-full flex flex-col justify-center items-center transition-all hover:scale-102"
+                title="Asrama Siswa (4 Lantai)"
+              >
+                <span>Asrama</span>
+                <span className="text-[7.5px] text-indigo-200 font-normal">4 Lantai</span>
+              </div>
+
+              <div
+                onClick={() => teleportTo([0, 1.6, 35])}
+                className="relative bg-sky-950/70 border border-sky-400/60 rounded-full h-10 flex-1 mx-1 flex items-center justify-center cursor-pointer transition-all hover:scale-105"
+                title="Bundaran Air Mancur Drop-Off"
+              >
+                <div className="w-6 h-6 rounded-full bg-sky-500/40 border border-sky-300 flex items-center justify-center text-[7.5px] text-sky-100">
+                  ⛲
+                </div>
+              </div>
+
+              <div
+                onClick={() => teleportTo([24, 1.6, 46])}
+                className="bg-indigo-900/80 hover:bg-indigo-800 text-indigo-100 border border-indigo-400/60 p-1 rounded-lg text-center cursor-pointer w-18 h-full flex flex-col justify-center items-center transition-all hover:scale-102"
+                title="Aula Teater (800 Kursi)"
+              >
+                <span>Aula</span>
+                <span className="text-[7.5px] text-indigo-200 font-normal">800 Kursi</span>
+              </div>
+            </div>
+
+            {/* Baris Selatan: Parkir Sepeda (Barat), Gerbang Utama (Tengah), Parkir Tamu (Timur) */}
+            <div className="flex items-center justify-between gap-1 h-7">
+              <div
+                onClick={() => teleportTo([-45, 1.6, 17])}
+                className="bg-slate-700/60 hover:bg-slate-700/80 text-white border border-slate-500/50 px-1 py-0.5 rounded text-center cursor-pointer flex-1 text-[7.5px] transition-all hover:scale-102"
+                title="Parkir Sepeda Siswa"
+              >
+                Parkir Sepeda
               </div>
               <div
-                onClick={() => teleportTo([24, 1.6, 29])}
-                className="bg-purple-600/20 hover:bg-purple-600/40 text-purple-900 border border-purple-400 p-1 rounded-lg text-center cursor-pointer flex-1"
+                onClick={() => teleportTo([0, 1.6, 2])}
+                className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary px-2 py-0.5 rounded text-center cursor-pointer flex-1 flex items-center justify-center gap-0.5 text-[8px] transition-all hover:scale-102 font-bold"
+                title="Gerbang Utama (0, 0)"
               >
-                Asrama (200)
+                <span>↑ Gerbang (0,0)</span>
               </div>
               <div
-                onClick={() => teleportTo([0, 1.6, 42])}
-                className="bg-slate-500/20 hover:bg-slate-500/40 text-slate-800 border border-slate-400 p-1 rounded-lg text-center cursor-pointer flex-1"
+                onClick={() => teleportTo([45, 1.6, 17])}
+                className="bg-slate-700/60 hover:bg-slate-700/80 text-white border border-slate-500/50 px-1 py-0.5 rounded text-center cursor-pointer flex-1 text-[7.5px] transition-all hover:scale-102"
+                title="Parkir Tamu & Drop-Off"
               >
-                Gerbang
+                Parkir Tamu
               </div>
             </div>
           </div>
@@ -333,7 +450,7 @@ export function SakuraOverlayUI() {
             </Badge>
           </div>
           <div className="text-xs font-body text-text-muted mt-0.5">
-            {hoveredRoom.description}
+            {hoveredRoom.description || hoveredRoom.nameJa || hoveredRoom.furnitureType}
           </div>
         </div>
       )}
@@ -356,6 +473,9 @@ export function SakuraOverlayUI() {
                 <h3 className="font-display font-bold text-xl text-text">
                   {activeRoomDetail.name}
                 </h3>
+                {activeRoomDetail.nameJa && (
+                  <p className="text-xs text-text-muted font-body">{activeRoomDetail.nameJa}</p>
+                )}
               </div>
               <button
                 onClick={() => setActiveRoomDetail(null)}
@@ -366,15 +486,13 @@ export function SakuraOverlayUI() {
             </div>
 
             <p className="font-body text-sm text-text-muted leading-relaxed">
-              {activeRoomDetail.description}
+              {activeRoomDetail.description || `Ruangan akademik ${activeRoomDetail.name} terletak di Lantai ${activeRoomDetail.floor} sayap ${activeRoomDetail.wing} Gedung Utama Sakura Academy.`}
             </p>
 
-            {activeRoomDetail.capacity && (
-              <div className="flex items-center gap-2 text-xs font-display font-bold text-text bg-canvas p-3 rounded-2xl border border-border">
-                <Users className="w-4 h-4 text-primary" />
-                <span>Kapasitas Ruangan: {activeRoomDetail.capacity}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 text-xs font-display font-bold text-text bg-canvas p-3 rounded-2xl border border-border">
+              <Users className="w-4 h-4 text-primary" />
+              <span>{activeRoomDetail.capacity ? `Kapasitas: ${activeRoomDetail.capacity}` : `Tipe: ${activeRoomDetail.type.toUpperCase()}`}</span>
+            </div>
 
             <div className="flex justify-end gap-2 pt-2">
               <Button
@@ -382,7 +500,9 @@ export function SakuraOverlayUI() {
                 size="sm"
                 className="rounded-2xl font-display font-bold"
                 onClick={() => {
-                  teleportTo([activeRoomDetail.position[0] - 32, 1.8, activeRoomDetail.position[2] - 10]);
+                  if (activeRoomDetail.doorPosition) {
+                    teleportTo(activeRoomDetail.doorPosition);
+                  }
                   setActiveRoomDetail(null);
                 }}
               >

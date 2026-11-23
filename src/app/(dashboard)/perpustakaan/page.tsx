@@ -7,7 +7,6 @@ import {
   Download,
   Plus,
   X,
-  CheckCircle2,
   Trash2,
   Loader2,
   FileText,
@@ -17,6 +16,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ConfirmDestructiveModal } from "@/components/ui/confirm-destructive-modal";
+import { ImageUploader } from "@/components/ui/image-uploader";
 import { authClient } from "@/lib/auth/auth-client";
 import {
   getMaterials,
@@ -42,7 +44,10 @@ export default function PerpustakaanPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState("Semua");
-  const [downloadNotice, setDownloadNotice] = React.useState<string | null>(null);
+  const [downloadNotice, setDownloadNotice] = React.useState<{ title: string; progress: number; secondsLeft: number } | null>(null);
+
+  // Modal Konfirmasi Hapus Destruktif (Psychology of Colors)
+  const [pendingDeleteMaterial, setPendingDeleteMaterial] = React.useState<{ id: string; title: string } | null>(null);
 
   // Dialog Unggah Materi (Hanya Admin & Super Admin)
   const [showUploadDialog, setShowUploadDialog] = React.useState(false);
@@ -51,6 +56,7 @@ export default function PerpustakaanPage() {
   const [newCategory, setNewCategory] = React.useState("Jaringan & Server");
   const [newFormat, setNewFormat] = React.useState("PDF");
   const [newSize, setNewSize] = React.useState("2.5 MB");
+  const [uploadedFileUrl, setUploadedFileUrl] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
@@ -92,29 +98,17 @@ export default function PerpustakaanPage() {
   }, [materials, searchTerm, selectedCategory]);
 
   const handleDownload = (title: string) => {
-    setDownloadNotice(`Mempersiapkan berkas: "${title}"...`);
+    // Tampilkan Determinate Progress (Kaidah UX: "Show How Long" bukan spinner tanpa waktu)
+    setDownloadNotice({ title, progress: 15, secondsLeft: 3 });
+    setTimeout(() => {
+      setDownloadNotice({ title, progress: 65, secondsLeft: 2 });
+    }, 700);
+    setTimeout(() => {
+      setDownloadNotice({ title, progress: 100, secondsLeft: 0 });
+    }, 1500);
     setTimeout(() => {
       setDownloadNotice(null);
-    }, 2500);
-  };
-
-  const handleDelete = async (materialId: string, title: string) => {
-    if (!confirm(`Hapus materi "${title}" dari perpustakaan?`)) {
-      return;
-    }
-    setDeletingId(materialId);
-    try {
-      const res = await deleteMaterial(materialId);
-      if (res.success) {
-        await fetchMaterials();
-      } else {
-        alert(res.error || "Gagal menghapus materi.");
-      }
-    } catch {
-      alert("Terjadi kesalahan sistem saat menghapus materi.");
-    } finally {
-      setDeletingId(null);
-    }
+    }, 2400);
   };
 
   const handleUploadMaterial = async (e: React.FormEvent) => {
@@ -189,11 +183,25 @@ export default function PerpustakaanPage() {
         </div>
       </div>
 
-      {/* Notifikasi Download Toast */}
+      {/* Notifikasi Determinate Progress (Kaidah UX: "SHOW HOW LONG") */}
       {downloadNotice && (
-        <div className="rounded-2xl border-2 border-ok/30 bg-ok/10 text-ok p-3.5 font-body text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4" />
-          <span>{downloadNotice}</span>
+        <div className="rounded-2xl border-2 border-primary/40 bg-surface p-4 font-body text-xs shadow-md space-y-2 animate-in fade-in select-none">
+          <div className="flex items-center justify-between text-text">
+            <span className="font-display font-bold">
+              Mengunduh berkas: &quot;{downloadNotice.title}&quot;
+            </span>
+            <span className="text-text-muted font-mono text-[11px]">
+              {downloadNotice.secondsLeft > 0
+                ? `Tersisa ~${downloadNotice.secondsLeft} detik`
+                : "Selesai!"}
+            </span>
+          </div>
+          <div className="w-full bg-canvas rounded-full h-2 overflow-hidden border border-border">
+            <div
+              className="bg-primary h-full transition-all duration-300 rounded-full"
+              style={{ width: `${downloadNotice.progress}%` }}
+            />
+          </div>
         </div>
       )}
 
@@ -230,11 +238,29 @@ export default function PerpustakaanPage() {
         </div>
       </div>
 
-      {/* Grid Materi Pembelajaran */}
+      {/* Grid Materi Pembelajaran (Skeleton Loading Sesuai Kaidah UX) */}
       {isLoading ? (
-        <div className="p-12 rounded-3xl border-2 border-border bg-surface text-center font-body text-xs text-text-muted flex items-center justify-center space-x-2">
-          <Loader2 className="w-4 h-4 animate-spin text-accent" />
-          <span>Memuat koleksi materi pembelajaran...</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[1, 2, 3, 4, 5, 6].map((idx) => (
+            <div
+              key={idx}
+              className="rounded-3xl border-2 border-border/80 bg-surface/60 p-6 space-y-4 shadow-xs"
+            >
+              <div className="flex items-center justify-between">
+                <Skeleton className="w-24 h-6 rounded-full" />
+                <Skeleton className="w-16 h-4 rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="w-4/5 h-6 rounded-xl" />
+                <Skeleton className="w-full h-4 rounded-xl" />
+                <Skeleton className="w-3/5 h-4 rounded-xl" />
+              </div>
+              <div className="pt-4 border-t border-border/40 flex items-center justify-between">
+                <Skeleton className="w-28 h-4 rounded-xl" />
+                <Skeleton className="w-20 h-9 rounded-2xl" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : filteredMaterials.length === 0 ? (
         <div className="rounded-3xl border-2 border-border bg-surface p-12 text-center space-y-3 shadow-sm">
@@ -285,13 +311,13 @@ export default function PerpustakaanPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(item.id, item.title)}
+                      onClick={() => setPendingDeleteMaterial({ id: item.id, title: item.title })}
                       disabled={deletingId === item.id}
-                      className="text-alert hover:bg-alert/10 px-2 h-9 rounded-xl"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-500/10 px-2 h-9 rounded-xl transition-colors"
                       title="Hapus materi"
                     >
                       {deletingId === item.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin text-red-500" />
                       ) : (
                         <Trash2 className="w-4 h-4" />
                       )}
@@ -425,6 +451,22 @@ export default function PerpustakaanPage() {
                 />
               </div>
 
+              {/* Lampiran Berkas Vercel Blob */}
+              <div className="pt-1">
+                <ImageUploader
+                  value={uploadedFileUrl}
+                  onChange={(url) => {
+                    setUploadedFileUrl(url);
+                    if (url) {
+                      setNewFormat(url.endsWith(".pdf") ? "PDF" : "IMG");
+                    }
+                  }}
+                  label="Lampiran Berkas / Sampul (Vercel Blob)"
+                  description="Format PDF, JPG, PNG, atau WebP (Maksimal 10 MB)"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                />
+              </div>
+
               <div className="flex items-center justify-end space-x-2 pt-2 border-t border-border/50">
                 <Button
                   type="button"
@@ -456,6 +498,29 @@ export default function PerpustakaanPage() {
           </div>
         </div>
       )}
+      {/* Modal Konfirmasi Hapus Destruktif (Kaidah UX: "Psychology of Colors") */}
+      <ConfirmDestructiveModal
+        isOpen={!!pendingDeleteMaterial}
+        onClose={() => setPendingDeleteMaterial(null)}
+        onConfirm={async () => {
+          if (!pendingDeleteMaterial) return;
+          const id = pendingDeleteMaterial.id;
+          setDeletingId(id);
+          try {
+            const res = await deleteMaterial(id);
+            if (res.success) {
+              await fetchMaterials();
+            }
+          } finally {
+            setDeletingId(null);
+            setPendingDeleteMaterial(null);
+          }
+        }}
+        title="Hapus Materi Pembelajaran"
+        description={`Apakah Anda yakin ingin menghapus "${pendingDeleteMaterial?.title}"? Dokumen ini akan dihapus secara permanen dari perpustakaan sekolah.`}
+        confirmText="Hapus Permanen"
+        isLoading={!!deletingId}
+      />
     </div>
   );
 }

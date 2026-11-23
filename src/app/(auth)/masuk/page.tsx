@@ -77,7 +77,7 @@ export default function MasukPage() {
       </CardHeader>
 
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4 pt-6">
+        <CardContent className="space-y-5 pt-6">
           {serverError && (
             <div className="p-3.5 rounded-2xl border-2 border-alert/30 bg-alert/10 text-alert text-xs font-body font-medium flex items-start space-x-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-alert" />
@@ -85,9 +85,10 @@ export default function MasukPage() {
             </div>
           )}
 
+          {/* Grup Email (Kaidah UX: Law of Proximity, Jarak Label-Input 6px, Jarak Antar Grup 20px) */}
           <div className="space-y-1.5">
             <Label htmlFor="email" className="font-display font-semibold text-xs text-text">
-              Alamat Email
+              Alamat Email Sekolah
             </Label>
             <Input
               id="email"
@@ -95,7 +96,7 @@ export default function MasukPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="nama@sekolah.id"
+              placeholder="Contoh: nama@sekolah.id"
               disabled={isLoading}
               className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
             />
@@ -104,6 +105,7 @@ export default function MasukPage() {
             )}
           </div>
 
+          {/* Grup Kata Sandi */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="password" className="font-display font-semibold text-xs text-text">
@@ -116,7 +118,7 @@ export default function MasukPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Minimal 8 karakter"
               disabled={isLoading}
               className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
             />
@@ -126,7 +128,7 @@ export default function MasukPage() {
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4 pt-4 border-t border-border/50">
+        <CardFooter className="flex flex-col space-y-4 pt-5 border-t border-border/50">
           <Button
             type="submit"
             className="w-full flex items-center justify-center space-x-2 rounded-2xl font-display font-bold py-3 text-sm"

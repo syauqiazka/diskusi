@@ -6,7 +6,7 @@ import { Canvas } from "@react-three/fiber";
 import { ArrowRight, Zap } from "lucide-react";
 import { useWorldStore } from "@/stores/use-world-store";
 import { Button } from "@/components/ui/button";
-import { SakuraCampusScene } from "./sakura/sakura-campus-scene";
+import { SakuraCampusMaster } from "./sakura-campus-master";
 import { SakuraOverlayUI } from "./sakura/sakura-overlay-ui";
 
 function isWebGLAvailable(): boolean {
@@ -66,18 +66,26 @@ export function WorldContainer() {
 
   return (
     <div className="relative w-screen h-screen bg-canvas overflow-hidden select-none">
-      {/* 3D Canvas React Three Fiber - Sakura Academy Japanese Anime Campus */}
+      {/* 3D Canvas React Three Fiber - Sakura Academy Master 3D Campus */}
       <Canvas
         camera={{
-          position: [-16, 26, 48],
-          fov: 55,
-          near: 0.1,
-          far: 600,
+          position: [0, 1.6, 2],
+          fov: 65,
+          near: 0.3,
+          far: 2000,
         }}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
-        className="w-full h-full cursor-grab active:cursor-grabbing"
+        dpr={[1, 1.5]}
+        performance={{ min: 0.8 }}
+        gl={{
+          antialias: true,
+          powerPreference: "high-performance",
+          depth: true,
+          logarithmicDepthBuffer: true,
+          stencil: false,
+        }}
+        className="w-full h-full cursor-crosshair"
       >
-        <SakuraCampusScene />
+        <SakuraCampusMaster />
       </Canvas>
 
       {/* Layer Overlay UI Interaktif (Orbit/Walk, Cutaway Lantai, Mode Lapangan, Teleport, Waktu, Minimap) */}

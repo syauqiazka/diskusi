@@ -20,6 +20,7 @@ import { getClassmatesForDm } from "@/lib/chat/actions";
 import { getThreads } from "@/lib/forum/actions";
 import { QuickJoinButton } from "@/components/classroom/quick-join-button";
 import { HomeActionBar } from "@/components/home/home-action-bar";
+import { GsapFadeUp, GsapStagger } from "@/components/animations/gsap-animate";
 
 // -------------------------------------------------------------
 // TAMPILAN BERANDA UNTUK SISWA/GURU TERAUTENTIKASI
@@ -46,42 +47,45 @@ async function AuthenticatedStudentHome({
   return (
     <div className="space-y-10">
       {/* 1. HERO SAMBUTAN HANGAT (BRUNO-SIMON TOY-LIKE INSPIRED) */}
-      <section className="bg-surface p-6 sm:p-10 rounded-3xl border-2 border-border shadow-md relative overflow-hidden text-center space-y-6">
-        <div className="max-w-2xl mx-auto space-y-3">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Badge variant="mint">Sesi Aktif</Badge>
-            <Badge variant="outline">SMK TI BAZMA</Badge>
-            <Badge variant="peach">Program SIJA</Badge>
-            <Badge
-              variant={
-                userRole === "SUPERADMIN"
-                  ? "mint"
-                  : userRole === "ADMIN"
-                  ? "peach"
-                  : "default"
-              }
-            >
-              Peran: {roleDisplay}
-            </Badge>
+      <GsapFadeUp delay={0.05}>
+        <section className="bg-surface p-6 sm:p-10 rounded-3xl border-2 border-border shadow-md relative overflow-hidden text-center space-y-6">
+          <div className="max-w-2xl mx-auto space-y-3">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Badge variant="mint">Sesi Aktif</Badge>
+              <Badge variant="outline">SMK TI BAZMA</Badge>
+              <Badge variant="peach">Program SIJA</Badge>
+              <Badge
+                variant={
+                  userRole === "SUPERADMIN"
+                    ? "mint"
+                    : userRole === "ADMIN"
+                    ? "peach"
+                    : "default"
+                }
+              >
+                Peran: {roleDisplay}
+              </Badge>
+            </div>
+
+            <h1 className="font-display text-3xl sm:text-5xl text-text font-bold leading-tight">
+              Halo, {session.user.name}!
+            </h1>
+
+            <p className="font-body text-sm sm:text-base text-text-muted leading-relaxed">
+              Selamat datang di kampus virtual SMK TI BAZMA. Ruang belajar interaktif tempat kamu
+              bisa membuka ruang kelas, berdiskusi di mading, meminjam modul materi, atau menjelajahi
+              dunia 3D kampus sekolah anime.
+            </p>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-5xl text-text font-bold leading-tight">
-            Halo, {session.user.name}!
-          </h1>
-
-          <p className="font-body text-sm sm:text-base text-text-muted leading-relaxed">
-            Selamat datang di kampus virtual SMK TI BAZMA. Ruang belajar interaktif tempat kamu
-            bisa membuka ruang kelas, berdiskusi di mading, meminjam modul materi, atau menjelajahi
-            dunia 3D kampus sekolah anime.
-          </p>
-        </div>
-
-        {/* Action Bar (Mulai Menjelajah + 5 Tombol Pil: Opsi, Kontrol, Peta, Pencapaian, Kredit) */}
-        <HomeActionBar />
-      </section>
+          {/* Action Bar (Mulai Menjelajah + 5 Tombol Pil: Opsi, Kontrol, Peta, Pencapaian, Kredit) */}
+          <HomeActionBar />
+        </section>
+      </GsapFadeUp>
 
       {/* 2. DUA JALUR UTAMA (MODE 2D CEPAT vs JELAJAH 3D) */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <GsapStagger stagger={0.1} delay={0.15}>
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Jalur 2D Ruang Belajar */}
         <div className="bg-surface p-6 sm:p-8 rounded-3xl border-2 border-border flex flex-col justify-between space-y-4 shadow-sm hover:border-primary/60 transition-all">
           <div className="space-y-3">
@@ -134,6 +138,7 @@ async function AuthenticatedStudentHome({
           </Link>
         </div>
       </section>
+      </GsapStagger>
 
       {/* 3. KELAS SAYA */}
       <section className="space-y-4">
@@ -323,37 +328,39 @@ function PublicLandingPage() {
   return (
     <div className="space-y-12">
       {/* HERO SECTION TAMU RAMAH & BERSIH */}
-      <section className="bg-surface p-6 sm:p-12 rounded-3xl border-2 border-border shadow-md text-center space-y-6 max-w-4xl mx-auto">
-        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-primary/20 text-emerald-800 border border-primary/40 font-display text-xs font-bold">
-          <Sparkles className="w-4 h-4 text-emerald-600" />
-          <span>SMK TI BAZMA ISLAMIC BOARDING SCHOOL</span>
-        </div>
+      <GsapFadeUp delay={0.05}>
+        <section className="bg-surface p-6 sm:p-12 rounded-3xl border-2 border-border shadow-md text-center space-y-6 max-w-4xl mx-auto">
+          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-primary/20 text-emerald-800 border border-primary/40 font-display text-xs font-bold">
+            <Sparkles className="w-4 h-4 text-emerald-600" />
+            <span>SMK TI BAZMA ISLAMIC BOARDING SCHOOL</span>
+          </div>
 
-        <h1 className="font-display text-4xl sm:text-6xl text-text font-bold tracking-tight leading-tight">
-          Sekolah Virtual SMK TI BAZMA
-        </h1>
+          <h1 className="font-display text-4xl sm:text-6xl text-text font-bold tracking-tight leading-tight">
+            Sekolah Virtual SMK TI BAZMA
+          </h1>
 
-        <p className="font-body text-base sm:text-lg text-text-muted max-w-2xl mx-auto leading-relaxed">
-          Platform pembelajaran interaktif kejuruan SIJA yang menggabungkan kemudahan forum belajar 2D
-          dengan dunia penjelajahan 3D bergaya kampus anime yang ramah dan menyenangkan.
-        </p>
+          <p className="font-body text-base sm:text-lg text-text-muted max-w-2xl mx-auto leading-relaxed">
+            Platform pembelajaran interaktif kejuruan SIJA yang menggabungkan kemudahan forum belajar 2D
+            dengan dunia penjelajahan 3D bergaya kampus anime yang ramah dan menyenangkan.
+          </p>
 
-        {/* Action Bar Tamu */}
-        <HomeActionBar />
+          {/* Action Bar Tamu */}
+          <HomeActionBar />
 
-        <div className="pt-4 flex flex-wrap justify-center gap-3">
-          <Link href="/masuk">
-            <Button variant="default" size="lg" className="px-8 font-display">
-              Masuk ke Akun
-            </Button>
-          </Link>
-          <Link href="/daftar">
-            <Button variant="secondary" size="lg" className="px-8 font-display">
-              Daftar Siswa Baru
-            </Button>
-          </Link>
-        </div>
-      </section>
+          <div className="pt-4 flex flex-wrap justify-center gap-3">
+            <Link href="/masuk">
+              <Button variant="default" size="lg" className="px-8 font-display">
+                Masuk ke Akun
+              </Button>
+            </Link>
+            <Link href="/daftar">
+              <Button variant="secondary" size="lg" className="px-8 font-display">
+                Daftar Siswa Baru
+              </Button>
+            </Link>
+          </div>
+        </section>
+      </GsapFadeUp>
 
       {/* SECTION FASILITAS PEMBELAJARAN */}
       <section className="space-y-6">
@@ -366,7 +373,8 @@ function PublicLandingPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <GsapStagger stagger={0.08} delay={0.1}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-surface p-6 rounded-3xl border-2 border-border space-y-2 shadow-xs">
             <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-accent mb-2">
               <Monitor className="w-5 h-5" />
@@ -396,7 +404,8 @@ function PublicLandingPage() {
               Repositori terbuka modul pembelajaran dan standar operasional kejuruan SIJA.
             </p>
           </div>
-        </div>
+          </div>
+        </GsapStagger>
       </section>
     </div>
   );

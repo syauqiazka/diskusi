@@ -76,30 +76,51 @@ export function JoinClassForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5 pt-1">
-        <Input
-          type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="Ketik kode kelas (misal: SIJA-10A)"
-          className="uppercase tracking-wider text-xs sm:text-sm h-11 flex-1 rounded-2xl border-2 border-border bg-canvas/40"
-          disabled={isLoading}
-        />
-        <Button
-          type="submit"
-          variant="default"
-          disabled={isLoading || !code.trim()}
-          className="whitespace-nowrap px-6 h-11 rounded-2xl font-display font-bold text-xs sm:text-sm"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              <span>Memproses...</span>
-            </>
-          ) : (
-            <span>Gabung Kelas</span>
-          )}
-        </Button>
+      <form onSubmit={handleSubmit} className="space-y-3 pt-1">
+        <div className="flex flex-col sm:flex-row gap-2.5">
+          <div className="flex-1 relative">
+            <Input
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="Contoh: SIJA-10A"
+              className="uppercase tracking-widest text-sm sm:text-base font-mono font-bold h-12 rounded-2xl border-2 border-border bg-canvas/40 px-4 focus:bg-surface"
+              disabled={isLoading}
+            />
+          </div>
+          <Button
+            type="submit"
+            variant="default"
+            disabled={isLoading || !code.trim()}
+            className="whitespace-nowrap px-7 h-12 rounded-2xl font-display font-bold text-xs sm:text-sm shadow-sm"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <span>Memproses...</span>
+              </>
+            ) : (
+              <span>Gabung Kelas</span>
+            )}
+          </Button>
+        </div>
+
+        {/* Input Mask & Format Guidance Pills (Kaidah UX: "Use Input Masks In Fields To Guide Users") */}
+        <div className="flex flex-wrap items-center gap-2 pt-1 font-body text-xs text-text-muted">
+          <span className="font-medium text-[11px]">Format: <code className="bg-canvas border border-border px-1.5 py-0.5 rounded font-mono font-bold text-text">PROG-TINGKAT</code></span>
+          <span className="text-border">•</span>
+          <span className="text-[11px]">Cepat pilih contoh:</span>
+          {(["SIJA-10A", "SIJA-11A", "SIJA-12A"] as const).map((ex) => (
+            <button
+              key={ex}
+              type="button"
+              onClick={() => setCode(ex)}
+              className="px-2 py-0.5 rounded-lg border border-border bg-surface text-[11px] font-mono hover:border-primary hover:text-text transition-colors cursor-pointer"
+            >
+              {ex}
+            </button>
+          ))}
+        </div>
       </form>
     </div>
   );

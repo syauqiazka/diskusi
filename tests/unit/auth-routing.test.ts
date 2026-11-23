@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { middleware } from "@/middleware";
+import { proxy } from "@/proxy";
 import { NextRequest } from "next/server";
 
 describe("Alur Autentikasi dan Pemisahan Rute 2D / 3D", () => {
   it("mengarahkan pengguna yang belum login ke /masuk saat mencoba membuka rute 2D (/kelas)", () => {
     const req = new NextRequest("http://localhost:3000/kelas");
-    const res = middleware(req);
+    const res = proxy(req);
 
     expect(res).toBeDefined();
     expect(res!.status).toBe(307); // Temporary Redirect
@@ -16,7 +16,7 @@ describe("Alur Autentikasi dan Pemisahan Rute 2D / 3D", () => {
 
   it("mengarahkan pengguna yang belum login ke /masuk saat mencoba membuka rute 3D (/dunia)", () => {
     const req = new NextRequest("http://localhost:3000/dunia");
-    const res = middleware(req);
+    const res = proxy(req);
 
     expect(res).toBeDefined();
     expect(res!.status).toBe(307);
@@ -30,7 +30,7 @@ describe("Alur Autentikasi dan Pemisahan Rute 2D / 3D", () => {
 
     protectedPaths.forEach((path) => {
       const req = new NextRequest(`http://localhost:3000${path}`);
-      const res = middleware(req);
+      const res = proxy(req);
       expect(res).toBeDefined();
       expect(res!.status).toBe(307);
       expect(res!.headers.get("location")).toContain("/masuk");
@@ -43,7 +43,7 @@ describe("Alur Autentikasi dan Pemisahan Rute 2D / 3D", () => {
         cookie: "better-auth.session_token=valid_test_token_12345",
       },
     });
-    const res = middleware(req);
+    const res = proxy(req);
 
     // NextResponse.next() tidak melakukan redirect
     expect(res?.status).not.toBe(307);
@@ -55,7 +55,7 @@ describe("Alur Autentikasi dan Pemisahan Rute 2D / 3D", () => {
         cookie: "better-auth.session_token=valid_test_token_12345",
       },
     });
-    const resMasuk = middleware(reqMasuk);
+    const resMasuk = proxy(reqMasuk);
     expect(resMasuk?.status).toBe(307);
     expect(resMasuk?.headers.get("location")).toBe("http://localhost:3000/");
 
@@ -64,7 +64,7 @@ describe("Alur Autentikasi dan Pemisahan Rute 2D / 3D", () => {
         cookie: "better-auth.session_token=valid_test_token_12345",
       },
     });
-    const resDaftar = middleware(reqDaftar);
+    const resDaftar = proxy(reqDaftar);
     expect(resDaftar?.status).toBe(307);
     expect(resDaftar?.headers.get("location")).toBe("http://localhost:3000/");
   });

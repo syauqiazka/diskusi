@@ -4,6 +4,7 @@ import * as React from "react";
 import { X, Heart, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useModalAnimation } from "@/components/animations/gsap-animate";
 
 interface CreditsModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface CreditsModalProps {
 }
 
 export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
+  const { backdropRef, cardRef } = useModalAnimation(isOpen);
   if (!isOpen) return null;
 
   const TECH_STACK = [
@@ -25,8 +27,8 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-surface w-full max-w-lg p-6 sm:p-8 space-y-6 rounded-3xl border-2 border-border shadow-2xl relative flex flex-col max-h-[90vh]">
+    <div ref={backdropRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+      <div ref={cardRef} className="bg-surface w-full max-w-lg p-6 sm:p-8 space-y-6 rounded-3xl border-2 border-border shadow-2xl relative flex flex-col max-h-[90vh]">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 p-2 rounded-full text-text-muted hover:text-text hover:bg-canvas transition-colors"

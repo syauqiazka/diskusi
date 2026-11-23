@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fredoka, Nunito, JetBrains_Mono } from "next/font/google";
+import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import "./globals.css";
 
 const fredoka = Fredoka({
@@ -35,10 +36,16 @@ export default function RootLayout({
   return (
     <html
       lang="id"
+      suppressHydrationWarning
       className={`${fredoka.variable} ${nunito.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="bg-canvas text-text font-body min-h-screen antialiased selection:bg-accent selection:text-white">
-        {children}
+      <body
+        suppressHydrationWarning
+        className="bg-canvas text-text font-body min-h-screen antialiased selection:bg-accent selection:text-white"
+      >
+        <SmoothScrollProvider>
+          {children}
+        </SmoothScrollProvider>
       </body>
     </html>
   );

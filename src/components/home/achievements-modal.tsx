@@ -5,6 +5,7 @@ import { X, Trophy, CheckCircle2, Lock, Sparkles, BookOpen, Map, Radio, Users, S
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAchievementStore } from "@/stores/use-achievement-store";
+import { useModalAnimation } from "@/components/animations/gsap-animate";
 
 interface AchievementsModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export function AchievementsModal({ isOpen, onClose }: AchievementsModalProps) {
+  const { backdropRef, cardRef } = useModalAnimation(isOpen);
   const achievements = useAchievementStore((s) => s.achievements);
   const resetAchievements = useAchievementStore((s) => s.resetAchievements);
 
@@ -31,8 +33,8 @@ export function AchievementsModal({ isOpen, onClose }: AchievementsModalProps) {
   const progressPercent = Math.round((unlockedCount / achievements.length) * 100);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-surface w-full max-w-lg p-6 sm:p-8 space-y-6 rounded-3xl border-2 border-border shadow-2xl relative flex flex-col max-h-[90vh]">
+    <div ref={backdropRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+      <div ref={cardRef} className="bg-surface w-full max-w-lg p-6 sm:p-8 space-y-6 rounded-3xl border-2 border-border shadow-2xl relative flex flex-col max-h-[90vh]">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 p-2 rounded-full text-text-muted hover:text-text hover:bg-canvas transition-colors"
