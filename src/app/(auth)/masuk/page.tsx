@@ -88,7 +88,7 @@ export default function MasukPage() {
           {/* Grup Email (Kaidah UX: Law of Proximity, Jarak Label-Input 6px, Jarak Antar Grup 20px) */}
           <div className="space-y-1.5">
             <Label htmlFor="email" className="font-display font-semibold text-xs text-text">
-              Alamat Email Sekolah
+              Alamat Email
             </Label>
             <Input
               id="email"
