@@ -200,3 +200,86 @@ export async function assignUserRole(
 
   return { success: true };
 }
+
+
+export async function updateManagedUser(
+  targetUserId: string,
+  input: { name: string; username: string | null }
+): Promise<{ success: boolean; error?: string; user?: { name: string; username: string | null } }> {
+  const session = await getSession();
+  if (!session?.user?.id || !(await checkIsSuperAdmin())) {
+    return { success: false, error: "Hanya Super Admin yang dapat mengubah data akun." };
+  }
+
+  if (!targetUserId || targetUserId === session.user.id) {
+    return { success: false, error: "Akun yang sedang digunakan tidak dapat diedit dari panel ini." };
+  }
+
+  const name = input.name.trim();
+  const username = input.username?.trim().toLowerCase() || null;
+  if (name.length < 2 || name.length > 50) {
+    return { success: false, error: "Nama harus terdiri dari 2–50 karakter." };
+  }
+  if (username && (username.length < 3 || username.length > 20 || !/^[a-z0-9_]+$/.test(username))) {
+    return { success: false, error: "Username harus 3–20 karakter dan hanya boleh berisi huruf, angka, atau underscore." };
+  }
+
+  try {
+    const user = await prisma.user.update({
+      where: { id: targetUserId },
+      data: { name, username },
+      select: { name: true, username: true },
+    });
+    return { success: true, user };
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
+      return { success: false, error: "Username tersebut sudah digunakan akun lain." };
+    }
+    return { success: false, error: "Data akun gagal diperbarui. Coba lagi." };
+  }
+}
+
+export async function deleteManagedUser(
+  targetUserId: string
+): Promise<{ success: boolean; error?: string }> {
+  const session = await getSession();
+  if (!session?.user?.id || !(await checkIsSuperAdmin())) {
+    return { success: false, error: "Hanya Super Admin yang dapat menghapus akun." };
+  }
+
+  if (!targetUserId || targetUserId === session.user.id) {
+    return { success: false, error: "Akun yang sedang digunakan tidak dapat dihapus dari panel ini." };
+  }
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const target = await tx.user.findUnique({
+        where: { id: targetUserId },
+        select: { role: true, _count: { select: { createdClasses: true } } },
+      });
+
+      if (!target) return { success: false, error: "Pengguna target tidak ditemukan." };
+
+      if (target.role === "SUPERADMIN") {
+        const superAdminCount = await tx.user.count({ where: { role: "SUPERADMIN" } });
+        if (superAdminCount <= 1) {
+          return { success: false, error: "Super Admin terakhir tidak dapat dihapus." };
+        }
+      }
+
+      if (target._count.createdClasses > 0) {
+        return {
+          success: false,
+          error: "Akun ini masih menjadi pembuat kelas. Pindahkan kepemilikan kelas terlebih dahulu sebelum menghapus akun.",
+        };
+      }
+
+      // Relasi dengan session, account, postingan, komentar, keanggotaan,
+      // percakapan, dan pesan mengikuti kebijakan onDelete pada schema Prisma.
+      await tx.user.delete({ where: { id: targetUserId } });
+      return { success: true };
+    });
+  } catch {
+    return { success: false, error: "Akun tidak dapat dihapus karena masih memiliki data terkait. Periksa relasi database terlebih dahulu." };
+  }
+}
