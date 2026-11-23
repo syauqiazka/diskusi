@@ -4,6 +4,18 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db";
 import { PlatformRole } from "@prisma/client";
+import { z } from "zod";
+
+const managedUserSchema = z.object({
+  name: z.string().trim().min(2).max(50),
+  username: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? null : value),
+    z.string().trim().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/).toLowerCase().nullable()
+  ),
+});
+
+const userIdSchema = z.string().min(1).max(100);
+const managedRoleSchema = z.enum(["SUPERADMIN", "ADMIN", "USER"]);
 
 async function getSession() {
   const reqHeaders = await headers();
@@ -83,10 +95,9 @@ export async function switchMyRole(newRole: "SUPERADMIN" | "ADMIN" | "USER") {
     };
   }
 
-  const validRole = PlatformRole[newRole];
-  if (!validRole) {
-    return { success: false, error: "Peran tidak valid." };
-  }
+  const parsedRole = managedRoleSchema.safeParse(newRole);
+  if (!parsedRole.success) return { success: false, error: "Peran tidak valid." };
+  const validRole = PlatformRole[parsedRole.data];
 
   // Peralihan ini hanya untuk simulasi UI. Jangan ubah role permanen
   // akun Super Admin ketika mencoba tampilan role lain.
@@ -188,10 +199,9 @@ export async function assignUserRole(
     }
   }
 
-  const validRole = PlatformRole[newRole];
-  if (!validRole) {
-    return { success: false, error: "Peran tidak valid." };
-  }
+  const parsedRole = managedRoleSchema.safeParse(newRole);
+  if (!parsedRole.success) return { success: false, error: "Peran tidak valid." };
+  const validRole = PlatformRole[parsedRole.data];
 
   await prisma.user.update({
     where: { id: targetUserId },
@@ -211,18 +221,16 @@ export async function updateManagedUser(
     return { success: false, error: "Hanya Super Admin yang dapat mengubah data akun." };
   }
 
-  if (!targetUserId || targetUserId === session.user.id) {
+  const parsedId = userIdSchema.safeParse(targetUserId);
+  const parsedInput = managedUserSchema.safeParse(input);
+  if (!parsedId.success || !parsedInput.success) {
+    return { success: false, error: "Data akun tidak valid. Periksa nama dan username." };
+  }
+  if (targetUserId === session.user.id) {
     return { success: false, error: "Akun yang sedang digunakan tidak dapat diedit dari panel ini." };
   }
 
-  const name = input.name.trim();
-  const username = input.username?.trim().toLowerCase() || null;
-  if (name.length < 2 || name.length > 50) {
-    return { success: false, error: "Nama harus terdiri dari 2–50 karakter." };
-  }
-  if (username && (username.length < 3 || username.length > 20 || !/^[a-z0-9_]+$/.test(username))) {
-    return { success: false, error: "Username harus 3–20 karakter dan hanya boleh berisi huruf, angka, atau underscore." };
-  }
+  const { name, username } = parsedInput.data;
 
   try {
     const user = await prisma.user.update({
@@ -247,7 +255,9 @@ export async function deleteManagedUser(
     return { success: false, error: "Hanya Super Admin yang dapat menghapus akun." };
   }
 
-  if (!targetUserId || targetUserId === session.user.id) {
+  const parsedId = userIdSchema.safeParse(targetUserId);
+  if (!parsedId.success) return { success: false, error: "ID akun tidak valid." };
+  if (targetUserId === session.user.id) {
     return { success: false, error: "Akun yang sedang digunakan tidak dapat dihapus dari panel ini." };
   }
 
