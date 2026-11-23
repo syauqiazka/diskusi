@@ -190,11 +190,7 @@ export default function ProfilPage() {
       {/* SECTION PENGELOLAAN PERAN (SUPERADMIN / ADMIN / USER) */}
       <RoleSwitcher
         currentRole={(user as { role?: string })?.role}
-        isSuperAdmin={
-          (user as { role?: string })?.role === "SUPERADMIN" ||
-          user?.email === "admin@smkbazma.sch.id" ||
-          user?.email === "muhammad.syauqi1869@smk.belajar.id"
-        }
+        isSuperAdmin={(user as { role?: string })?.role === "SUPERADMIN"}
       />
 
       {/* SECTION CERMIN: KATALOG RESMI BINGKAI & EFEK */}

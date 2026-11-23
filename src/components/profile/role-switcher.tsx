@@ -11,6 +11,10 @@ import {
   Lock,
   Users,
   Search,
+  Pencil,
+  Trash2,
+  Save,
+  X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +23,8 @@ import {
   switchMyRole,
   getAllUsersForRoleManagement,
   assignUserRole,
+  updateManagedUser,
+  deleteManagedUser,
   type UserManagementItem,
 } from "@/lib/user/role-actions";
 
@@ -45,6 +51,10 @@ export function RoleSwitcher({
   const [isLoadingUsers, setIsLoadingUsers] = React.useState(false);
   const [userSearch, setUserSearch] = React.useState("");
   const [updatingUserId, setUpdatingUserId] = React.useState<string | null>(null);
+  const [editingUserId, setEditingUserId] = React.useState<string | null>(null);
+  const [editName, setEditName] = React.useState("");
+  const [editUsername, setEditUsername] = React.useState("");
+  const [isSavingEdit, setIsSavingEdit] = React.useState(false);
 
   React.useEffect(() => {
     if (isSuperAdmin) {
@@ -99,6 +109,60 @@ export function RoleSwitcher({
         setStatusMsg(res.error || "Gagal mengubah peran");
       }
     });
+  };
+
+  const startEditUser = (user: UserManagementItem) => {
+    setEditingUserId(user.id);
+    setEditName(user.name);
+    setEditUsername(user.username || "");
+    setStatusMsg(null);
+  };
+
+  const handleSaveUser = async (targetUserId: string) => {
+    setIsSavingEdit(true);
+    setStatusMsg(null);
+    try {
+      const res = await updateManagedUser(targetUserId, {
+        name: editName,
+        username: editUsername.trim() || null,
+      });
+      if (!res.success || !res.user) {
+        setStatusMsg(res.error || "Data akun gagal diperbarui.");
+        return;
+      }
+      setUserList((prev) => prev.map((u) =>
+        u.id === targetUserId ? { ...u, name: res.user!.name, username: res.user!.username } : u
+      ));
+      setEditingUserId(null);
+      setStatusMsg("Data akun berhasil diperbarui.");
+    } catch {
+      setStatusMsg("Terjadi kesalahan saat memperbarui akun.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleDeleteUser = async (user: UserManagementItem) => {
+    const confirmed = window.confirm(
+      `Hapus akun ${user.name} (${user.email})? Data yang terhubung seperti postingan, komentar, pesan, dan sesi akun dapat ikut terhapus. Tindakan ini tidak dapat dibatalkan.`
+    );
+    if (!confirmed) return;
+
+    setUpdatingUserId(user.id);
+    setStatusMsg(null);
+    try {
+      const res = await deleteManagedUser(user.id);
+      if (res.success) {
+        setUserList((prev) => prev.filter((u) => u.id !== user.id));
+        setStatusMsg(`Akun ${user.email} berhasil dihapus.`);
+      } else {
+        setStatusMsg(res.error || "Akun gagal dihapus.");
+      }
+    } catch {
+      setStatusMsg("Terjadi kesalahan saat menghapus akun.");
+    } finally {
+      setUpdatingUserId(null);
+    }
   };
 
   // Khusus Super Admin: Ubah peran pengguna lain di database
@@ -249,7 +313,7 @@ export function RoleSwitcher({
               <Users className="w-5 h-5 text-accent" />
             </div>
             <span className="font-display font-bold text-lg text-text">
-              Kelola Peran Siswa &amp; Guru (Direktori Sekolah)
+              Kelola Akun &amp; Peran Pengguna
             </span>
           </div>
           <span className="font-body text-xs text-text-muted">
@@ -262,7 +326,7 @@ export function RoleSwitcher({
           <Input
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
-            placeholder="Cari nama atau email pengguna untuk mengatur peran..."
+            placeholder="Cari nama, email, atau username..."
             className="pl-10 h-10 text-xs rounded-2xl border-2 border-border bg-canvas/40"
           />
         </div>
@@ -270,6 +334,10 @@ export function RoleSwitcher({
         {isLoadingUsers ? (
           <div className="p-8 text-center font-body text-xs text-text-muted">
             Memuat daftar pengguna sekolah...
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="p-8 text-center font-body text-xs text-text-muted">
+            {userList.length === 0 ? "Belum ada akun terdaftar." : "Tidak ada akun yang cocok dengan pencarian."}
           </div>
         ) : (
           <div className="divide-y divide-border/30 rounded-2xl border-2 border-border max-h-80 overflow-y-auto bg-canvas/20">
@@ -280,29 +348,52 @@ export function RoleSwitcher({
                   key={u.id}
                   className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-surface transition-colors"
                 >
-                  <div className="space-y-0.5">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-display font-bold text-sm text-text">{u.name}</span>
-                      <Badge
-                        variant={
-                          u.role === "SUPERADMIN" ? "ok" : u.role === "ADMIN" ? "peach" : "mint"
-                        }
-                        className="text-[10px]"
-                      >
-                        {u.role === "SUPERADMIN"
-                          ? "Super Admin"
-                          : u.role === "ADMIN"
-                          ? "Guru/Staf"
-                          : "Siswa"}
-                      </Badge>
+                  {editingUserId === u.id ? (
+                    <div className="grid flex-1 grid-cols-1 sm:grid-cols-2 gap-2 min-w-0">
+                      <Input
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        aria-label="Nama akun"
+                        placeholder="Nama lengkap"
+                        className="h-9 text-xs rounded-xl"
+                        maxLength={50}
+                        disabled={isSavingEdit}
+                      />
+                      <Input
+                        value={editUsername}
+                        onChange={(e) => setEditUsername(e.target.value)}
+                        aria-label="Username akun"
+                        placeholder="Username (opsional)"
+                        className="h-9 text-xs rounded-xl"
+                        maxLength={20}
+                        disabled={isSavingEdit}
+                      />
                     </div>
-                    <p className="font-body text-xs text-text-muted">
-                      {u.email} {u.username && `• @${u.username}`}
-                    </p>
-                  </div>
+                  ) : (
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-display font-bold text-sm text-text">{u.name}</span>
+                        <Badge
+                          variant={
+                            u.role === "SUPERADMIN" ? "ok" : u.role === "ADMIN" ? "peach" : "mint"
+                          }
+                          className="text-[10px]"
+                        >
+                          {u.role === "SUPERADMIN"
+                            ? "Super Admin"
+                            : u.role === "ADMIN"
+                            ? "Guru/Staf"
+                            : "Siswa"}
+                        </Badge>
+                      </div>
+                      <p className="font-body text-xs text-text-muted break-all">
+                        {u.email} {u.username && `• @${u.username}`}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Tombol Pengubah Peran oleh Super Admin */}
-                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <div className="flex flex-wrap items-center justify-end gap-2 self-end sm:self-auto shrink-0">
                     {isUpdating ? (
                       <div className="flex items-center space-x-1.5 font-body text-xs text-text-muted">
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
@@ -310,7 +401,51 @@ export function RoleSwitcher({
                       </div>
                     ) : (
                       <>
-                        {u.role !== "ADMIN" && (
+                        {editingUserId === u.id ? (
+                          <>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleSaveUser(u.id)}
+                              disabled={isSavingEdit}
+                              className="rounded-xl text-xs"
+                            >
+                              <Save className="w-3.5 h-3.5 mr-1" />
+                              Simpan
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEditingUserId(null)}
+                              disabled={isSavingEdit}
+                              className="rounded-xl text-xs"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => startEditUser(u)}
+                              className="rounded-xl text-xs"
+                            >
+                              <Pencil className="w-3.5 h-3.5 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleDeleteUser(u)}
+                              className="rounded-xl text-xs"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-1" />
+                              Hapus
+                            </Button>
+                          </>
+                        )}
+                        {editingUserId !== u.id && u.role !== "ADMIN" && (
                           <Button
                             variant="secondary"
                             size="sm"
@@ -320,7 +455,7 @@ export function RoleSwitcher({
                             + Guru/Staf
                           </Button>
                         )}
-                        {u.role !== "USER" && (
+                        {editingUserId !== u.id && u.role !== "USER" && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -330,7 +465,7 @@ export function RoleSwitcher({
                             Jadikan Siswa
                           </Button>
                         )}
-                        {u.role !== "SUPERADMIN" && (
+                        {editingUserId !== u.id && u.role !== "SUPERADMIN" && (
                           <Button
                             variant="default"
                             size="sm"

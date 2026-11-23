@@ -15,6 +15,41 @@ describe("Validasi Zod Autentikasi", () => {
       expect(result.success).toBe(true);
     });
 
+    it("mengubah email menjadi lowercase dan memangkas spasi", () => {
+      const result = registerSchema.safeParse({
+        name: "  Budi Santoso  ",
+        email: "  BUDI@SEKOLAH.ID  ",
+        password: "password123",
+        username: "  Budi_01  ",
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.name).toBe("Budi Santoso");
+        expect(result.data.email).toBe("budi@sekolah.id");
+        expect(result.data.username).toBe("budi_01");
+      }
+    });
+
+    it("menerima username kosong sebagai opsional", () => {
+      const result = registerSchema.safeParse({
+        name: "Budi Santoso",
+        email: "budi@sekolah.id",
+        password: "password123",
+        username: "   ",
+      });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.username).toBeUndefined();
+    });
+
+    it("menolak nama yang hanya berisi spasi", () => {
+      const result = registerSchema.safeParse({
+        name: "   ",
+        email: "budi@sekolah.id",
+        password: "password123",
+      });
+      expect(result.success).toBe(false);
+    });
+
     it("harus menolak password yang kurang dari 8 karakter", () => {
       const invalid = {
         name: "Budi",
