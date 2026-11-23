@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  webpack: (config) => {
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: ["**/System Volume Information/**", "**/.git/**"],
+    };
+    return config;
+  },
 };
 
 export default nextConfig;

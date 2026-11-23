@@ -1,25 +1,20 @@
 import type { Metadata } from "next";
-import { VT323, Anton, Instrument_Sans, JetBrains_Mono } from "next/font/google";
+import { Fredoka, Nunito, JetBrains_Mono } from "next/font/google";
+import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import "./globals.css";
 
-const vt323 = VT323({
-  weight: "400",
+const fredoka = Fredoka({
   subsets: ["latin"],
-  variable: "--font-vt323",
+  variable: "--font-fredoka",
   display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
-const anton = Anton({
-  weight: "400",
+const nunito = Nunito({
   subsets: ["latin"],
-  variable: "--font-anton",
+  variable: "--font-nunito",
   display: "swap",
-});
-
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  variable: "--font-instrument-sans",
-  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -29,8 +24,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sekolah Tengah Malam",
-  description: "Platform diskusi dan forum pembelajaran virtual",
+  title: "Sekolah Virtual SMK TI BAZMA",
+  description: "Platform diskusi dan forum pembelajaran virtual bernuansa kampus anime",
 };
 
 export default function RootLayout({
@@ -41,10 +36,16 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${vt323.variable} ${anton.variable} ${instrumentSans.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+      className={`${fredoka.variable} ${nunito.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="bg-canvas text-fluor font-body min-h-screen antialiased selection:bg-caution selection:text-white">
-        {children}
+      <body
+        suppressHydrationWarning
+        className="bg-canvas text-text font-body min-h-screen antialiased selection:bg-accent selection:text-white"
+      >
+        <SmoothScrollProvider>
+          {children}
+        </SmoothScrollProvider>
       </body>
     </html>
   );

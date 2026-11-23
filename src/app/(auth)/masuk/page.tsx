@@ -61,49 +61,56 @@ export default function MasukPage() {
   };
 
   return (
-    <Card className="border-fluor/40">
-      <CardHeader>
+    <Card className="rounded-3xl border-2 border-border shadow-xl bg-surface/95 backdrop-blur-md">
+      <CardHeader className="space-y-2 pb-6 border-b border-border/50">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-3xl font-hud tracking-widest text-caution">
-            MASUK KE KELAS
+          <CardTitle className="text-2xl sm:text-3xl font-display font-bold text-text">
+            Masuk ke Kelas
           </CardTitle>
-          <span className="font-mono text-xs px-2 py-0.5 border border-fluor/30 text-fluor/70">
-            AUTENTIKASI
+          <span className="font-display font-medium text-xs px-3 py-1 rounded-full bg-primary/20 text-text border border-primary/40">
+            Akun Sekolah
           </span>
         </div>
-        <CardDescription>
-          Gunakan akun SMK TI BAZMA Anda untuk mengakses forum dan materi.
+        <CardDescription className="text-text-muted text-sm font-body">
+          Gunakan akun sekolah Anda untuk mengakses kelas, forum, materi, dan dunia 3D.
         </CardDescription>
       </CardHeader>
 
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5 pt-6">
           {serverError && (
-            <div className="p-3 border border-alert/60 bg-alert/10 text-alert text-xs font-mono flex items-start space-x-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div className="p-3.5 rounded-2xl border-2 border-alert/30 bg-alert/10 text-alert text-xs font-body font-medium flex items-start space-x-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-alert" />
               <span>{serverError}</span>
             </div>
           )}
 
-          <div className="space-y-1">
-            <Label htmlFor="email">Alamat Email</Label>
+          {/* Grup Email (Kaidah UX: Law of Proximity, Jarak Label-Input 6px, Jarak Antar Grup 20px) */}
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="font-display font-semibold text-xs text-text">
+              Alamat Email Sekolah
+            </Label>
             <Input
               id="email"
               type="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="nama@sekolah.id"
+              placeholder="Contoh: nama@sekolah.id"
               disabled={isLoading}
+              className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
             />
             {errors.email && (
-              <p className="text-xs text-alert font-mono mt-1">{errors.email}</p>
+              <p className="text-xs text-alert font-body font-medium mt-1">{errors.email}</p>
             )}
           </div>
 
-          <div className="space-y-1">
+          {/* Grup Kata Sandi */}
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Kata Sandi</Label>
+              <Label htmlFor="password" className="font-display font-semibold text-xs text-text">
+                Kata Sandi
+              </Label>
             </div>
             <Input
               id="password"
@@ -111,30 +118,31 @@ export default function MasukPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Minimal 8 karakter"
               disabled={isLoading}
+              className="rounded-2xl border-2 border-border bg-canvas/40 focus:bg-surface text-sm"
             />
             {errors.password && (
-              <p className="text-xs text-alert font-mono mt-1">{errors.password}</p>
+              <p className="text-xs text-alert font-body font-medium mt-1">{errors.password}</p>
             )}
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter className="flex flex-col space-y-4 pt-5 border-t border-border/50">
           <Button
             type="submit"
-            className="w-full flex items-center justify-center space-x-2"
+            className="w-full flex items-center justify-center space-x-2 rounded-2xl font-display font-bold py-3 text-sm"
             disabled={isLoading}
           >
             <LogIn className="w-4 h-4" />
-            <span>{isLoading ? "MEMERIKSA KREDENSIAL..." : "MASUK KE SEKOLAH"}</span>
+            <span>{isLoading ? "Memeriksa Akun..." : "Masuk Sekarang"}</span>
           </Button>
 
-          <div className="text-xs font-mono text-fluor/60 text-center">
+          <div className="text-xs font-body text-text-muted text-center">
             Belum memiliki akun?{" "}
             <Link
               href="/daftar"
-              className="text-caution hover:underline uppercase tracking-wider"
+              className="font-bold text-accent hover:underline ml-1"
             >
               Daftar Siswa Baru
             </Link>

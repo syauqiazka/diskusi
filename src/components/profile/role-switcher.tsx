@@ -62,24 +62,24 @@ export function RoleSwitcher({
   const roles = [
     {
       id: "SUPERADMIN" as const,
-      label: "SUPER ADMIN",
+      label: "Super Admin",
       badgeVariant: "ok" as const,
       icon: ShieldAlert,
       desc: "Pengelola Sistem & Hak Akses Tertinggi",
     },
     {
       id: "ADMIN" as const,
-      label: "ADMIN (GURU & STAF)",
-      badgeVariant: "cyan" as const,
+      label: "Admin (Guru & Staf)",
+      badgeVariant: "peach" as const,
       icon: Shield,
       desc: "Pengajar, Guru & Jajaran Staf Sekolah",
     },
     {
       id: "USER" as const,
-      label: "SISWA",
-      badgeVariant: "outline" as const,
+      label: "Siswa",
+      badgeVariant: "mint" as const,
       icon: User,
-      desc: "Akun Pengguna Siswa SMK TI BAZMA",
+      desc: "Akun Pengguna Siswa Sekolah",
     },
   ];
 
@@ -125,31 +125,31 @@ export function RoleSwitcher({
   // Tampilan Terkunci untuk Siswa Biasa (USER) atau Staf (ADMIN)
   if (!isSuperAdmin) {
     return (
-      <div className="border border-fluor/30 bg-night p-5 space-y-3">
-        <div className="flex items-center justify-between border-b border-fluor/15 pb-2">
-          <div className="flex items-center space-x-2 text-fluor">
-            <Shield className="w-5 h-5 text-fluor/60" />
-            <span className="font-hud text-lg tracking-widest text-fluor uppercase">
-              STATUS PERAN PENGGUNA
+      <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-border/50 pb-3">
+          <div className="flex items-center space-x-2 text-text">
+            <Shield className="w-5 h-5 text-accent" />
+            <span className="font-display font-bold text-lg text-text">
+              Status Peran Pengguna
             </span>
           </div>
-          <Badge variant={activeRole === "ADMIN" ? "cyan" : "outline"}>
-            {activeRole === "ADMIN" ? "ADMIN (GURU & STAF)" : "SISWA"}
+          <Badge variant={activeRole === "ADMIN" ? "peach" : "mint"}>
+            {activeRole === "ADMIN" ? "Admin (Guru & Staf)" : "Siswa"}
           </Badge>
         </div>
 
-        <div className="p-3.5 border border-fluor/20 bg-fluor/[0.02] flex items-start space-x-3">
-          <Lock className="w-4 h-4 text-caution shrink-0 mt-0.5" />
-          <div className="space-y-1 font-body text-xs text-fluor/80 leading-relaxed">
-            <p className="font-semibold text-fluor uppercase font-hud tracking-wider">
-              PERAN TERKELOLA TERPUSAT
+        <div className="p-4 rounded-2xl border-2 border-border bg-canvas/40 flex items-start space-x-3.5">
+          <Lock className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+          <div className="space-y-1 font-body text-xs text-text-muted leading-relaxed">
+            <p className="font-display font-bold text-text text-sm">
+              Peran Terkelola Terpusat
             </p>
             <p>
               Akun Anda terdaftar sebagai{" "}
-              <strong className="text-fluor">
+              <strong className="text-text font-semibold">
                 {activeRole === "ADMIN" ? "Admin (Guru / Staf)" : "Siswa (User)"}
               </strong>
-              . Sesuai kebijakan SMK TI BAZMA, siswa tidak dapat mengubah perannya sendiri menjadi admin atau super admin. Peran baru hanya dapat dibuat dan ditetapkan oleh Super Admin sekolah.
+              . Sesuai kebijakan sekolah, akun siswa tidak dapat mengubah perannya sendiri menjadi admin atau super admin. Peran baru hanya dapat dibuat dan ditetapkan oleh Super Admin.
             </p>
           </div>
         </div>
@@ -171,22 +171,24 @@ export function RoleSwitcher({
   return (
     <div className="space-y-6">
       {/* 1. Pengujian Simulasi Peran Super Admin */}
-      <div className="border border-caution/60 bg-night p-5 space-y-4 shadow-[0_0_15px_rgba(242,194,0,0.1)]">
-        <div className="flex items-center justify-between border-b border-fluor/15 pb-2">
-          <div className="flex items-center space-x-2 text-fluor">
-            <ShieldAlert className="w-5 h-5 text-ok" />
-            <span className="font-hud text-lg tracking-widest text-fluor uppercase">
-              SIMULASI PERAN AKUN AKTIF [SUPER ADMIN]
+      <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-5 shadow-sm">
+        <div className="flex items-center justify-between border-b border-border/50 pb-3">
+          <div className="flex items-center space-x-2.5 text-text">
+            <div className="w-9 h-9 rounded-2xl bg-secondary/30 flex items-center justify-center text-text">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <span className="font-display font-bold text-lg text-text">
+              Simulasi Peran Akun Aktif (Super Admin)
             </span>
           </div>
-          <Badge variant="ok">SUPER ADMIN AKTIF</Badge>
+          <Badge variant="ok">Super Admin Aktif</Badge>
         </div>
 
-        <p className="font-body text-xs text-fluor/70 leading-relaxed">
+        <p className="font-body text-xs text-text-muted leading-relaxed">
           Sebagai Super Admin, Anda dapat menguji tampilan dan sudut pandang antarmuka sebagai Super Admin, Admin Guru, atau Siswa:
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {roles.map((r) => {
             const isSelected = activeRole === r.id;
             const Icon = r.icon;
@@ -197,40 +199,32 @@ export function RoleSwitcher({
                 type="button"
                 disabled={isPending}
                 onClick={() => handleSelectRole(r.id)}
-                className={`p-3.5 border text-left transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
+                className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
                   isSelected
-                    ? "border-caution bg-caution/15 shadow-[0_0_12px_rgba(242,194,0,0.15)]"
-                    : "border-fluor/20 bg-fluor/[0.02] hover:border-fluor/60 hover:bg-fluor/[0.05]"
+                    ? "border-primary bg-primary/15 shadow-sm"
+                    : "border-border bg-canvas/30 hover:border-primary/50"
                 }`}
               >
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Icon
-                      className={`w-4 h-4 ${
-                        r.id === "SUPERADMIN"
-                          ? "text-ok"
-                          : r.id === "ADMIN"
-                          ? "text-neon-cyan"
-                          : "text-fluor/70"
-                      }`}
-                    />
-                    {isSelected && <Check className="w-4 h-4 text-caution" />}
+                    <Icon className="w-4 h-4 text-text" />
+                    {isSelected && <Check className="w-4 h-4 text-text font-bold" />}
                   </div>
-                  <h4 className="font-sign text-base uppercase tracking-wider text-fluor pt-1">
+                  <h4 className="font-display font-bold text-base text-text pt-1">
                     {r.label}
                   </h4>
-                  <p className="font-body text-[11px] text-fluor/70 leading-snug">
+                  <p className="font-body text-xs text-text-muted leading-snug">
                     {r.desc}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-fluor/10 flex items-center justify-between">
-                  <span className="font-mono text-[10px] text-fluor/50 uppercase">
-                    {isSelected ? "[TERPILIH]" : "[UJI PERAN]"}
+                <div className="pt-2 border-t border-border/50 flex items-center justify-between">
+                  <span className="font-display font-semibold text-[11px] text-text-muted">
+                    {isSelected ? "Terpilih" : "Uji Peran"}
                   </span>
                   {isSelected && (
-                    <Badge variant={r.badgeVariant} className="text-[10px] py-0 px-1.5">
-                      AKTIF
+                    <Badge variant={r.badgeVariant} className="text-[10px] py-0 px-2">
+                      Aktif
                     </Badge>
                   )}
                 </div>
@@ -240,88 +234,90 @@ export function RoleSwitcher({
         </div>
 
         {isPending && (
-          <div className="flex items-center space-x-2 font-mono text-xs text-caution">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            <span>MENGUBAH PERAN SISTEM...</span>
+          <div className="flex items-center space-x-2 font-body text-xs text-text-muted">
+            <Loader2 className="w-4 h-4 animate-spin text-accent" />
+            <span>Memperbarui simulasi peran sistem...</span>
           </div>
         )}
       </div>
 
       {/* 2. Panel Manajemen Peran Seluruh Pengguna Sekolah */}
-      <div className="border border-fluor/30 bg-night p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-fluor/15 gap-2">
-          <div className="flex items-center space-x-2 text-fluor">
-            <Users className="w-5 h-5 text-neon-cyan" />
-            <span className="font-hud text-lg tracking-widest text-fluor uppercase">
-              PANEL KELOLA PERAN SISWA &amp; GURU (DIREKTORI SEKOLAH)
+      <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border/50 gap-2">
+          <div className="flex items-center space-x-2.5 text-text">
+            <div className="w-9 h-9 rounded-2xl bg-primary/20 flex items-center justify-center text-text">
+              <Users className="w-5 h-5 text-accent" />
+            </div>
+            <span className="font-display font-bold text-lg text-text">
+              Kelola Peran Siswa &amp; Guru (Direktori Sekolah)
             </span>
           </div>
-          <span className="font-mono text-xs text-fluor/50">
-            TOTAL {userList.length} PENGGUNA TERDAFTAR
+          <span className="font-body text-xs text-text-muted">
+            Total {userList.length} Pengguna
           </span>
         </div>
 
         <div className="relative">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-fluor/40" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3 text-text-muted" />
           <Input
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
             placeholder="Cari nama atau email pengguna untuk mengatur peran..."
-            className="pl-9 h-9 text-xs font-mono"
+            className="pl-10 h-10 text-xs rounded-2xl border-2 border-border bg-canvas/40"
           />
         </div>
 
         {isLoadingUsers ? (
-          <div className="p-6 text-center font-mono text-xs text-fluor/50">
+          <div className="p-8 text-center font-body text-xs text-text-muted">
             Memuat daftar pengguna sekolah...
           </div>
         ) : (
-          <div className="divide-y divide-fluor/10 border border-fluor/20 max-h-80 overflow-y-auto">
+          <div className="divide-y divide-border/30 rounded-2xl border-2 border-border max-h-80 overflow-y-auto bg-canvas/20">
             {filteredUsers.map((u) => {
               const isUpdating = updatingUserId === u.id;
               return (
                 <div
                   key={u.id}
-                  className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-fluor/[0.02]"
+                  className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-surface transition-colors"
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center space-x-2">
-                      <span className="font-sign text-base text-fluor uppercase">{u.name}</span>
+                      <span className="font-display font-bold text-sm text-text">{u.name}</span>
                       <Badge
                         variant={
-                          u.role === "SUPERADMIN" ? "ok" : u.role === "ADMIN" ? "cyan" : "outline"
+                          u.role === "SUPERADMIN" ? "ok" : u.role === "ADMIN" ? "peach" : "mint"
                         }
                         className="text-[10px]"
                       >
                         {u.role === "SUPERADMIN"
-                          ? "SUPER ADMIN"
+                          ? "Super Admin"
                           : u.role === "ADMIN"
-                          ? "GURU/STAF"
-                          : "SISWA"}
+                          ? "Guru/Staf"
+                          : "Siswa"}
                       </Badge>
                     </div>
-                    <p className="font-mono text-xs text-fluor/60">
+                    <p className="font-body text-xs text-text-muted">
                       {u.email} {u.username && `• @${u.username}`}
                     </p>
                   </div>
 
                   {/* Tombol Pengubah Peran oleh Super Admin */}
-                  <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                     {isUpdating ? (
-                      <div className="flex items-center space-x-1.5 font-mono text-xs text-caution">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>MENYIMPAN...</span>
+                      <div className="flex items-center space-x-1.5 font-body text-xs text-text-muted">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                        <span>Menyimpan...</span>
                       </div>
                     ) : (
                       <>
                         {u.role !== "ADMIN" && (
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => handleAssignRole(u.id, "ADMIN")}
-                            className="font-hud text-xs border-neon-cyan/60 text-neon-cyan hover:bg-neon-cyan hover:text-night"
+                            className="rounded-xl text-xs font-display font-semibold"
                           >
-                            + GURU/STAF
+                            + Guru/Staf
                           </Button>
                         )}
                         {u.role !== "USER" && (
@@ -329,19 +325,19 @@ export function RoleSwitcher({
                             variant="outline"
                             size="sm"
                             onClick={() => handleAssignRole(u.id, "USER")}
-                            className="font-hud text-xs border-fluor/40 text-fluor/70 hover:border-fluor hover:text-fluor"
+                            className="rounded-xl text-xs font-display font-semibold"
                           >
-                            JADIKAN SISWA
+                            Jadikan Siswa
                           </Button>
                         )}
                         {u.role !== "SUPERADMIN" && (
                           <Button
-                            variant="outline"
+                            variant="default"
                             size="sm"
                             onClick={() => handleAssignRole(u.id, "SUPERADMIN")}
-                            className="font-hud text-xs border-ok/60 text-ok hover:bg-ok hover:text-night"
+                            className="rounded-xl text-xs font-display font-semibold"
                           >
-                            + SUPER ADMIN
+                            + Super Admin
                           </Button>
                         )}
                       </>
@@ -354,7 +350,7 @@ export function RoleSwitcher({
         )}
 
         {statusMsg && (
-          <div className="p-2.5 border border-ok/40 bg-ok/10 text-ok font-mono text-xs">
+          <div className="p-3.5 rounded-2xl border-2 border-ok/30 bg-ok/10 text-ok font-body text-xs font-semibold">
             {statusMsg}
           </div>
         )}

@@ -4,6 +4,7 @@ import { getServerSession } from "@/lib/auth/session";
 import { HudHeader } from "@/components/layout/hud-header";
 import { HudFooter } from "@/components/layout/hud-footer";
 import { DashboardNav } from "@/components/layout/dashboard-nav";
+import { GsapFadeUp } from "@/components/animations/gsap-animate";
 
 export const instant = false;
 
@@ -18,12 +19,12 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-canvas text-fluor">
+    <div className="min-h-screen flex flex-col bg-canvas text-text">
       <HudHeader />
       <Suspense
         fallback={
-          <div className="border-b border-fluor/20 bg-night/90 h-12 flex items-center px-4 font-mono text-xs text-fluor/50">
-            MEMUAT NAVIGASI SISTEM 2D...
+          <div className="border-b border-border/50 bg-surface h-12 flex items-center px-4 font-body text-xs text-text-muted">
+            Memuat navigasi...
           </div>
         }
       >
@@ -32,12 +33,14 @@ export default async function DashboardLayout({
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <Suspense
           fallback={
-            <div className="font-mono text-xs text-caution p-8 border border-fluor/20 bg-night text-center">
-              MEMUAT DATA PANEL 2D...
+            <div className="font-body text-xs text-text-muted p-8 rounded-3xl border-2 border-border bg-surface text-center">
+              Memuat halaman...
             </div>
           }
         >
-          {children}
+          <GsapFadeUp>
+            {children}
+          </GsapFadeUp>
         </Suspense>
       </main>
       <HudFooter />

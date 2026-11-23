@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   X,
@@ -153,7 +154,6 @@ export function WorldModals() {
     setDoorSubmitting(false);
 
     if (res.success) {
-      // Muat ulang data akses pintu
       setDoorLoading(true);
       const updated = await getPintuKelasAccess("SIJA-10A");
       setDoorData(updated);
@@ -203,75 +203,74 @@ export function WorldModals() {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-night/85 backdrop-blur-xs flex items-center justify-center p-4 select-none animate-fadeIn"
+      className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 select-none animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) closePanel();
       }}
     >
-      <div className="max-w-2xl w-full border-2 border-fluor/40 bg-night p-6 sm:p-8 space-y-6 text-fluor relative shadow-[0_0_30px_rgba(11,13,18,0.95)] max-h-[90vh] overflow-y-auto">
+      <div className="max-w-2xl w-full rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-6 text-text relative shadow-2xl max-h-[88vh] overflow-y-auto animate-in zoom-in-95">
         {/* Tombol Tutup [X] */}
         <button
           onClick={closePanel}
-          className="absolute top-4 right-4 text-fluor/60 hover:text-caution p-1 transition-colors"
+          className="absolute top-5 right-5 text-text-muted hover:text-text p-1.5 rounded-full hover:bg-canvas transition-colors"
           aria-label="Tutup Panel"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
 
-        {/* 1. MODAL PINTU RUANG KELAS SIJA (3.2, 3.3, & Tahap 4) */}
+        {/* 1. MODAL PINTU RUANG KELAS */}
         {activePanel === "door" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-caution">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-accent">
                 <GraduationCap className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} AKSES PINTU KELAS
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Akses Pintu Kelas
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                {doorData?.className || "RUANG KELAS 10-SIJA"}
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                {doorData?.className || "Ruang Kelas X SIJA 1"}
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
-                Pintu masuk ruang kelas Sistem Informasi, Jaringan, dan Aplikasi SMK TI BAZMA.
-                Pemeriksaan izin akses dilakukan langsung di server database.
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
+                Pintu masuk ruang kelas sekolah. Hak akses diverifikasi langsung melalui database.
               </p>
             </div>
 
             {doorLoading ? (
-              <div className="p-8 border border-fluor/20 flex flex-col items-center justify-center space-y-3 font-mono text-xs text-caution">
-                <Loader2 className="w-6 h-6 animate-spin text-caution" />
-                <span>MEMERIKSA HAK AKSES PINTU DI SERVER...</span>
+              <div className="p-8 rounded-2xl border-2 border-border bg-canvas/30 flex flex-col items-center justify-center space-y-3 font-body text-xs text-text-muted">
+                <Loader2 className="w-6 h-6 animate-spin text-accent" />
+                <span>Memeriksa hak akses pintu...</span>
               </div>
             ) : doorData ? (
               <div className="space-y-4">
-                <div className="border border-fluor/20 p-4 bg-fluor/[0.02] space-y-3 font-mono text-xs">
+                <div className="rounded-2xl border-2 border-border p-5 bg-canvas/30 space-y-3 font-body text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-fluor/60">KODE KELAS:</span>
-                    <span className="text-caution font-bold px-2 py-0.5 border border-caution/40 bg-caution/10">
+                    <span className="text-text-muted font-medium">Kode Kelas:</span>
+                    <span className="font-display font-bold text-xs px-2.5 py-0.5 rounded-xl border border-secondary/50 text-text bg-secondary/30">
                       {doorData.classCode}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-fluor/60">STATUS AKSES PINTU:</span>
+                    <span className="text-text-muted font-medium">Status Akses:</span>
                     {doorData.isMember ? (
                       <span className="flex items-center space-x-1.5 text-ok font-bold">
                         <Unlock className="w-4 h-4" />
-                        <span>TERBUKA (ANGGOTA TERDAFTAR)</span>
+                        <span>Terbuka (Anggota Kelas)</span>
                       </span>
                     ) : (
                       <span className="flex items-center space-x-1.5 text-alert font-bold">
                         <Lock className="w-4 h-4" />
-                        <span>TERKUNCI (BUKAN ANGGOTA)</span>
+                        <span>Terkunci (Belum Terdaftar)</span>
                       </span>
                     )}
                   </div>
                   {doorData.isMember && (
-                    <div className="flex justify-between items-center pt-1 border-t border-fluor/10">
-                      <span className="text-fluor/60">NOMOR MEJA SISWA:</span>
-                      <span className="text-neon-cyan font-bold">
+                    <div className="flex justify-between items-center pt-2 border-t border-border/40">
+                      <span className="text-text-muted font-medium">Nomor Meja Siswa:</span>
+                      <span className="font-display font-bold text-sm text-text">
                         {doorData.seatIndex !== null && doorData.seatIndex !== undefined
-                          ? `MEJA #${doorData.seatIndex + 1}`
-                          : "MEJA GURU / ASISTEN"}
+                          ? `Meja #${doorData.seatIndex + 1}`
+                          : "Meja Guru"}
                       </span>
                     </div>
                   )}
@@ -279,10 +278,10 @@ export function WorldModals() {
 
                 {/* Form Buka Gembok jika Pintu Terkunci */}
                 {!doorData.isMember && (
-                  <form onSubmit={handleJoinClassFromDoor} className="border border-alert/40 bg-alert/5 p-4 space-y-3">
-                    <div className="flex items-center space-x-2 text-alert text-xs font-mono">
+                  <form onSubmit={handleJoinClassFromDoor} className="rounded-2xl border-2 border-alert/30 bg-alert/10 p-5 space-y-3">
+                    <div className="flex items-center space-x-2 text-alert text-xs font-body font-semibold">
                       <ShieldAlert className="w-4 h-4 flex-shrink-0" />
-                      <span>Masukkan kode kelas untuk membuka gembok dan mendaftar meja siswa:</span>
+                      <span>Masukkan kode kelas untuk membuka pintu dan mendaftar nomor meja:</span>
                     </div>
 
                     <div className="flex gap-2">
@@ -290,23 +289,23 @@ export function WorldModals() {
                         value={doorCodeInput}
                         onChange={(e) => setDoorCodeInput(e.target.value)}
                         placeholder="KODE KELAS (misal: SIJA-10A)"
-                        className="font-mono text-xs uppercase"
+                        className="font-display font-bold text-xs uppercase rounded-xl border-2 border-border bg-surface"
                         disabled={doorSubmitting}
                       />
-                      <Button type="submit" variant="default" size="sm" disabled={doorSubmitting} className="whitespace-nowrap">
+                      <Button type="submit" variant="default" size="sm" disabled={doorSubmitting} className="whitespace-nowrap rounded-xl font-display font-bold">
                         {doorSubmitting ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <span className="flex items-center space-x-1">
                             <Key className="w-3.5 h-3.5" />
-                            <span>BUKA KUNCI</span>
+                            <span>Buka Kunci</span>
                           </span>
                         )}
                       </Button>
                     </div>
 
                     {doorError && (
-                      <div className="text-alert font-mono text-[11px] leading-tight">
+                      <div className="text-alert font-body text-xs">
                         {doorError}
                       </div>
                     )}
@@ -319,7 +318,7 @@ export function WorldModals() {
                       <Button
                         variant="default"
                         size="lg"
-                        className="flex-1 space-x-2"
+                        className="flex-1 space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
                         onClick={() => {
                           closePanel();
                           router.push(
@@ -327,12 +326,13 @@ export function WorldModals() {
                           );
                         }}
                       >
-                        <span className="font-hud text-lg tracking-wider">[E] MASUK KE KELAS 3D</span>
+                        <span>Masuk ke Kelas 3D</span>
                         <ArrowRight className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="lg"
+                        className="rounded-2xl font-display font-semibold text-sm"
                         onClick={() => {
                           closePanel();
                           router.push(
@@ -340,24 +340,24 @@ export function WorldModals() {
                           );
                         }}
                       >
-                        <span>MODE CEPAT (2D)</span>
+                        <span>Mode Cepat (2D)</span>
                       </Button>
                     </>
                   ) : (
                     <Button
                       variant="outline"
                       size="lg"
-                      className="flex-1"
+                      className="flex-1 rounded-2xl font-display font-semibold text-sm"
                       onClick={() => {
                         closePanel();
                         router.push("/kelas");
                       }}
                     >
-                      <span>LIHAT DAFTAR KELAS (MODE CEPAT)</span>
+                      <span>Lihat Daftar Kelas (Mode 2D)</span>
                     </Button>
                   )}
-                  <Button variant="outline" size="lg" onClick={closePanel}>
-                    KEMBALI KE LORONG
+                  <Button variant="ghost" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                    Kembali
                   </Button>
                 </div>
               </div>
@@ -365,49 +365,48 @@ export function WorldModals() {
           </div>
         )}
 
-        {/* 2. MODAL MADING GLOBAL (3.2 & Tahap 4) */}
+        {/* 2. MODAL MADING GLOBAL */}
         {activePanel === "mading" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-neon-cyan">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-accent">
                 <LayoutGrid className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} MADING SEKOLAH GLOBAL
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Mading Sekolah
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                PAPAN PENGUMUMAN & DISKUSI
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                Papan Pengumuman &amp; Diskusi
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
-                Pusat pengumuman dan diskusi umum seluruh warga sekolah. Akses topik terhangat,
-                tanya jawab jaringan, dan kolaborasi umum.
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
+                Pusat pengumuman dan diskusi terbuka seluruh warga sekolah. Akses topik terhangat dan tanya jawab.
               </p>
             </div>
 
             <div className="space-y-3">
-              <div className="border border-fluor/20 p-3 bg-night hover:border-fluor/40 transition-colors">
-                <div className="flex justify-between text-xs font-mono text-caution mb-1">
-                  <span>JARINGAN & SERVER</span>
+              <div className="rounded-2xl border-2 border-border p-4 bg-canvas/30 hover:border-primary transition-all">
+                <div className="flex justify-between text-xs font-body text-text-muted mb-1">
+                  <Badge variant="peach">Jaringan & Server</Badge>
                   <span>1 jam yang lalu</span>
                 </div>
-                <h4 className="font-sign text-base uppercase text-fluor">
+                <h4 className="font-display font-bold text-base text-text mt-1">
                   Konfigurasi BGP Routing Multi-Homing untuk Praktik Lab Komputer
                 </h4>
-                <p className="font-body text-xs text-fluor/60 mt-1 line-clamp-1">
+                <p className="font-body text-xs text-text-muted mt-1 line-clamp-1">
                   Prefix list dan local preference gateway di MikroTik CHR.
                 </p>
               </div>
 
-              <div className="border border-fluor/20 p-3 bg-night hover:border-fluor/40 transition-colors">
-                <div className="flex justify-between text-xs font-mono text-neon-cyan mb-1">
-                  <span>VIRTUALISASI</span>
+              <div className="rounded-2xl border-2 border-border p-4 bg-canvas/30 hover:border-primary transition-all">
+                <div className="flex justify-between text-xs font-body text-text-muted mb-1">
+                  <Badge variant="mint">Virtualisasi</Badge>
                   <span>3 jam yang lalu</span>
                 </div>
-                <h4 className="font-sign text-base uppercase text-fluor">
+                <h4 className="font-display font-bold text-base text-text mt-1">
                   Rekomendasi Lingkungan Docker Container untuk Simulasi Router
                 </h4>
-                <p className="font-body text-xs text-fluor/60 mt-1 line-clamp-1">
-                  Efisiensi container vs Proxmox VE pada server lab SIJA.
+                <p className="font-body text-xs text-text-muted mt-1 line-clamp-1">
+                  Efisiensi container vs Proxmox VE pada server lab sekolah.
                 </p>
               </div>
             </div>
@@ -416,55 +415,54 @@ export function WorldModals() {
               <Button
                 variant="default"
                 size="lg"
-                className="flex-1 space-x-2"
+                className="flex-1 space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
                 onClick={() => {
                   closePanel();
                   router.push("/mading");
                 }}
               >
-                <span className="font-hud text-lg tracking-wider">BUKA MADING PENUH</span>
+                <span>Buka Mading Penuh</span>
                 <ChevronRight className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="lg" onClick={closePanel}>
-                TUTUP PAPAN
+              <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                Tutup Papan
               </Button>
             </div>
           </div>
         )}
 
-        {/* 3. MODAL PERPUSTAKAAN TERBUKA (3.2 & Tahap 4) */}
+        {/* 3. MODAL PERPUSTAKAAN TERBUKA */}
         {activePanel === "library" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-ok">
-                <BookOpen className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} PERPUSTAKAAN DIGITAL
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-primary">
+                <BookOpen className="w-6 h-6 text-text" />
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Perpustakaan Digital
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                SUMBER BELAJAR TERBUKA
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                Sumber Belajar Terbuka
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
-                Koleksi modul ajar, panduan praktikum lab komputer, dan materi keahlian SIJA yang
-                dapat diunduh secara bebas oleh seluruh siswa.
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
+                Koleksi modul ajar, panduan praktikum lab, dan materi keahlian sekolah yang dapat diunduh bebas.
               </p>
             </div>
 
-            <div className="space-y-2 font-mono text-xs">
-              <div className="p-3 border border-fluor/20 flex items-center justify-between">
+            <div className="space-y-3 font-body text-xs">
+              <div className="p-4 rounded-2xl border-2 border-border bg-canvas/30 flex items-center justify-between">
                 <div>
-                  <div className="text-fluor font-semibold">Panduan MikroTik MTCNA — SIJA BAZMA</div>
-                  <div className="text-fluor/50 text-[11px]">Format: PDF (8.5 MB) // Jaringan & Server</div>
+                  <div className="font-display font-bold text-sm text-text">Panduan MikroTik MTCNA — SIJA</div>
+                  <div className="text-text-muted text-xs mt-0.5">Format: PDF (8.5 MB) • Jaringan & Server</div>
                 </div>
-                <Badge variant="ok">TERSEDIA</Badge>
+                <Badge variant="mint">Tersedia</Badge>
               </div>
-              <div className="p-3 border border-fluor/20 flex items-center justify-between">
+              <div className="p-4 rounded-2xl border-2 border-border bg-canvas/30 flex items-center justify-between">
                 <div>
-                  <div className="text-fluor font-semibold">Modul Praktikum Administrasi Linux Debian 12</div>
-                  <div className="text-fluor/50 text-[11px]">Format: PDF (5.2 MB) // Sistem Operasi</div>
+                  <div className="font-display font-bold text-sm text-text">Modul Praktikum Administrasi Linux Debian 12</div>
+                  <div className="text-text-muted text-xs mt-0.5">Format: PDF (5.2 MB) • Sistem Operasi</div>
                 </div>
-                <Badge variant="ok">TERSEDIA</Badge>
+                <Badge variant="mint">Tersedia</Badge>
               </div>
             </div>
 
@@ -472,76 +470,76 @@ export function WorldModals() {
               <Button
                 variant="default"
                 size="lg"
-                className="flex-1 space-x-2"
+                className="flex-1 space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
                 onClick={() => {
                   closePanel();
                   router.push("/perpustakaan");
                 }}
               >
-                <span className="font-hud text-lg tracking-wider">BUKA KATALOG PERPUSTAKAAN</span>
+                <span>Buka Katalog Perpustakaan</span>
                 <ChevronRight className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="lg" onClick={closePanel}>
-                KEMBALI KE LORONG
+              <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                Tutup
               </Button>
             </div>
           </div>
         )}
 
-        {/* 4. MODAL LOKER SISWA (3.2 & Tahap 4) */}
+        {/* 4. MODAL LOKER SISWA */}
         {activePanel === "locker" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-caution">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-text">
                 <User className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} LOKER SISWA
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Loker Siswa
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                LOKER PRIBADI
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                Loker Pribadi
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
-                Penyimpanan identitas dan inventaris profil akun siswa Anda di kawasan SMK TI BAZMA.
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
+                Penyimpanan identitas dan inventaris profil akun siswa Anda di sekolah.
               </p>
             </div>
 
             {lokerLoading ? (
-              <div className="p-8 border border-fluor/20 flex flex-col items-center justify-center space-y-3 font-mono text-xs text-caution">
-                <Loader2 className="w-6 h-6 animate-spin text-caution" />
-                <span>MEMUAT DATA IDENTITAS LOKER DARI DATABASE...</span>
+              <div className="p-8 rounded-2xl border-2 border-border bg-canvas/30 flex flex-col items-center justify-center space-y-3 font-body text-xs text-text-muted">
+                <Loader2 className="w-6 h-6 animate-spin text-accent" />
+                <span>Memuat data identitas loker...</span>
               </div>
             ) : lokerData?.isLoggedIn && lokerData.user ? (
               <div className="space-y-4">
-                <div className="border border-fluor/20 p-4 space-y-4 font-mono text-xs">
+                <div className="rounded-2xl border-2 border-border p-5 bg-canvas/30 space-y-4 font-body text-xs">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-night border-2 border-caution flex items-center justify-center">
-                        <User className="w-6 h-6 text-fluor/80" />
+                    <div className="flex items-center space-x-3.5">
+                      <div className="w-12 h-12 rounded-2xl bg-secondary/30 flex items-center justify-center text-text font-display font-bold text-base">
+                        {lokerData.user.displayName?.charAt(0).toUpperCase() || "S"}
                       </div>
                       <div>
-                        <div className="font-sign text-lg text-fluor uppercase">
+                        <div className="font-display font-bold text-base text-text">
                           {lokerData.user.displayName || lokerData.user.name}
                         </div>
-                        <div className="text-caution">
-                          @{lokerData.user.username || "pengguna"} {" // "} {lokerData.user.role}
+                        <div className="text-accent font-semibold text-xs">
+                          @{lokerData.user.username || "pengguna"} • {lokerData.user.role}
                         </div>
                       </div>
                     </div>
-                    <Badge variant="cyan">AKUN TERVERIFIKASI</Badge>
+                    <Badge variant="mint">Akun Terdaftar</Badge>
                   </div>
 
                   {/* Bio dengan Fitur Edit Cepat */}
-                  <div className="pt-2 border-t border-fluor/10 space-y-1.5">
-                    <div className="flex justify-between items-center text-[11px] text-fluor/60">
-                      <span>BIO PENGGUNA:</span>
+                  <div className="pt-3 border-t border-border/40 space-y-2">
+                    <div className="flex justify-between items-center text-xs text-text-muted">
+                      <span className="font-semibold">Bio Profil:</span>
                       {!isEditingBio && (
                         <button
                           onClick={() => setIsEditingBio(true)}
-                          className="flex items-center space-x-1 text-caution hover:underline"
+                          className="flex items-center space-x-1 text-accent font-bold hover:underline"
                         >
                           <Edit2 className="w-3 h-3" />
-                          <span>UBAH</span>
+                          <span>Ubah</span>
                         </button>
                       )}
                     </div>
@@ -552,45 +550,45 @@ export function WorldModals() {
                           value={bioInput}
                           onChange={(e) => setBioInput(e.target.value)}
                           placeholder="Tulis status/bio Anda (maks 200 karakter)"
-                          className="font-mono text-xs"
+                          className="font-body text-xs rounded-xl border-2 border-border bg-surface"
                           maxLength={200}
                         />
                         <div className="flex gap-2">
-                          <Button size="sm" variant="default" onClick={handleSaveBio} disabled={bioSaving}>
-                            {bioSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "SIMPAN"}
+                          <Button size="sm" variant="default" onClick={handleSaveBio} disabled={bioSaving} className="rounded-xl font-display font-bold">
+                            {bioSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Simpan"}
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => setIsEditingBio(false)}>
-                            BATAL
+                          <Button size="sm" variant="outline" onClick={() => setIsEditingBio(false)} className="rounded-xl font-display font-semibold">
+                            Batal
                           </Button>
                         </div>
                       </div>
                     ) : (
-                      <div className="font-body text-xs text-fluor/80 italic bg-fluor/5 p-2 border border-fluor/10">
+                      <div className="font-body text-xs text-text italic bg-surface p-3 rounded-xl border border-border">
                         &quot;{lokerData.user.bio || "Belum ada bio. Klik ubah untuk mengisi."}&quot;
                       </div>
                     )}
 
                     {bioNotice && (
-                      <div className="text-ok font-mono text-[11px] pt-1">
+                      <div className="text-ok font-body text-xs pt-1 font-semibold">
                         {bioNotice}
                       </div>
                     )}
                   </div>
 
                   {/* Daftar Kelas yang Diikuti */}
-                  <div className="pt-2 border-t border-fluor/10 space-y-2">
-                    <span className="text-[11px] text-fluor/60 uppercase">KELAS YANG DIIKUTI:</span>
+                  <div className="pt-3 border-t border-border/40 space-y-2">
+                    <span className="text-xs text-text-muted font-semibold">Kelas yang Diikuti:</span>
                     {lokerData.classes.length === 0 ? (
-                      <div className="text-fluor/50 text-xs italic">
+                      <div className="text-text-muted text-xs italic">
                         Belum bergabung ke kelas mana pun. Kunjungi pintu kelas di lorong.
                       </div>
                     ) : (
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {lokerData.classes.map((c) => (
-                          <div key={c.classId} className="flex justify-between items-center p-2 border border-fluor/15 bg-night">
-                            <span className="text-fluor font-semibold">{c.className}</span>
-                            <span className="text-caution">
-                              {c.seatIndex !== null ? `MEJA #${c.seatIndex + 1}` : "GURU"}
+                          <div key={c.classId} className="flex justify-between items-center p-3 rounded-xl border border-border bg-surface">
+                            <span className="font-display font-bold text-xs text-text">{c.className}</span>
+                            <span className="text-text font-semibold text-xs">
+                              {c.seatIndex !== null ? `Meja #${c.seatIndex + 1}` : "Guru"}
                             </span>
                           </div>
                         ))}
@@ -603,42 +601,37 @@ export function WorldModals() {
                   <Button
                     variant="default"
                     size="lg"
-                    className="flex-1 space-x-2"
+                    className="flex-1 space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
                     onClick={() => {
                       closePanel();
                       router.push("/profil");
                     }}
                   >
-                    <span className="font-hud text-lg tracking-wider">BUKA HALAMAN PROFIL LENGKAP</span>
+                    <span>Buka Halaman Profil Lengkap</span>
                     <ArrowRight className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="lg" onClick={closePanel}>
-                    KUNCI LOKER & KEMBALI
+                  <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                    Tutup Loker
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="border border-alert/40 bg-alert/5 p-6 text-center space-y-4">
+              <div className="rounded-2xl border-2 border-alert/30 bg-alert/10 p-6 text-center space-y-4">
                 <ShieldAlert className="w-10 h-10 text-alert mx-auto" />
                 <div className="space-y-1">
-                  <h3 className="font-sign text-xl uppercase text-alert">LOKER TERKUNCI</h3>
-                  <p className="font-body text-xs text-fluor/70">
-                    Anda belum masuk akun. Loker hanya dapat diakses oleh pengguna yang memiliki akun terdaftar.
+                  <h3 className="font-display font-bold text-lg text-alert">Loker Terkunci</h3>
+                  <p className="font-body text-xs text-text-muted">
+                    Anda belum masuk akun. Loker hanya dapat diakses oleh siswa yang sudah masuk.
                   </p>
                 </div>
                 <div className="flex justify-center gap-3 pt-2">
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => {
-                      closePanel();
-                      router.push("/masuk");
-                    }}
-                  >
-                    MASUK KE AKUN
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={closePanel}>
-                    TUTUP
+                  <Link href="/masuk">
+                    <Button variant="danger" size="sm" className="rounded-xl">
+                      Masuk ke Akun
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" onClick={closePanel} className="rounded-xl">
+                    Tutup
                   </Button>
                 </div>
               </div>
@@ -646,59 +639,57 @@ export function WorldModals() {
           </div>
         )}
 
-        {/* 5. MODAL CERMIN KOSMETIK (3.2 & Tahap 4) */}
+        {/* 5. MODAL CERMIN KOSMETIK */}
         {activePanel === "mirror" && (
           <div className="space-y-6">
-            <div className="border-b border-fluor/20 pb-4 space-y-2">
-              <div className="flex items-center space-x-2 text-neon-pink">
+            <div className="border-b border-border/50 pb-4 space-y-2">
+              <div className="flex items-center space-x-2 text-accent">
                 <Sparkles className="w-6 h-6" />
-                <span className="font-hud text-xl tracking-widest uppercase">
-                  {"//"} CERMIN KOSMETIK
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Cermin Kosmetik
                 </span>
               </div>
-              <h2 className="font-sign text-3xl sm:text-4xl uppercase tracking-wide text-fluor">
-                BINGKAI AVATAR DARI KATALOG
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-text">
+                Bingkai Avatar Sekolah
               </h2>
-              <p className="font-body text-xs sm:text-sm text-fluor/70">
-                Katalog resmi kosmetik visual: pilih bingkai avatar yang tampil di kartu meja siswa
-                dan cermin lorong. Pilihan tersimpan langsung ke akun Anda.
+              <p className="font-body text-xs sm:text-sm text-text-muted leading-relaxed">
+                Pilih bingkai avatar resmi yang tampil di kartu meja siswa dan cermin sekolah.
               </p>
             </div>
 
             {cerminLoading ? (
-              <div className="p-8 border border-fluor/20 flex flex-col items-center justify-center space-y-3 font-mono text-xs text-caution">
-                <Loader2 className="w-6 h-6 animate-spin text-caution" />
-                <span>MEMUAT KATALOG KOSMETIK CERMIN DARI DATABASE...</span>
+              <div className="p-8 rounded-2xl border-2 border-border bg-canvas/30 flex flex-col items-center justify-center space-y-3 font-body text-xs text-text-muted">
+                <Loader2 className="w-6 h-6 animate-spin text-accent" />
+                <span>Memuat katalog cermin...</span>
               </div>
             ) : cerminData ? (
               <div className="space-y-4">
                 {frameSavedNotice && (
-                  <div className="p-3 border border-ok bg-ok/10 text-ok font-mono text-xs flex items-center space-x-2">
+                  <div className="p-3.5 rounded-2xl border-2 border-ok/30 bg-ok/10 text-ok font-body text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
                     <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                     <span>Bingkai avatar berhasil disimpan ke profil Anda!</span>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 font-body text-xs">
                   {/* Opsi Tanpa Bingkai */}
                   <button
                     onClick={() => setSelectedFrameId(null)}
-                    className={`p-3 border text-left transition-colors flex items-center justify-between ${
-                      selectedFrameId === null
-                        ? "border-caution bg-caution/10"
-                        : "border-fluor/20 bg-night hover:border-fluor/40"
-                    }`}
+                    className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between cursor-pointer ${selectedFrameId === null
+                        ? "border-primary bg-primary/15 shadow-xs"
+                        : "border-border bg-canvas/30 hover:border-primary/50"
+                      }`}
                   >
-                    <div className="flex items-center space-x-2.5">
-                      <div className="w-7 h-7 border border-fluor/30 flex items-center justify-center bg-night">
-                        <User className="w-3.5 h-3.5 text-fluor/70" />
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 rounded-xl border border-border flex items-center justify-center bg-surface">
+                        <User className="w-4 h-4 text-text-muted" />
                       </div>
                       <div>
-                        <div className="font-semibold text-fluor">Tanpa Bingkai</div>
-                        <div className="text-[10px] text-fluor/50">Tampilan standar</div>
+                        <div className="font-display font-bold text-sm text-text">Tanpa Bingkai</div>
+                        <div className="text-[11px] text-text-muted">Tampilan standar</div>
                       </div>
                     </div>
-                    {selectedFrameId === null && <Check className="w-4 h-4 text-caution" />}
+                    {selectedFrameId === null && <Check className="w-4 h-4 text-text font-bold" />}
                   </button>
 
                   {/* Opsi dari Database */}
@@ -708,24 +699,23 @@ export function WorldModals() {
                       <button
                         key={frame.id}
                         onClick={() => setSelectedFrameId(frame.id)}
-                        className={`p-3 border text-left transition-colors flex items-center justify-between ${
-                          isSelected
-                            ? "border-caution bg-caution/10"
-                            : "border-fluor/20 bg-night hover:border-fluor/40"
-                        }`}
+                        className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between cursor-pointer ${isSelected
+                            ? "border-primary bg-primary/15 shadow-xs"
+                            : "border-border bg-canvas/30 hover:border-primary/50"
+                          }`}
                       >
-                        <div className="flex items-center space-x-2.5">
-                          <div className="w-7 h-7 border-2 border-caution flex items-center justify-center bg-night">
-                            <User className="w-3.5 h-3.5 text-caution" />
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-xl border-2 border-primary flex items-center justify-center bg-primary/20">
+                            <User className="w-4 h-4 text-text" />
                           </div>
                           <div>
-                            <div className="font-semibold text-fluor">{frame.name}</div>
-                            <div className="text-[10px] text-fluor/50 line-clamp-1">
+                            <div className="font-display font-bold text-sm text-text">{frame.name}</div>
+                            <div className="text-[11px] text-text-muted line-clamp-1">
                               {frame.description || "Katalog resmi"}
                             </div>
                           </div>
                         </div>
-                        {isSelected && <Check className="w-4 h-4 text-caution" />}
+                        {isSelected && <Check className="w-4 h-4 text-text font-bold" />}
                       </button>
                     );
                   })}
@@ -735,20 +725,18 @@ export function WorldModals() {
                   <Button
                     variant="default"
                     size="lg"
-                    className="flex-1 space-x-2"
+                    className="flex-1 space-x-2 rounded-2xl font-display font-bold text-sm shadow-sm"
                     onClick={handleSaveFrame}
                     disabled={frameSaving}
                   >
                     {frameSaving ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <span className="font-hud text-lg tracking-wider">
-                        PASANG BINGKAI & SIMPAN KE AKUN
-                      </span>
+                      <span>Pasang Bingkai &amp; Simpan</span>
                     )}
                   </Button>
-                  <Button variant="outline" size="lg" onClick={closePanel}>
-                    TUTUP CERMIN
+                  <Button variant="outline" size="lg" onClick={closePanel} className="rounded-2xl font-display font-semibold text-sm">
+                    Tutup
                   </Button>
                 </div>
               </div>

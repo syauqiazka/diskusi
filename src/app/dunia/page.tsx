@@ -15,12 +15,11 @@ const WorldContainer = dynamic(
 
 function WorldLoadingScreen() {
   const loadingTexts = [
-    "Menyapu lorong tengah malam...",
-    "Menyalakan lampu neon tabung...",
-    "Mengecek gembok pintu kelas SIJA...",
-    "Memeriksa mading sekolah...",
-    "Menyusun rak buku perpustakaan...",
-    "Mengunci lemari ruang guru...",
+    "Mempersiapkan kawasan sekolah bernuansa anime...",
+    "Menyusun meja dan kursi kelas...",
+    "Menghangatkan pencahayaan fajar sekolah...",
+    "Menyiapkan rak perpustakaan dan buku...",
+    "Membuka pintu lorong utama sekolah...",
   ];
 
   const [textIndex, setTextIndex] = React.useState(0);
@@ -33,25 +32,28 @@ function WorldLoadingScreen() {
   }, [loadingTexts.length]);
 
   return (
-    <div className="w-screen h-screen bg-night flex flex-col items-center justify-center space-y-4 p-6 select-none font-hud">
+    <div className="w-screen h-screen bg-canvas flex flex-col items-center justify-center space-y-5 p-6 select-none font-body">
       <div className="relative">
-        <Loader2 className="w-12 h-12 text-caution animate-spin" />
-        <span className="absolute inset-0 flex items-center justify-center font-mono text-[10px] text-fluor">
-          3D
+        <div className="w-16 h-16 rounded-3xl bg-primary/20 border-2 border-primary/40 flex items-center justify-center shadow-sm">
+          <Loader2 className="w-8 h-8 text-text animate-spin" />
+        </div>
+        <span className="absolute -top-1 -right-1 flex h-4 w-4">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+          <span className="relative inline-flex rounded-full h-4 w-4 bg-accent" />
         </span>
       </div>
 
-      <div className="space-y-1 text-center">
-        <div className="text-caution text-3xl sm:text-4xl tracking-widest uppercase">
-          MEMUAT KAWASAN SEKOLAH 3D
+      <div className="space-y-2 text-center">
+        <div className="text-text font-display font-bold text-2xl sm:text-3xl tracking-tight">
+          Memuat Kawasan Sekolah 3D
         </div>
-        <div className="font-mono text-xs text-fluor/70 tracking-wider">
+        <div className="font-body text-xs text-text-muted">
           {loadingTexts[textIndex]}
         </div>
       </div>
 
-      <div className="border border-fluor/20 px-3 py-1 bg-night text-fluor/50 font-mono text-[11px] uppercase">
-        TEKAN KANVAS UNTUK MEMULAI KONTROL FIRST-PERSON
+      <div className="border-2 border-border px-4 py-1.5 rounded-full bg-surface text-text-muted font-display text-xs shadow-xs">
+        Klik kanvas layar untuk mengaktifkan kendali gerak first-person
       </div>
     </div>
   );

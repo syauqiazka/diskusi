@@ -1,16 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { HelpCircle, X, Compass } from "lucide-react";
+import { HelpCircle, X, Compass, Play, Pause } from "lucide-react";
 import { useWorldStore } from "@/stores/use-world-store";
 
 function formatSessionTime(totalSeconds: number): string {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-
   const pad = (n: number) => n.toString().padStart(2, "0");
-  return `SP ${hours}:${pad(minutes)}:${pad(seconds)}`;
+  return `${pad(minutes)}:${pad(seconds)}`;
 }
 
 export function WorldHud() {
@@ -36,73 +34,65 @@ export function WorldHud() {
   if (!showHud || activePanel) return null;
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4 sm:p-6 select-none font-hud">
-      {/* BARIS ATAS HUD VHS */}
+    <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4 sm:p-6 select-none font-body">
+      {/* BARIS ATAS HUD BERSIH & RAMAH */}
       <div className="flex items-center justify-between w-full pointer-events-auto">
-        {/* Kiri Atas: Indikator PLAY / PAUSE (SVG Murni, Tanpa Emoji) */}
-        <div className="flex items-center space-x-3 bg-night/80 border border-fluor/20 px-3 py-1.5 backdrop-blur-xs">
+        {/* Kiri Atas: Indikator PLAY / PAUSE */}
+        <div className="flex items-center space-x-2 bg-surface/90 border-2 border-border px-3.5 py-1.5 rounded-full backdrop-blur-md shadow-sm">
           {isPaused ? (
-            <span className="flex items-center space-x-2 text-alert text-xl sm:text-2xl tracking-widest animate-pulse">
-              <span>PAUSE</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" />
-                <rect x="14" y="4" width="4" height="16" />
-              </svg>
+            <span className="flex items-center space-x-1.5 text-alert font-display font-bold text-xs tracking-wide">
+              <Pause className="w-3.5 h-3.5 fill-current" />
+              <span>Dijeda</span>
             </span>
           ) : (
-            <span className="flex items-center space-x-2 text-caution text-xl sm:text-2xl tracking-widest">
-              <span>PLAY</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
+            <span className="flex items-center space-x-1.5 text-text font-display font-bold text-xs tracking-wide">
+              <Play className="w-3.5 h-3.5 fill-primary text-primary" />
+              <span>Jelajah Aktif</span>
             </span>
           )}
           <button
             onClick={togglePause}
-            className="text-xs font-mono text-fluor/60 hover:text-fluor border-l border-fluor/20 pl-2 uppercase"
+            className="text-xs font-display font-medium text-text-muted hover:text-text border-l border-border pl-2 transition-colors"
           >
-            {isPaused ? "[ESC] LANJUT" : "[ESC] JEDA"}
+            {isPaused ? "[Esc] Lanjut" : "[Esc] Jeda"}
           </button>
         </div>
 
-        {/* Tengah Atas: Tombol Informasi Kontrol (3.5 & 3.7) */}
+        {/* Tengah Atas: Tombol Panduan Kontrol */}
         <div className="hidden sm:flex items-center space-x-2">
           <button
             onClick={toggleControlHelp}
-            className="flex items-center space-x-1.5 bg-night/80 border border-fluor/25 hover:border-caution hover:text-caution px-3 py-1.5 text-fluor text-lg tracking-widest transition-colors"
+            className="flex items-center space-x-1.5 bg-surface/90 border-2 border-border hover:border-primary px-3.5 py-1.5 rounded-full text-text font-display font-bold text-xs shadow-sm transition-all hover:scale-105"
           >
-            <HelpCircle className="w-4 h-4 text-caution" />
-            <span>[?] INFORMASI KONTROL</span>
+            <HelpCircle className="w-3.5 h-3.5 text-accent" />
+            <span>[?] Panduan Kontrol</span>
           </button>
         </div>
 
-        {/* Kanan Atas: Penghitung Waktu Sesi VHS */}
-        <div className="flex items-center space-x-3 bg-night/80 border border-fluor/20 px-3 py-1.5 text-fluor/80 text-xl sm:text-2xl tracking-widest">
-          <span>{formatSessionTime(sessionDuration)}</span>
+        {/* Kanan Atas: Penghitung Waktu Jelajah */}
+        <div className="flex items-center space-x-2 bg-surface/90 border-2 border-border px-3.5 py-1.5 rounded-full text-text font-display font-bold text-xs shadow-sm backdrop-blur-md">
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <span>Waktu: {formatSessionTime(sessionDuration)}</span>
         </div>
       </div>
 
-      {/* PUSAT LAYAR: RETICLE & PROMPT AKSI INTERAKTIF (3.4) */}
+      {/* PUSAT LAYAR: RETICLE & PROMPT AKSI INTERAKTIF */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-        {/* Reticle / Crosshair Minimalis */}
-        <div className="relative w-4 h-4 flex items-center justify-center">
-          <div className="w-1 h-1 bg-fluor/60" />
-          <div className="absolute top-0 w-0.5 h-1 bg-fluor/40" />
-          <div className="absolute bottom-0 w-0.5 h-1 bg-fluor/40" />
-          <div className="absolute left-0 h-0.5 w-1 bg-fluor/40" />
-          <div className="absolute right-0 h-0.5 w-1 bg-fluor/40" />
+        {/* Reticle / Crosshair Lembut Bersahabat */}
+        <div className="relative w-3 h-3 flex items-center justify-center">
+          <div className="w-2 h-2 rounded-full bg-surface border-2 border-primary shadow-md" />
         </div>
 
         {/* Banner Prompt Aksi saat objek terdeteksi raycast */}
         {activeInteractable && (
-          <div className="mt-6 flex flex-col items-center space-y-1 animate-pulse">
-            <div className="bg-night/95 border-2 border-caution px-5 py-2 shadow-[0_0_15px_rgba(242,194,0,0.4)]">
-              <span className="text-caution text-2xl sm:text-3xl tracking-widest font-hud font-bold">
+          <div className="mt-8 flex flex-col items-center space-y-1.5 animate-bounce">
+            <div className="bg-surface/95 border-2 border-primary px-5 py-2.5 rounded-2xl shadow-xl backdrop-blur-md">
+              <span className="text-text font-display font-bold text-base sm:text-lg">
                 {activeInteractable.actionPrompt}
               </span>
             </div>
-            <div className="bg-night/90 border border-fluor/30 px-3 py-0.5">
-              <span className="font-mono text-[11px] text-fluor/90 uppercase tracking-wider">
+            <div className="bg-surface/90 border border-border px-3 py-1 rounded-full shadow-sm">
+              <span className="font-body text-xs font-medium text-text-muted">
                 {activeInteractable.label}
               </span>
             </div>
@@ -111,66 +101,68 @@ export function WorldHud() {
       </div>
 
       {/* FOOTER HUD: STATUS NAVIGASI CEPAT */}
-      <div className="flex items-center justify-between text-fluor/60 text-base sm:text-lg tracking-wider">
-        <div className="hidden sm:block bg-night/70 px-2 py-0.5 border border-fluor/10">
-          LORONG SEKOLAH TENGAH MALAM — LT 1
+      <div className="flex items-center justify-between text-text-muted text-xs font-medium">
+        <div className="hidden sm:block bg-surface/80 px-3 py-1 rounded-full border border-border shadow-xs backdrop-blur-xs">
+          Kawasan Sekolah • Navigasi Bebas
         </div>
-        <div className="bg-night/70 px-2 py-0.5 border border-fluor/10 text-right ml-auto">
-          FIRST-PERSON EXPLORATION // WASD TO WALK
+        <div className="bg-surface/80 px-3 py-1 rounded-full border border-border text-right ml-auto shadow-xs backdrop-blur-xs">
+          Gunakan WASD untuk berjalan • Geser mouse untuk melihat
         </div>
       </div>
 
       {/* MODAL DIALOG BANTUAN KONTROL KARAKTER */}
       {showControlHelp && (
-        <div className="fixed inset-0 bg-night/85 backdrop-blur-xs flex items-center justify-center p-4 z-50 pointer-events-auto">
-          <div className="max-w-md w-full border-2 border-caution bg-night p-6 space-y-5 relative">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 pointer-events-auto">
+          <div className="max-w-md w-full rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-5 relative shadow-2xl animate-in fade-in zoom-in-95">
             <button
               onClick={toggleControlHelp}
-              className="absolute top-4 right-4 text-fluor/60 hover:text-caution p-1"
+              className="absolute top-5 right-5 text-text-muted hover:text-text p-1.5 rounded-full hover:bg-canvas transition-colors"
               aria-label="Tutup Bantuan"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="border-b border-fluor/20 pb-3 flex items-center space-x-2 text-caution">
-              <Compass className="w-5 h-5" />
-              <h3 className="font-hud text-2xl uppercase tracking-widest">
-                INFORMASI KONTROL KARAKTER
+            <div className="border-b border-border/50 pb-3 flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-secondary/30 flex items-center justify-center text-text">
+                <Compass className="w-5 h-5" />
+              </div>
+              <h3 className="font-display font-bold text-xl text-text">
+                Panduan Kontrol Karakter
               </h3>
             </div>
 
-            <div className="space-y-3 font-mono text-xs text-fluor/90">
-              <div className="flex justify-between items-center p-2 border border-fluor/15">
-                <span className="text-caution font-semibold">W, A, S, D / PANAH</span>
-                <span>Bergerak Maju, Kiri, Mundur, Kanan</span>
+            <div className="space-y-2.5 font-body text-xs text-text">
+              <div className="flex justify-between items-center p-2.5 rounded-2xl border border-border bg-canvas/30">
+                <span className="font-display font-bold text-text">W, A, S, D / Panah</span>
+                <span className="text-text-muted">Maju, Kiri, Mundur, Kanan</span>
               </div>
-              <div className="flex justify-between items-center p-2 border border-fluor/15">
-                <span className="text-caution font-semibold">GERAKAN MOUSE</span>
-                <span>Melihat Sekeliling (Pointer Lock)</span>
+              <div className="flex justify-between items-center p-2.5 rounded-2xl border border-border bg-canvas/30">
+                <span className="font-display font-bold text-text">Gerakan Mouse</span>
+                <span className="text-text-muted">Melihat Sekeliling (Pointer Lock)</span>
               </div>
-              <div className="flex justify-between items-center p-2 border border-fluor/15">
-                <span className="text-caution font-semibold">SHIFT</span>
-                <span>Berlari Cepat</span>
+              <div className="flex justify-between items-center p-2.5 rounded-2xl border border-border bg-canvas/30">
+                <span className="font-display font-bold text-text">Shift</span>
+                <span className="text-text-muted">Berlari Cepat</span>
               </div>
-              <div className="flex justify-between items-center p-2 border border-fluor/15">
-                <span className="text-caution font-semibold">CTRL / C</span>
-                <span>Jongkok (Tinggi 0.9m)</span>
+              <div className="flex justify-between items-center p-2.5 rounded-2xl border border-border bg-canvas/30">
+                <span className="font-display font-bold text-text">C</span>
+                <span className="text-text-muted">Jongkok (Kamera 0.9m)</span>
               </div>
-              <div className="flex justify-between items-center p-2 border border-fluor/15">
-                <span className="text-caution font-semibold">TOMBOL E / KLIK</span>
-                <span>Interaksi dengan Objek</span>
+              <div className="flex justify-between items-center p-2.5 rounded-2xl border border-border bg-canvas/30">
+                <span className="font-display font-bold text-text">Tombol E / Klik Kiri</span>
+                <span className="text-text-muted">Interaksi dengan Objek / Pintu</span>
               </div>
-              <div className="flex justify-between items-center p-2 border border-fluor/15">
-                <span className="text-caution font-semibold">ESC</span>
-                <span>Membuka / Menutup Menu Jeda</span>
+              <div className="flex justify-between items-center p-2.5 rounded-2xl border border-border bg-canvas/30">
+                <span className="font-display font-bold text-text">Esc</span>
+                <span className="text-text-muted">Buka / Tutup Menu Jeda</span>
               </div>
             </div>
 
             <button
               onClick={toggleControlHelp}
-              className="w-full bg-caution text-night font-hud text-xl py-2 tracking-widest hover:bg-caution/90 transition-colors"
+              className="w-full bg-primary text-text font-display font-bold text-sm py-3 rounded-2xl shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
             >
-              [TUTUP INFORMASI]
+              Mengerti, Lanjutkan Jelajah
             </button>
           </div>
         </div>

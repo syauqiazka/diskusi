@@ -98,14 +98,18 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
     return map;
   }, [classroom.members]);
 
-  const teachers = classroom.members.filter(
-    (m) => m.role === "TEACHER" || m.role === "ASSISTANT"
-  );
+  const teachers = React.useMemo(() => {
+    return classroom.members.filter(
+      (m) => m.role === "TEACHER" || m.role === "ASSISTANT"
+    );
+  }, [classroom.members]);
 
-  const myMembership = classroom.members.find((m) => m.user.id === currentUserId);
-  const myName = myMembership?.user.displayName || myMembership?.user.name || "Saya";
-  const mySeat = myMembership?.seatIndex ?? null;
+  const isTeacherOrAdmin = React.useMemo(() => {
+    const me = classroom.members.find((m) => m.user.id === currentUserId);
+    return me?.role === "TEACHER" || me?.role === "ASSISTANT";
+  }, [classroom.members, currentUserId]);
 
+  // Realtime Presence Ably
   const classMembersForPresence = React.useMemo(() => {
     return classroom.members.map((m) => ({
       userId: m.user.id,
@@ -114,23 +118,20 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
     }));
   }, [classroom.members]);
 
+  const myMembership = classroom.members.find((m) => m.user.id === currentUserId);
+
   const { onlineUserIds, activeStudentCount } = useClassroomPresence({
     classId: classroom.id,
     currentUserId,
-    currentUserName: myName,
-    currentUserSeatIndex: mySeat,
+    currentUserName: myMembership?.user.displayName || myMembership?.user.name || "Siswa",
+    currentUserSeatIndex: myMembership?.seatIndex ?? null,
     classMembers: classMembersForPresence,
   });
 
-  const isTeacherOrAdmin = React.useMemo(() => {
-    return classroom.members.some(
-      (m) => m.user.id === currentUserId && (m.role === "TEACHER" || m.role === "ASSISTANT")
-    );
-  }, [classroom.members, currentUserId]);
-
-  // Load Data Riil Kelas (Pengumuman, Thread Diskusi, Materi)
+  // Refresh data pengumuman, forum, materi
   const refreshClassData = React.useCallback(async () => {
     try {
+      setIsLoadingData(true);
       const [annRes, threadRes, matRes] = await Promise.all([
         getAnnouncements(classroom.id),
         getThreads({ classId: classroom.id }),
@@ -289,62 +290,62 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
     <div className="space-y-6">
       {/* Toast Notice */}
       {downloadNotice && (
-        <div className="border border-ok bg-ok/10 text-ok p-3 font-mono text-xs flex items-center space-x-2 animate-fadeIn">
+        <div className="rounded-2xl border-2 border-ok/30 bg-ok/10 text-ok p-3.5 font-body text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4" />
           <span>{downloadNotice}</span>
         </div>
       )}
 
       <Tabs defaultValue="meja">
-        <TabsList className="bg-night border border-fluor/25 p-1">
-          <TabsTrigger value="meja" className="space-x-1.5">
-            <Users className="w-3.5 h-3.5" />
-            <span>[01] MEJA ANGGOTA (DENAH 2D)</span>
+        <TabsList className="bg-surface border-2 border-border p-1.5 rounded-full inline-flex gap-1 shadow-sm flex-wrap h-auto">
+          <TabsTrigger value="meja" className="space-x-1.5 rounded-full font-display font-semibold text-xs py-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-text data-[state=active]:shadow-sm">
+            <Users className="w-4 h-4" />
+            <span>Denah Meja Kelas</span>
           </TabsTrigger>
-          <TabsTrigger value="papan" className="space-x-1.5">
-            <Pin className="w-3.5 h-3.5" />
-            <span>[02] PAPAN TULIS ({announcements.length})</span>
+          <TabsTrigger value="papan" className="space-x-1.5 rounded-full font-display font-semibold text-xs py-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-text data-[state=active]:shadow-sm">
+            <Pin className="w-4 h-4" />
+            <span>Papan Tulis ({announcements.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="diskusi" className="space-x-1.5">
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>[03] PAPAN DISKUSI ({threads.length})</span>
+          <TabsTrigger value="diskusi" className="space-x-1.5 rounded-full font-display font-semibold text-xs py-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-text data-[state=active]:shadow-sm">
+            <MessageSquare className="w-4 h-4" />
+            <span>Papan Diskusi ({threads.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="materi" className="space-x-1.5">
-            <FileText className="w-3.5 h-3.5" />
-            <span>[04] RAK MATERI ({materials.length})</span>
+          <TabsTrigger value="materi" className="space-x-1.5 rounded-full font-display font-semibold text-xs py-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-text data-[state=active]:shadow-sm">
+            <FileText className="w-4 h-4" />
+            <span>Rak Materi ({materials.length})</span>
           </TabsTrigger>
         </TabsList>
 
         {/* TAB 1: MEJA ANGGOTA (DENAH 2D RUANG KELAS) */}
-        <TabsContent value="meja" className="space-y-6">
+        <TabsContent value="meja" className="space-y-6 pt-2">
           {/* Meja Guru di depan */}
-          <div className="border border-fluor/30 bg-night p-4">
-            <div className="flex items-center justify-between border-b border-fluor/15 pb-2 mb-3">
-              <span className="font-hud text-lg tracking-widest text-caution">
-                [MEJA PENGAJAR / GURU & ASISTEN]
+          <div className="rounded-3xl border-2 border-border bg-surface p-6 shadow-sm">
+            <div className="flex items-center justify-between border-b border-border/50 pb-3 mb-4">
+              <span className="font-display font-bold text-base text-text">
+                Meja Pengajar & Asisten
               </span>
-              <Badge variant="cyan">DEPAN KELAS</Badge>
+              <Badge variant="peach">Depan Kelas</Badge>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {teachers.map((t) => {
                 const isTeacherOnline = onlineUserIds.has(t.user.id);
                 return (
                   <div
                     key={t.id}
-                    className="p-3 border border-neon-cyan/40 bg-neon-cyan/5 flex items-center justify-between"
+                    className="p-4 rounded-2xl border-2 border-border bg-canvas/30 flex items-center justify-between shadow-xs"
                   >
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                       <span
-                        className={`w-2.5 h-2.5 ${
-                          isTeacherOnline ? "bg-ok animate-pulse" : "bg-fluor/20"
+                        className={`w-3 h-3 rounded-full ${
+                          isTeacherOnline ? "bg-ok ring-2 ring-ok/20" : "bg-text-muted/40"
                         } inline-block`}
                         title={isTeacherOnline ? "Pengajar Online" : "Pengajar Offline"}
                       />
                       <div>
-                        <div className="font-sign uppercase text-base text-fluor">
+                        <div className="font-display font-bold text-sm text-text">
                           {t.user.displayName || t.user.name}
                         </div>
-                        <div className="font-mono text-[11px] text-fluor/60">
+                        <div className="font-body text-xs text-text-muted">
                           {t.role === "TEACHER" ? "Pengajar Utama" : "Asisten Kelas"}
                         </div>
                       </div>
@@ -354,9 +355,9 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                         variant="secondary"
                         size="sm"
                         onClick={() => handleOpenDm(t.user)}
-                        className="text-xs"
+                        className="rounded-xl text-xs font-display font-semibold"
                       >
-                        KIRIM PESAN
+                        Kirim Pesan
                       </Button>
                     )}
                   </div>
@@ -368,15 +369,15 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
           {/* Grid 30 Meja Siswa (Standard-30 Layout) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-sign text-xl uppercase tracking-wider text-fluor">
-                GRID MEJA SISWA ({activeStudentCount} / {classroom.members.filter((m) => m.role === "STUDENT").length} ONLINE)
+              <h3 className="font-display font-bold text-lg text-text">
+                Denah Meja Siswa ({activeStudentCount} / {classroom.members.filter((m) => m.role === "STUDENT").length} Online)
               </h3>
-              <span className="font-mono text-xs text-fluor/60">
-                LAYOUT: {classroom.roomLayout.toUpperCase()}
+              <span className="font-body text-xs text-text-muted">
+                Tata Letak: {classroom.roomLayout.toUpperCase()}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
               {Array.from({ length: 30 }).map((_, index) => {
                 const member = studentSeats.get(index);
                 const isMe = member?.user.id === currentUserId;
@@ -385,28 +386,28 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                 return (
                   <div
                     key={index}
-                    className={`border p-3 transition-colors flex flex-col justify-between min-h-[110px] ${
+                    className={`rounded-2xl p-4 transition-all flex flex-col justify-between min-h-[125px] ${
                       member
                         ? isMe
-                          ? "border-caution bg-caution/10"
+                          ? "border-2 border-primary bg-primary/15 shadow-sm"
                           : isOnline
-                            ? "border-fluor bg-fluor/[0.04] shadow-[0_0_10px_rgba(79,208,138,0.1)]"
-                            : "border-fluor/30 bg-night"
-                        : "border-dashed border-fluor/20 bg-fluor/[0.02]"
+                            ? "border-2 border-border bg-surface shadow-xs"
+                            : "border-2 border-border bg-surface/80"
+                        : "border-2 border-dashed border-border/60 bg-canvas/40"
                     }`}
                   >
-                    <div className="flex items-center justify-between font-mono text-[11px]">
-                      <span className="font-bold text-caution">
-                        MEJA #{String(index + 1).padStart(2, "0")}
+                    <div className="flex items-center justify-between font-body text-xs">
+                      <span className="font-display font-bold text-xs text-text">
+                        Meja #{String(index + 1).padStart(2, "0")}
                       </span>
                       {member && (
                         <span
-                          className={`w-2 h-2 ${
+                          className={`w-2.5 h-2.5 rounded-full ${
                             isOnline
                               ? isMe
-                                ? "bg-caution animate-pulse"
-                                : "bg-ok animate-pulse"
-                              : "bg-fluor/20"
+                                ? "bg-primary ring-2 ring-primary/30"
+                                : "bg-ok ring-2 ring-ok/30"
+                              : "bg-text-muted/30"
                           } inline-block`}
                           title={isOnline ? "Status: Online di Meja" : "Status: Offline"}
                         />
@@ -415,23 +416,23 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
 
                     {member ? (
                       <div className="my-2">
-                        <div className="font-sign text-base uppercase text-fluor truncate">
+                        <div className="font-display font-bold text-sm text-text truncate">
                           {member.user.displayName || member.user.name}
                         </div>
-                        <div className="font-mono text-[11px] text-fluor/50 truncate">
-                          {isMe ? "(MEJA ANDA)" : `@${member.user.username || "siswa"}`}
+                        <div className="font-body text-xs text-text-muted truncate">
+                          {isMe ? "(Meja Anda)" : `@${member.user.username || "siswa"}`}
                         </div>
-                        <div className="font-mono text-[10px] mt-0.5">
+                        <div className="font-body text-[11px] mt-1">
                           {isOnline ? (
-                            <span className="text-ok font-semibold">● ONLINE DI MEJA</span>
+                            <span className="text-ok font-semibold">● Hadir di Meja</span>
                           ) : (
-                            <span className="text-fluor/40">○ OFFLINE</span>
+                            <span className="text-text-muted">○ Tidak di Kelas</span>
                           )}
                         </div>
                       </div>
                     ) : (
-                      <div className="font-mono text-[11px] text-fluor/30 my-auto text-center">
-                        [KOSONG]
+                      <div className="font-body text-xs text-text-muted/60 my-auto text-center">
+                        Kosong
                       </div>
                     )}
 
@@ -440,9 +441,9 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenDm(member.user)}
-                        className="w-full text-[10px] h-7 px-1.5"
+                        className="w-full text-xs h-8 px-2 rounded-xl font-display font-semibold mt-1"
                       >
-                        KIRIM PESAN
+                        Kirim Pesan
                       </Button>
                     )}
                   </div>
@@ -453,50 +454,50 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
         </TabsContent>
 
         {/* TAB 2: PAPAN TULIS (PENGUMUMAN) */}
-        <TabsContent value="papan" className="space-y-4">
-          <div className="border border-fluor/30 bg-night p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-fluor/15 pb-3">
-              <span className="font-hud text-xl tracking-widest text-caution">
-                [PAPAN TULIS // PENGUMUMAN KELAS]
+        <TabsContent value="papan" className="space-y-4 pt-2">
+          <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-5 shadow-sm">
+            <div className="flex items-center justify-between border-b border-border/50 pb-4">
+              <span className="font-display font-bold text-xl text-text">
+                Papan Tulis Kelas
               </span>
               <div className="flex items-center space-x-2">
-                <Badge variant="caution">DIPIN OLEH PENGAJAR</Badge>
+                <Badge variant="peach">Dipin Pengajar</Badge>
                 {isTeacherOrAdmin && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowAnnounceDialog(true)}
-                    className="text-xs space-x-1"
+                    className="text-xs space-x-1.5 rounded-2xl font-display font-semibold"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>TULIS PENGUMUMAN</span>
+                    <span>Tulis Pengumuman</span>
                   </Button>
                 )}
               </div>
             </div>
 
             {isLoadingData ? (
-              <div className="text-center font-mono text-xs text-fluor/60 py-8">
+              <div className="text-center font-body text-xs text-text-muted py-10">
                 Memuat pengumuman kelas...
               </div>
             ) : announcements.length === 0 ? (
-              <div className="text-center font-mono text-xs text-fluor/50 py-8">
+              <div className="text-center font-body text-xs text-text-muted py-10">
                 Belum ada pengumuman yang ditulis di papan tulis.
               </div>
             ) : (
-              <div className="space-y-3 font-mono text-xs text-fluor/80 leading-relaxed">
+              <div className="space-y-3.5 leading-relaxed">
                 {announcements.map((ann) => (
-                  <div key={ann.id} className="p-4 border border-fluor/20 bg-fluor/[0.02] space-y-2">
-                    <div className="flex items-center justify-between text-caution">
-                      <span className="font-bold text-sm text-fluor uppercase">{ann.title}</span>
-                      <span className="text-[11px] text-fluor/50">
+                  <div key={ann.id} className="p-5 rounded-2xl border-2 border-border bg-canvas/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-display font-bold text-base text-text">{ann.title}</span>
+                      <span className="font-body text-xs text-text-muted">
                         {new Date(ann.createdAt).toLocaleDateString("id-ID")}
                       </span>
                     </div>
-                    <p className="font-body text-xs sm:text-sm text-fluor/90 leading-relaxed whitespace-pre-wrap">
+                    <p className="font-body text-sm text-text leading-relaxed whitespace-pre-wrap">
                       {ann.content}
                     </p>
-                    <div className="text-[10px] text-fluor/50 pt-1 border-t border-fluor/10">
+                    <div className="text-xs text-text-muted pt-2 border-t border-border/40 font-medium">
                       Oleh: {ann.author.name}
                     </div>
                   </div>
@@ -507,53 +508,53 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
         </TabsContent>
 
         {/* TAB 3: PAPAN DISKUSI */}
-        <TabsContent value="diskusi" className="space-y-4">
-          <div className="border border-fluor/30 bg-night p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-fluor/15 pb-3">
-              <span className="font-hud text-xl tracking-widest text-caution">
-                [PAPAN DISKUSI PRIVAT KELAS]
+        <TabsContent value="diskusi" className="space-y-4 pt-2">
+          <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-5 shadow-sm">
+            <div className="flex items-center justify-between border-b border-border/50 pb-4">
+              <span className="font-display font-bold text-xl text-text">
+                Papan Diskusi Kelas
               </span>
               <Button
                 variant="default"
                 size="sm"
                 onClick={() => setShowThreadDialog(true)}
-                className="space-x-1.5"
+                className="space-x-1.5 rounded-2xl font-display font-bold text-xs"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>BUAT TOPIK KELAS</span>
+                <span>Buat Topik Baru</span>
               </Button>
             </div>
 
             {isLoadingData ? (
-              <div className="text-center font-mono text-xs text-fluor/60 py-8">
+              <div className="text-center font-body text-xs text-text-muted py-10">
                 Memuat diskusi kelas...
               </div>
             ) : threads.length === 0 ? (
-              <div className="text-center font-mono text-xs text-fluor/50 py-8">
+              <div className="text-center font-body text-xs text-text-muted py-10">
                 Belum ada topik diskusi di kelas ini.
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {threads.map((thread) => (
                   <div
                     key={thread.id}
-                    className="p-4 border border-fluor/20 bg-night hover:border-fluor/50 transition-colors"
+                    className="p-5 rounded-2xl border-2 border-border bg-canvas/20 hover:border-primary transition-all shadow-xs"
                   >
-                    <div className="flex items-center justify-between font-mono text-xs text-fluor/50 mb-1">
+                    <div className="flex items-center justify-between font-body text-xs text-text-muted mb-1.5">
                       <span>Ditanyakan oleh {thread.author.name} • {new Date(thread.createdAt).toLocaleDateString("id-ID")}</span>
                       {thread.hasBestAnswer ? (
-                        <Badge variant="ok">TERJAWAB</Badge>
+                        <Badge variant="ok">Terjawab</Badge>
                       ) : (
-                        <Badge variant="outline">{thread.category}</Badge>
+                        <Badge variant="peach">{thread.category}</Badge>
                       )}
                     </div>
-                    <h4 className="font-sign text-lg text-fluor uppercase">
+                    <h4 className="font-display font-bold text-base text-text">
                       {thread.title}
                     </h4>
-                    <p className="font-body text-xs text-fluor/70 mt-1 line-clamp-2">
+                    <p className="font-body text-xs text-text-muted mt-1.5 line-clamp-2 leading-relaxed">
                       {thread.content}
                     </p>
-                    <div className="mt-3 pt-2 border-t border-fluor/10 flex items-center space-x-4 font-mono text-[11px] text-fluor/60">
+                    <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center space-x-4 font-body text-xs text-text-muted font-medium">
                       <span>{thread.votes} Suara</span>
                       <span>•</span>
                       <span>{thread.commentCount} Balasan</span>
@@ -566,46 +567,46 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
         </TabsContent>
 
         {/* TAB 4: RAK MATERI */}
-        <TabsContent value="materi" className="space-y-4">
-          <div className="border border-fluor/30 bg-night p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-fluor/15 pb-3">
-              <span className="font-hud text-xl tracking-widest text-caution">
-                [RAK MATERI KELAS // {classroom.name}]
+        <TabsContent value="materi" className="space-y-4 pt-2">
+          <div className="rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-5 shadow-sm">
+            <div className="flex items-center justify-between border-b border-border/50 pb-4">
+              <span className="font-display font-bold text-xl text-text">
+                Rak Materi Pembelajaran
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowMaterialDialog(true)}
-                className="space-x-1.5"
+                className="space-x-1.5 rounded-2xl font-display font-semibold text-xs"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>UNGGAH MATERI KELAS</span>
+                <span>Unggah Materi</span>
               </Button>
             </div>
 
             {isLoadingData ? (
-              <div className="text-center font-mono text-xs text-fluor/60 py-8">
+              <div className="text-center font-body text-xs text-text-muted py-10">
                 Memuat materi kelas...
               </div>
             ) : materials.length === 0 ? (
-              <div className="text-center font-mono text-xs text-fluor/50 py-8">
+              <div className="text-center font-body text-xs text-text-muted py-10">
                 Belum ada materi pembelajaran yang diunggah ke rak kelas ini.
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {materials.map((mat) => (
-                  <div key={mat.id} className="p-4 border border-fluor/20 bg-night space-y-2 flex flex-col justify-between">
+                  <div key={mat.id} className="p-5 rounded-2xl border-2 border-border bg-canvas/30 space-y-3 flex flex-col justify-between shadow-xs">
                     <div>
                       <div className="flex items-center justify-between">
-                        <Badge variant="cyan">{mat.category}</Badge>
-                        <span className="font-mono text-[11px] text-fluor/50">
+                        <Badge variant="mint">{mat.category}</Badge>
+                        <span className="font-body text-xs text-text-muted">
                           {mat.fileFormat} • {mat.fileSize}
                         </span>
                       </div>
-                      <h4 className="font-sign text-base text-fluor uppercase mt-2">
+                      <h4 className="font-display font-bold text-base text-text mt-2.5">
                         {mat.title}
                       </h4>
-                      <p className="font-body text-xs text-fluor/70 mt-1">
+                      <p className="font-body text-xs text-text-muted mt-1 leading-relaxed">
                         {mat.description || "Modul panduan dan referensi kelas."}
                       </p>
                     </div>
@@ -616,10 +617,10 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                         setDownloadNotice(`Mempersiapkan unduhan: ${mat.title}...`);
                         setTimeout(() => setDownloadNotice(null), 2500);
                       }}
-                      className="w-full text-xs mt-3 space-x-1.5"
+                      className="w-full text-xs mt-3 space-x-1.5 rounded-xl font-display font-semibold"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      <span>UNDUH MATERI</span>
+                      <span>Unduh Materi</span>
                     </Button>
                   </div>
                 ))}
@@ -629,56 +630,56 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
         </TabsContent>
       </Tabs>
 
-      {/* DIALOG DM INTRA-KELAS LENGKAP DENGAN RIWAYAT PESAN (SERVER VERIFIED) */}
+      {/* DIALOG DM INTRA-KELAS LENGKAP DENGAN RIWAYAT PESAN */}
       {selectedRecipient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
-          <div className="border-2 border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
+          <div className="rounded-3xl border-2 border-border bg-surface w-full max-w-lg p-6 space-y-4 relative flex flex-col max-h-[85vh] shadow-2xl animate-in fade-in zoom-in-95">
             <button
               onClick={() => setSelectedRecipient(null)}
-              className="absolute top-4 right-4 text-fluor/60 hover:text-fluor p-1 transition-colors"
+              className="absolute top-5 right-5 text-text-muted hover:text-text p-1.5 rounded-full hover:bg-canvas transition-colors"
               aria-label="Tutup Percakapan"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
 
-            <div className="border-b border-fluor/20 pb-3">
-              <div className="flex items-center space-x-2 text-caution mb-0.5">
-                <ShieldCheck className="w-4 h-4" />
-                <span className="font-mono text-xs uppercase tracking-wider">
-                  Pesan Pribadi Teman Sekelas
+            <div className="border-b border-border/50 pb-3">
+              <div className="flex items-center space-x-2 text-text mb-1">
+                <ShieldCheck className="w-4 h-4 text-accent" />
+                <span className="font-display font-semibold text-xs text-text-muted">
+                  Pesan Pribadi Rekan Sekelas
                 </span>
               </div>
-              <h3 className="font-sign text-2xl text-fluor uppercase">
+              <h3 className="font-display font-bold text-2xl text-text">
                 {selectedRecipient.displayName || selectedRecipient.name}
               </h3>
-              <p className="font-mono text-xs text-fluor/60">
+              <p className="font-body text-xs text-text-muted">
                 @{selectedRecipient.username || "siswa"} • Kelas: {classroom.name}
               </p>
             </div>
 
             {isVerifyingDm ? (
-              <div className="py-12 text-center font-mono text-xs text-fluor/60">
+              <div className="py-12 text-center font-body text-xs text-text-muted">
                 Memverifikasi keanggotaan kelas di server...
               </div>
             ) : dmError ? (
-              <div className="p-4 border border-alert bg-alert/10 text-alert text-xs font-mono space-y-2">
-                <div className="font-bold">PELANGGARAN ATURAN AKSES DM</div>
+              <div className="p-4 rounded-2xl border-2 border-alert/30 bg-alert/10 text-alert text-xs font-body space-y-2">
+                <div className="font-bold">Akses DM Ditolak</div>
                 <p>{dmError}</p>
-                <Button variant="outline" size="sm" onClick={() => setSelectedRecipient(null)} className="mt-2">
-                  TUTUP
+                <Button variant="outline" size="sm" onClick={() => setSelectedRecipient(null)} className="mt-2 rounded-xl">
+                  Tutup
                 </Button>
               </div>
             ) : conversation ? (
               <div className="flex-1 flex flex-col space-y-3 min-h-0">
-                <div className="p-2 border border-ok/40 bg-ok/5 text-ok text-[11px] font-mono flex items-center space-x-2">
-                  <span className="w-2 h-2 bg-ok inline-block" />
-                  <span>Terverifikasi: Pengguna berada dalam satu kelas yang sama ({classroom.code}).</span>
+                <div className="p-2.5 rounded-xl border border-ok/30 bg-ok/10 text-ok text-xs font-body flex items-center space-x-2 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-ok inline-block" />
+                  <span>Terverifikasi: Berada dalam kelas yang sama ({classroom.code}).</span>
                 </div>
 
                 {/* Riwayat Percakapan */}
-                <div className="flex-1 border border-fluor/20 p-3 space-y-2.5 overflow-y-auto max-h-56 bg-night">
+                <div className="flex-1 rounded-2xl border-2 border-border p-3.5 space-y-2.5 overflow-y-auto max-h-56 bg-canvas/30">
                   {conversation.messages.length === 0 ? (
-                    <div className="text-center font-mono text-xs text-fluor/40 py-6">
+                    <div className="text-center font-body text-xs text-text-muted py-6">
                       Belum ada percakapan. Sampaikan pesan pertama Anda.
                     </div>
                   ) : (
@@ -688,14 +689,16 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                         className={`flex flex-col ${msg.isSelf ? "items-end" : "items-start"}`}
                       >
                         <div
-                          className={`p-2.5 max-w-[85%] text-xs font-body leading-relaxed ${
+                          className={`p-3 max-w-[85%] rounded-2xl text-xs font-body leading-relaxed shadow-xs ${
                             msg.isSelf
-                              ? "bg-caution/15 border border-caution/40 text-fluor"
-                              : "bg-neon-cyan/15 border border-neon-cyan/40 text-fluor"
+                              ? "bg-primary text-text font-medium rounded-tr-sm"
+                              : "bg-surface border-2 border-border text-text rounded-tl-sm"
                           }`}
                         >
-                          <div className="font-mono text-[10px] text-fluor/50 mb-0.5">
-                            {msg.isSelf ? "Anda" : msg.senderName} • {new Date(msg.createdAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                          <div className="text-[10px] text-text-muted mb-0.5 flex items-center space-x-1.5 font-medium">
+                            <span>{msg.isSelf ? "Anda" : msg.senderName}</span>
+                            <span>•</span>
+                            <span>{new Date(msg.createdAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>
                           </div>
                           <div>{msg.content}</div>
                         </div>
@@ -705,13 +708,13 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                 </div>
 
                 {/* Form Kirim Pesan */}
-                <form onSubmit={handleSendDm} className="space-y-2 pt-2">
+                <form onSubmit={handleSendDm} className="space-y-2 pt-1">
                   <div className="flex gap-2">
                     <Input
                       value={dmMessage}
                       onChange={(e) => setDmMessage(e.target.value)}
                       placeholder="Ketik pesan untuk rekan sekelas..."
-                      className="font-mono text-xs flex-1"
+                      className="font-body text-xs flex-1 rounded-2xl border-2 border-border bg-canvas/40"
                       disabled={isSendingDm}
                       autoFocus
                     />
@@ -720,10 +723,10 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                       variant="default"
                       size="sm"
                       disabled={isSendingDm || !dmMessage.trim()}
-                      className="space-x-1"
+                      className="space-x-1.5 rounded-2xl font-display font-bold px-4"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      <span>{isSendingDm ? "..." : "KIRIM"}</span>
+                      <span>{isSendingDm ? "..." : "Kirim"}</span>
                     </Button>
                   </div>
                 </form>
@@ -735,50 +738,51 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
 
       {/* Dialog Buat Pengumuman Baru */}
       {showAnnounceDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
-          <div className="border border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
+          <div className="rounded-3xl border-2 border-border bg-surface w-full max-w-lg p-6 sm:p-8 space-y-4 relative shadow-2xl animate-in fade-in zoom-in-95">
             <button
               onClick={() => setShowAnnounceDialog(false)}
-              className="absolute top-4 right-4 text-fluor/60 hover:text-fluor"
+              className="absolute top-5 right-5 text-text-muted hover:text-text p-1.5 rounded-full hover:bg-canvas transition-colors"
               aria-label="Tutup"
             >
               <X className="w-5 h-5" />
             </button>
-            <div className="border-b border-fluor/20 pb-3">
-              <span className="font-hud text-lg tracking-widest text-caution">
-                [PAPAN TULIS // TULIS PENGUMUMAN]
+            <div className="border-b border-border/50 pb-3">
+              <span className="font-display font-semibold text-xs text-text-muted">
+                Papan Tulis Kelas
               </span>
-              <h3 className="font-sign text-2xl text-fluor uppercase mt-1">
-                AGENDA KELAS
+              <h3 className="font-display font-bold text-2xl text-text mt-0.5">
+                Tulis Agenda Kelas
               </h3>
             </div>
             <form onSubmit={handleCreateAnnouncement} className="space-y-4">
               <div className="space-y-1">
-                <label className="font-mono text-xs text-fluor/70 block">Judul Pengumuman:</label>
+                <label className="font-display font-semibold text-xs text-text block">Judul Pengumuman:</label>
                 <Input
                   value={announceTitle}
                   onChange={(e) => setAnnounceTitle(e.target.value)}
-                  placeholder="Contoh: Praktikum Konfigurasi Switch Core Hari Kamis"
+                  placeholder="Contoh: Praktikum Jaringan Hari Kamis"
                   required
+                  className="rounded-2xl border-2 border-border bg-canvas/40 text-xs"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-mono text-xs text-fluor/70 block">Isi Pengumuman:</label>
+                <label className="font-display font-semibold text-xs text-text block">Isi Pengumuman:</label>
                 <textarea
                   value={announceContent}
                   onChange={(e) => setAnnounceContent(e.target.value)}
                   rows={4}
-                  className="w-full border border-fluor/30 bg-night p-3 font-body text-xs text-fluor placeholder:text-fluor/40 focus:border-caution focus:outline-none"
+                  className="w-full rounded-2xl border-2 border-border bg-canvas/40 p-3 font-body text-xs text-text placeholder:text-text-muted focus:bg-surface focus:outline-none transition-colors"
                   placeholder="Tuliskan detail jadwal, instruksi lab, atau pengingat tugas..."
                   required
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setShowAnnounceDialog(false)}>
-                  BATAL
+              <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowAnnounceDialog(false)} className="rounded-2xl font-display font-semibold">
+                  Batal
                 </Button>
-                <Button type="submit" variant="default" size="sm" disabled={isSubmittingAnnounce}>
-                  {isSubmittingAnnounce ? "MENYIMPAN..." : "PASANG DI PAPAN TULIS"}
+                <Button type="submit" variant="default" size="sm" disabled={isSubmittingAnnounce} className="rounded-2xl font-display font-bold">
+                  {isSubmittingAnnounce ? "Menyimpan..." : "Pasang di Papan"}
                 </Button>
               </div>
             </form>
@@ -788,39 +792,40 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
 
       {/* Dialog Buat Thread Diskusi Kelas */}
       {showThreadDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
-          <div className="border border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
+          <div className="rounded-3xl border-2 border-border bg-surface w-full max-w-lg p-6 sm:p-8 space-y-4 relative shadow-2xl animate-in fade-in zoom-in-95">
             <button
               onClick={() => setShowThreadDialog(false)}
-              className="absolute top-4 right-4 text-fluor/60 hover:text-fluor"
+              className="absolute top-5 right-5 text-text-muted hover:text-text p-1.5 rounded-full hover:bg-canvas transition-colors"
               aria-label="Tutup"
             >
               <X className="w-5 h-5" />
             </button>
-            <div className="border-b border-fluor/20 pb-3">
-              <span className="font-hud text-lg tracking-widest text-caution">
-                [PAPAN DISKUSI // TOPIK KELAS BARU]
+            <div className="border-b border-border/50 pb-3">
+              <span className="font-display font-semibold text-xs text-text-muted">
+                Papan Diskusi Kelas
               </span>
-              <h3 className="font-sign text-2xl text-fluor uppercase mt-1">
-                TANYA JAWAB PRIVAT KELAS
+              <h3 className="font-display font-bold text-2xl text-text mt-0.5">
+                Topik Diskusi Baru
               </h3>
             </div>
             <form onSubmit={handleCreateThread} className="space-y-4">
               <div className="space-y-1">
-                <label className="font-mono text-xs text-fluor/70 block">Judul Diskusi:</label>
+                <label className="font-display font-semibold text-xs text-text block">Judul Diskusi:</label>
                 <Input
                   value={threadTitle}
                   onChange={(e) => setThreadTitle(e.target.value)}
-                  placeholder="Contoh: Pertanyaan seputar Lab OSPF Multi-Area"
+                  placeholder="Contoh: Pertanyaan seputar Konfigurasi Router"
                   required
+                  className="rounded-2xl border-2 border-border bg-canvas/40 text-xs"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-mono text-xs text-fluor/70 block">Kategori:</label>
+                <label className="font-display font-semibold text-xs text-text block">Kategori:</label>
                 <select
                   value={threadCategory}
                   onChange={(e) => setThreadCategory(e.target.value)}
-                  className="w-full h-11 border border-fluor/30 bg-night px-3 font-mono text-xs text-fluor focus:border-caution focus:outline-none"
+                  className="w-full h-11 rounded-2xl border-2 border-border bg-canvas/40 px-3 font-body text-xs text-text focus:bg-surface focus:outline-none"
                 >
                   <option value="TUGAS & DISKUSI">TUGAS & DISKUSI</option>
                   <option value="PRAKTIKUM LAB">PRAKTIKUM LAB</option>
@@ -828,22 +833,22 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="font-mono text-xs text-fluor/70 block">Isi Pertanyaan:</label>
+                <label className="font-display font-semibold text-xs text-text block">Isi Pertanyaan:</label>
                 <textarea
                   value={threadContent}
                   onChange={(e) => setThreadContent(e.target.value)}
                   rows={4}
-                  className="w-full border border-fluor/30 bg-night p-3 font-body text-xs text-fluor placeholder:text-fluor/40 focus:border-caution focus:outline-none"
+                  className="w-full rounded-2xl border-2 border-border bg-canvas/40 p-3 font-body text-xs text-text placeholder:text-text-muted focus:bg-surface focus:outline-none transition-colors"
                   placeholder="Jelaskan pertanyaan atau kendala yang ingin dibahas bersama rekan sekelas..."
                   required
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setShowThreadDialog(false)}>
-                  BATAL
+              <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowThreadDialog(false)} className="rounded-2xl font-display font-semibold">
+                  Batal
                 </Button>
-                <Button type="submit" variant="default" size="sm" disabled={isSubmittingThread}>
-                  {isSubmittingThread ? "MENYIMPAN..." : "PUBLIKASIKAN KE DISKUSI KELAS"}
+                <Button type="submit" variant="default" size="sm" disabled={isSubmittingThread} className="rounded-2xl font-display font-bold">
+                  {isSubmittingThread ? "Menyimpan..." : "Publikasikan Topik"}
                 </Button>
               </div>
             </form>
@@ -853,39 +858,40 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
 
       {/* Dialog Unggah Materi Kelas */}
       {showMaterialDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm select-none">
-          <div className="border border-fluor/50 bg-night w-full max-w-lg p-6 space-y-4 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
+          <div className="rounded-3xl border-2 border-border bg-surface w-full max-w-lg p-6 sm:p-8 space-y-4 relative shadow-2xl animate-in fade-in zoom-in-95">
             <button
               onClick={() => setShowMaterialDialog(false)}
-              className="absolute top-4 right-4 text-fluor/60 hover:text-fluor"
+              className="absolute top-5 right-5 text-text-muted hover:text-text p-1.5 rounded-full hover:bg-canvas transition-colors"
               aria-label="Tutup"
             >
               <X className="w-5 h-5" />
             </button>
-            <div className="border-b border-fluor/20 pb-3">
-              <span className="font-hud text-lg tracking-widest text-caution">
-                [RAK MATERI // UNGGAH DOKUMEN KELAS]
+            <div className="border-b border-border/50 pb-3">
+              <span className="font-display font-semibold text-xs text-text-muted">
+                Rak Materi Kelas
               </span>
-              <h3 className="font-sign text-2xl text-fluor uppercase mt-1">
-                MODUL KELAS
+              <h3 className="font-display font-bold text-2xl text-text mt-0.5">
+                Unggah Modul Kelas
               </h3>
             </div>
             <form onSubmit={handleCreateMaterial} className="space-y-4">
               <div className="space-y-1">
-                <label className="font-mono text-xs text-fluor/70 block">Judul Modul:</label>
+                <label className="font-display font-semibold text-xs text-text block">Judul Modul:</label>
                 <Input
                   value={matTitle}
                   onChange={(e) => setMatTitle(e.target.value)}
-                  placeholder="Contoh: Lembar Kerja Siswa 03: Routing BGP"
+                  placeholder="Contoh: Modul Praktikum 03: Routing"
                   required
+                  className="rounded-2xl border-2 border-border bg-canvas/40 text-xs"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-mono text-xs text-fluor/70 block">Kategori Materi:</label>
+                <label className="font-display font-semibold text-xs text-text block">Kategori Materi:</label>
                 <select
                   value={matCategory}
                   onChange={(e) => setMatCategory(e.target.value)}
-                  className="w-full h-11 border border-fluor/30 bg-night px-3 font-mono text-xs text-fluor focus:border-caution focus:outline-none"
+                  className="w-full h-11 rounded-2xl border-2 border-border bg-canvas/40 px-3 font-body text-xs text-text focus:bg-surface focus:outline-none"
                 >
                   <option value="MATERI KELAS">MATERI KELAS</option>
                   <option value="LEMBAR KERJA">LEMBAR KERJA</option>
@@ -893,21 +899,21 @@ export function ClassroomTabsView({ classroom, currentUserId }: ClassroomProps) 
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="font-mono text-xs text-fluor/70 block">Deskripsi Singkat:</label>
+                <label className="font-display font-semibold text-xs text-text block">Deskripsi Singkat:</label>
                 <textarea
                   value={matDesc}
                   onChange={(e) => setMatDesc(e.target.value)}
                   rows={3}
-                  className="w-full border border-fluor/30 bg-night p-3 font-body text-xs text-fluor placeholder:text-fluor/40 focus:border-caution focus:outline-none"
+                  className="w-full rounded-2xl border-2 border-border bg-canvas/40 p-3 font-body text-xs text-text placeholder:text-text-muted focus:bg-surface focus:outline-none transition-colors"
                   placeholder="Penjelasan ringkas isi modul..."
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setShowMaterialDialog(false)}>
-                  BATAL
+              <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowMaterialDialog(false)} className="rounded-2xl font-display font-semibold">
+                  Batal
                 </Button>
-                <Button type="submit" variant="default" size="sm" disabled={isSubmittingMaterial}>
-                  {isSubmittingMaterial ? "MENYIMPAN..." : "SIMPAN DI RAK MATERI"}
+                <Button type="submit" variant="default" size="sm" disabled={isSubmittingMaterial} className="rounded-2xl font-display font-bold">
+                  {isSubmittingMaterial ? "Menyimpan..." : "Simpan Materi"}
                 </Button>
               </div>
             </form>

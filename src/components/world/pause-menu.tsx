@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Play, Home, Zap, Monitor, Eye, Compass } from "lucide-react";
+import { Play, Home, Zap, Eye, Compass, Pause } from "lucide-react";
 import { useWorldStore } from "@/stores/use-world-store";
 
 export function PauseMenu() {
@@ -24,7 +24,6 @@ export function PauseMenu() {
     if (!isPaused || activePanel) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Abaikan jika fokus di form input
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -52,7 +51,6 @@ export function PauseMenu() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isPaused, activePanel, router, setPaused]);
 
-  // Jangan tampilkan menu jeda jika ada panel 2D (modal) yang sedang dibuka
   if (!isPaused || activePanel) return null;
 
   const handleResume = () => {
@@ -74,158 +72,145 @@ export function PauseMenu() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-night/95 backdrop-blur-sm flex items-center justify-center p-4 select-none font-hud">
-      <div className="max-w-lg w-full border-2 border-fluor/40 bg-night p-6 sm:p-8 space-y-5 text-fluor relative shadow-[0_0_35px_rgba(11,13,18,0.95)]">
+    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 select-none font-body">
+      <div className="max-w-md w-full rounded-3xl border-2 border-border bg-surface p-6 sm:p-8 space-y-6 text-text relative shadow-2xl animate-in fade-in zoom-in-95">
         {/* Header Layar Jeda */}
-        <div className="text-center space-y-2 border-b border-fluor/20 pb-4">
-          <div className="inline-flex items-center space-x-2 text-alert text-xl tracking-widest animate-pulse">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="6" y="4" width="4" height="16" />
-              <rect x="14" y="4" width="4" height="16" />
-            </svg>
-            <span>SIMULASI DIJEDA [ESC]</span>
+        <div className="text-center space-y-2 border-b border-border/50 pb-5">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-secondary/30 text-text font-display font-semibold text-xs border border-secondary/50">
+            <Pause className="w-3.5 h-3.5 fill-current" />
+            <span>Simulasi Dijeda [Esc]</span>
           </div>
-          <h2 className="font-sign text-3xl sm:text-5xl tracking-wide uppercase text-fluor">
-            SEKOLAH TENGAH MALAM
+          <h2 className="font-display font-bold text-3xl tracking-tight text-text">
+            Menu Eksplorasi
           </h2>
-          <p className="font-mono text-xs text-caution tracking-widest uppercase">
-            {"//"} PENGATURAN KAWASAN &amp; KENDALI EKSPLORASI
+          <p className="font-body text-xs text-text-muted">
+            Atur preferensi tampilan dan kontrol jelajah kawasan sekolah
           </p>
         </div>
 
-        {/* Deretan Sakelar ON/OFF ala Cuchillo Midnight Video */}
-        <div className="space-y-2.5 font-mono text-xs max-h-[42vh] overflow-y-auto pr-1">
+        {/* Deretan Pengaturan Cepat */}
+        <div className="space-y-2.5 font-body text-xs">
           {/* 1. Mode Cepat (2D Penuh) */}
-          <div className="flex items-center justify-between p-2.5 border border-fluor/20 bg-fluor/[0.02]">
-            <div className="flex items-center space-x-2">
-              <Zap className="w-4 h-4 text-caution" />
-              <span className="font-hud text-lg tracking-wider text-fluor">MODE CEPAT (2D)</span>
+          <div className="flex items-center justify-between p-3 rounded-2xl border border-border bg-canvas/40">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center text-text">
+                <Zap className="w-4 h-4 text-accent" />
+              </div>
+              <div>
+                <span className="font-display font-bold text-text text-sm">Mode Cepat (2D)</span>
+                <p className="text-[11px] text-text-muted">Langsung buka portal web 2D</p>
+              </div>
             </div>
             <button
               type="button"
               onClick={handleToggleFastMode}
-              className={`px-3 py-1 font-hud text-base tracking-widest border transition-colors cursor-pointer ${
+              className={`px-3.5 py-1 rounded-xl font-display font-bold text-xs border transition-all cursor-pointer ${
                 worldSettings.fastMode
-                  ? "bg-caution text-night border-caution font-bold"
-                  : "bg-night text-fluor/60 border-fluor/30 hover:border-fluor"
+                  ? "bg-primary text-text border-primary/60 shadow-xs"
+                  : "bg-surface text-text-muted border-border hover:text-text"
               }`}
             >
-              {worldSettings.fastMode ? "ON" : "OFF"}
+              {worldSettings.fastMode ? "Aktif" : "Mati"}
             </button>
           </div>
 
           {/* 2. Head Bob Kamera */}
-          <div className="flex items-center justify-between p-2.5 border border-fluor/20 bg-fluor/[0.02]">
-            <div className="flex items-center space-x-2">
-              <Compass className="w-4 h-4 text-fluor/80" />
+          <div className="flex items-center justify-between p-3 rounded-2xl border border-border bg-canvas/40">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-secondary/25 flex items-center justify-center text-text">
+                <Compass className="w-4 h-4 text-text" />
+              </div>
               <div>
-                <span className="font-hud text-lg tracking-wider text-fluor">HEAD BOB KAMERA</span>
-                <p className="text-[10px] text-fluor/60 font-body">Ayunan langkah saat berjalan</p>
+                <span className="font-display font-bold text-text text-sm">Goyangan Langkah</span>
+                <p className="text-[11px] text-text-muted">Efek ayunan kamera saat berjalan</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setHeadBobEnabled(!headBobEnabled)}
-              className={`px-3 py-1 font-hud text-base tracking-widest border transition-colors cursor-pointer ${
+              className={`px-3.5 py-1 rounded-xl font-display font-bold text-xs border transition-all cursor-pointer ${
                 headBobEnabled
-                  ? "bg-caution text-night border-caution font-bold"
-                  : "bg-night text-fluor/60 border-fluor/30 hover:border-fluor"
+                  ? "bg-primary text-text border-primary/60 shadow-xs"
+                  : "bg-surface text-text-muted border-border hover:text-text"
               }`}
             >
-              {headBobEnabled ? "ON" : "OFF"}
+              {headBobEnabled ? "Aktif" : "Mati"}
             </button>
           </div>
 
           {/* 3. Postur Mata (Berdiri 1.6m vs Jongkok 0.9m) */}
-          <div className="flex items-center justify-between p-2.5 border border-fluor/20 bg-fluor/[0.02]">
+          <div className="flex items-center justify-between p-3 rounded-2xl border border-border bg-canvas/40">
             <div>
-              <span className="font-hud text-lg tracking-wider text-fluor">POSTUR MATA (C)</span>
-              <p className="text-[10px] text-fluor/60 font-body">
+              <span className="font-display font-bold text-text text-sm">Tinggi Kamera (C)</span>
+              <p className="text-[11px] text-text-muted">
                 {isCrouching ? "Kamera jongkok 0.9m" : "Kamera berdiri 1.6m"}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setCrouching(!isCrouching)}
-              className={`px-3 py-1 font-hud text-base tracking-widest border transition-colors cursor-pointer ${
+              className={`px-3.5 py-1 rounded-xl font-display font-bold text-xs border transition-all cursor-pointer ${
                 isCrouching
-                  ? "bg-neon-cyan text-night border-neon-cyan font-bold"
-                  : "bg-night text-fluor/60 border-fluor/30 hover:border-fluor"
+                  ? "bg-secondary text-text border-secondary/60 shadow-xs"
+                  : "bg-surface text-text-muted border-border hover:text-text"
               }`}
             >
-              {isCrouching ? "JONGKOK" : "BERDIRI"}
+              {isCrouching ? "Jongkok" : "Berdiri"}
             </button>
           </div>
 
-          {/* 4. Suasana Kawasan (Malam vs Pagi) */}
-          <div className="flex items-center justify-between p-2.5 border border-fluor/20 bg-fluor/[0.02]">
-            <div className="flex items-center space-x-2">
-              <Monitor className="w-4 h-4 text-neon-cyan" />
-              <span className="font-hud text-lg tracking-wider text-fluor">SUASANA KAWASAN</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => updateWorldSettings({ nightMode: !worldSettings.nightMode })}
-              className={`px-3 py-1 font-hud text-base tracking-widest border transition-colors cursor-pointer ${
-                worldSettings.nightMode
-                  ? "bg-neon-cyan text-night border-neon-cyan font-bold"
-                  : "bg-night text-fluor/60 border-fluor/30 hover:border-fluor"
-              }`}
-            >
-              {worldSettings.nightMode ? "MALAM (ON)" : "PAGI (OFF)"}
-            </button>
-          </div>
-
-          {/* 5. Tampilkan HUD Antarmuka */}
-          <div className="flex items-center justify-between p-2.5 border border-fluor/20 bg-fluor/[0.02]">
-            <div className="flex items-center space-x-2">
-              <Eye className="w-4 h-4 text-fluor/80" />
-              <span className="font-hud text-lg tracking-wider text-fluor">ANTARMUKA HUD</span>
+          {/* 4. Tampilkan HUD Antarmuka */}
+          <div className="flex items-center justify-between p-3 rounded-2xl border border-border bg-canvas/40">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-canvas flex items-center justify-center text-text border border-border">
+                <Eye className="w-4 h-4 text-text-muted" />
+              </div>
+              <span className="font-display font-bold text-text text-sm">Antarmuka HUD</span>
             </div>
             <button
               type="button"
               onClick={() => updateWorldSettings({ showHud: !worldSettings.showHud })}
-              className={`px-3 py-1 font-hud text-base tracking-widest border transition-colors cursor-pointer ${
+              className={`px-3.5 py-1 rounded-xl font-display font-bold text-xs border transition-all cursor-pointer ${
                 worldSettings.showHud
-                  ? "bg-caution text-night border-caution font-bold"
-                  : "bg-night text-fluor/60 border-fluor/30 hover:border-fluor"
+                  ? "bg-primary text-text border-primary/60 shadow-xs"
+                  : "bg-surface text-text-muted border-border hover:text-text"
               }`}
             >
-              {worldSettings.showHud ? "ON" : "OFF"}
+              {worldSettings.showHud ? "Tampil" : "Sembunyi"}
             </button>
           </div>
         </div>
 
         {/* Tombol Aksi Utama */}
-        <div className="space-y-2.5 pt-2">
+        <div className="space-y-2.5 pt-2 border-t border-border/50">
           {/* Tombol Lanjut Simulasi */}
           <button
             type="button"
             onClick={handleResume}
-            className="w-full bg-caution text-night py-3 font-hud text-xl sm:text-2xl tracking-widest hover:bg-caution/90 transition-colors flex items-center justify-center space-x-2 font-bold cursor-pointer"
+            className="w-full bg-primary text-text py-3 rounded-2xl font-display font-bold text-sm tracking-wide shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center space-x-2 cursor-pointer"
           >
-            <Play className="w-5 h-5 fill-current" />
-            <span>KLIK UNTUK LANJUT [ESC]</span>
+            <Play className="w-4 h-4 fill-current" />
+            <span>Lanjut Jelajah [Esc]</span>
           </button>
 
           {/* Tombol Keluar Langsung ke Halaman Utama (Pencet X) */}
           <button
             type="button"
             onClick={handleExitToHome}
-            className="w-full border-2 border-caution/80 bg-caution/15 text-caution py-2.5 font-hud text-lg sm:text-xl tracking-widest hover:bg-caution hover:text-night transition-colors flex items-center justify-center space-x-2 font-bold cursor-pointer shadow-[0_0_15px_rgba(242,194,0,0.2)]"
+            className="w-full border-2 border-border bg-surface text-text py-2.5 rounded-2xl font-display font-bold text-sm hover:bg-canvas transition-colors flex items-center justify-center space-x-2 cursor-pointer"
           >
             <Home className="w-4 h-4" />
-            <span>[X] KELUAR KE HALAMAN UTAMA</span>
+            <span>[X] Keluar ke Beranda</span>
           </button>
 
           {/* Tombol Alternatif: Masuk ke Mode Cepat 2D */}
           <Link href="/kelas" className="block">
             <button
               type="button"
-              className="w-full border border-fluor/30 bg-night text-fluor/70 py-2 font-hud text-base tracking-wider hover:border-fluor hover:text-fluor transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+              className="w-full text-text-muted hover:text-text py-1.5 font-body text-xs flex items-center justify-center space-x-1.5 transition-colors cursor-pointer"
             >
-              <Zap className="w-4 h-4" />
-              <span>MASUK KE RUANG KELAS (2D)</span>
+              <Zap className="w-3.5 h-3.5" />
+              <span>Buka Daftar Kelas (Mode 2D)</span>
             </button>
           </Link>
         </div>
@@ -233,4 +218,3 @@ export function PauseMenu() {
     </div>
   );
 }
-

@@ -2,12 +2,12 @@ import * as THREE from "three";
 import { THEME_TOKENS } from "@/lib/tokens";
 
 export const CLASSROOM_COLORS = {
-  night: THEME_TOKENS.colors.night,
-  fluor: THEME_TOKENS.colors.fluor,
-  caution: THEME_TOKENS.colors.caution,
-  neonCyan: THEME_TOKENS.colors.neonCyan,
-  alert: THEME_TOKENS.colors.alert,
-  ok: THEME_TOKENS.colors.ok,
+  night: THEME_TOKENS.colors.text,
+  fluor: THEME_TOKENS.colors.surface,
+  caution: THEME_TOKENS.colors.secondary,
+  neonCyan: THEME_TOKENS.colors.primary,
+  alert: THEME_TOKENS.colors.destructive,
+  ok: THEME_TOKENS.colors.success,
 
   // Warna Khas Interior Ruang Kelas
   blackboard: "#1A3326", // Hijau tua papan tulis kapur

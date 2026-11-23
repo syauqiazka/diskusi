@@ -4,78 +4,77 @@
  */
 
 /**
- * Token warna resmi dari DESIGN.md serta palet material kawasan kampus SMK TI BAZMA.
- * Menjadi satu-satunya sumber kebenaran warna objek 3D, medan, rumput, dan label.
+ * Token warna anime resmi untuk seluruh kawasan kampus 3D
+ * Selaras dengan tema visual Kyoto Animation Daylight
  */
-export const DESIGN_TOKENS = {
-  night: '#0B0D12',
-  fluor: '#E9F2E3',
-  caution: '#F2C200',
-  neonCyan: '#5CE1FF',
-  neonPink: '#FF5C93',
-  alert: '#E0412F',
-  ok: '#4FD08A',
+export const ANIME_THEME_TOKENS = {
+  canvas: '#F0FDF4',
+  surface: '#FFFFFF',
+  primary: '#34D399',
+  secondary: '#FDBA74',
+  accent: '#4F46E5',
+  text: '#0F172A',
 } as const;
 
 /**
- * Palet rumput & vegetasi konseptual (diselaraskan dengan nuansa liminal namun tetap segar di siang hari).
+ * Palet rumput & vegetasi cerah anime
  */
 export const GRASS_CONCEPTUAL_PALETTE = {
-  bladeBase: '#4d6f3d',
-  bladeTip: '#7ca35a',
-  bladeVariation: '#648948',
-  terrainMeadow: '#527341',
-  terrainSlopeOlive: '#5b7945',
-  terrainEarthShoulder: '#657a4c',
-  terrainConcretePad: '#9ca4ae',
-  terrainHorizonBlend: '#6e8372',
+  bladeBase: '#4d9059',
+  bladeTip: '#74c69d',
+  bladeVariation: '#52b788',
+  terrainMeadow: '#5db379',
+  terrainSlopeOlive: '#67be84',
+  terrainEarthShoulder: '#70c58d',
+  terrainConcretePad: '#b8c4d0',
+  terrainHorizonBlend: '#8acba2',
   source: 'konseptual' as const,
 };
 
 export const CAMPUS_PALETTE = {
   architecture: {
-    wallWhite: '#eceff1',
-    wallLightGrey: '#c8d0d8',
-    terracottaBrick: '#b85d38',
-    rosterScreen: '#a25030',
-    windowGlass: '#2a3b4c',
-    metalRailing: '#252b34',
-    doorWood: '#855336',
-    roofSlate: '#58626e',
-    roofFascia: '#e2e7ec',
-    canopyDark: '#2e3540',
-    foundation: '#4a535f',
-    masjidWall: '#edf0ed',
-    masjidRoof: '#2c7a5b',
-    masjidFinial: DESIGN_TOKENS.caution,
-    masjidPillars: '#dde3e8',
-    gate: '#525d6b',
+    wallWhite: '#FFFBF0', // Putih gading cerah anime
+    wallLightGrey: '#E2E8F0', // Abu-abu terang bersih
+    terracottaBrick: '#C97A5E', // Bata terakota anime cerah
+    rosterScreen: '#B0654B', // Roster
+    windowGlass: '#38BDF8', // Kaca jendela biru cerah anime
+    metalRailing: '#2D6A4F', // Railing hijau tua anime
+    doorWood: '#8D5B4C', // Pintu kayu hangat
+    roofSlate: '#94A3B8', // Semen rooftop cerah
+    roofFascia: '#FFFFFF', // List fascia putih
+    canopyDark: '#334155', // Kanopi
+    foundation: '#64748B', // Pondasi bersih
+    masjidWall: '#F8FAFC', // Dinding masjid putih bersih
+    masjidRoof: '#10B981', // Kubah masjid hijau emerald anime
+    masjidFinial: '#FDBA74', // Puncak kubah emas/peach cerah
+    masjidPillars: '#E2E8F0', // Tiang masjid
+    gate: '#334155', // Gerbang
   },
   landscape: {
-    taludRiverStone: '#69727d',
-    concreteLight: '#aab3bd',
-    concreteCurb: '#cfd6de',
-    stairs: '#c7cfd8',
-    stairBase: '#78828e',
-    pathway: '#79838e',
-    turunanSlope: '#67727f',
-    turfField: '#5a7d44',
-    courtLine: DESIGN_TOKENS.fluor,
-    flagPole: '#dce3ea',
-    flagRed: '#d93829',
-    flagWhite: '#f1f5f9',
-    shrubGreen: '#4e733b',
-    netPostGreen: '#236e42',
-    treeTrunk: '#5e4937',
-    treeCanopyShade: '#4c703e',
-    treeCanopyPalm: '#5c8248',
-    conceptualStairs: '#ea580c',
+    taludRiverStone: '#7c8896',
+    concreteLight: '#CBD5E1',
+    concreteCurb: '#E2E8F0',
+    stairs: '#D6DEE7',
+    stairBase: '#8D99A8',
+    pathway: '#8E9BAA',
+    turunanSlope: '#788696',
+    turfField: '#68BA7F',
+    courtLine: '#FFFFFF',
+    flagPole: '#E2E8F0',
+    flagRed: '#EF4444',
+    flagWhite: '#FFFFFF',
+    shrubGreen: '#52B788',
+    netPostGreen: '#2D6A4F',
+    treeTrunk: '#4A3525',
+    treeCanopyShade: '#F48FB1',
+    treeCanopyPalm: '#52B788',
+    conceptualStairs: '#FDBA74',
   },
   labels: {
-    bg: 'rgba(11, 13, 18, 0.90)',
-    border: DESIGN_TOKENS.fluor,
-    borderHighlight: DESIGN_TOKENS.caution,
-    text: DESIGN_TOKENS.fluor,
-    conceptualTag: DESIGN_TOKENS.caution,
+    bg: 'rgba(255, 255, 255, 0.95)',
+    border: '#CBD5E1',
+    borderHighlight: '#34D399',
+    text: '#0F172A',
+    conceptualTag: '#FDBA74',
   },
 } as const;

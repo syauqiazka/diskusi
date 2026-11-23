@@ -53,33 +53,33 @@ const VERIFIED_FACILITIES = [
 
 function renderPanelIcon(panel: ActivePanelState) {
   if (panel.isLocked) {
-    return <Lock className="w-5 h-5 text-[#E0412F] shrink-0" aria-hidden="true" />;
+    return <Lock className="w-5 h-5 text-alert shrink-0" aria-hidden="true" />;
   }
   switch (panel.type) {
     case 'door':
-      return <DoorOpen className="w-5 h-5 text-[#F2C200] shrink-0" aria-hidden="true" />;
+      return <DoorOpen className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />;
     case 'mading':
-      return <FileText className="w-5 h-5 text-[#F2C200] shrink-0" aria-hidden="true" />;
+      return <FileText className="w-5 h-5 text-secondary shrink-0" aria-hidden="true" />;
     case 'library':
-      return <BookOpen className="w-5 h-5 text-[#F2C200] shrink-0" aria-hidden="true" />;
+      return <BookOpen className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />;
     case 'locker':
-      return <Archive className="w-5 h-5 text-[#F2C200] shrink-0" aria-hidden="true" />;
+      return <Archive className="w-5 h-5 text-accent shrink-0" aria-hidden="true" />;
     case 'mirror':
-      return <UserSquare2 className="w-5 h-5 text-[#5CE1FF] shrink-0" aria-hidden="true" />;
+      return <UserSquare2 className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />;
     case 'lab_komputer':
-      return <Monitor className="w-5 h-5 text-[#5CE1FF] shrink-0" aria-hidden="true" />;
+      return <Monitor className="w-5 h-5 text-accent shrink-0" aria-hidden="true" />;
     case 'ruang_rapat':
-      return <Users className="w-5 h-5 text-[#F2C200] shrink-0" aria-hidden="true" />;
+      return <Users className="w-5 h-5 text-secondary shrink-0" aria-hidden="true" />;
     case 'ruang_konsultansi':
-      return <MessageSquare className="w-5 h-5 text-[#4FD08A] shrink-0" aria-hidden="true" />;
+      return <MessageSquare className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />;
     case 'ruang_kelas':
-      return <GraduationCap className="w-5 h-5 text-[#F2C200] shrink-0" aria-hidden="true" />;
+      return <GraduationCap className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />;
     case 'perpustakaan':
-      return <BookOpen className="w-5 h-5 text-[#F2C200] shrink-0" aria-hidden="true" />;
+      return <BookOpen className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />;
     case 'ruang_musik':
-      return <Music className="w-5 h-5 text-[#FF5C93] shrink-0" aria-hidden="true" />;
+      return <Music className="w-5 h-5 text-secondary shrink-0" aria-hidden="true" />;
     default:
-      return <FileText className="w-5 h-5 text-[#F2C200] shrink-0" aria-hidden="true" />;
+      return <FileText className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />;
   }
 }
 
@@ -149,7 +149,7 @@ export function InteractionPanel() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0D12]/80 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-text/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           closePanel();
@@ -161,17 +161,17 @@ export function InteractionPanel() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="interaction-panel-title"
-        className="w-full max-w-xl max-h-[85vh] overflow-y-auto bg-[#0B0D12] border border-[#E9F2E3] text-[#E9F2E3] p-6 shadow-2xl"
+        className="w-full max-w-xl max-h-[85vh] overflow-y-auto bg-surface border-2 border-border text-text rounded-3xl p-6 shadow-2xl space-y-6"
       >
         {/* Header Panel */}
-        <div className="flex items-start justify-between gap-4 border-b border-[#E9F2E3]/20 pb-4 mb-5">
+        <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
           <div>
-            <div className="font-vt323 text-lg tracking-widest text-[#5CE1FF] uppercase mb-1">
-              INTERAKSI OBJEK · {activePanel.source === 'konseptual' ? 'DESAIN KONSEPTUAL' : 'REFERENSI'}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary-dark font-display font-bold text-xs uppercase tracking-wider mb-2">
+              Interaksi Objek · {activePanel.source === 'konseptual' ? 'Desain Konseptual' : 'Fasilitas'}
             </div>
             <h2
               id="interaction-panel-title"
-              className="font-anton text-2xl tracking-wide text-[#E9F2E3] uppercase flex items-center gap-2.5"
+              className="font-display font-bold text-2xl text-text flex items-center gap-2.5"
             >
               {renderPanelIcon(activePanel)}
               <span>{activePanel.title}</span>
@@ -183,23 +183,23 @@ export function InteractionPanel() {
             type="button"
             onClick={closePanel}
             aria-label="Tutup panel interaksi"
-            className="flex items-center gap-1.5 border border-[#E9F2E3]/40 hover:border-[#F2C200] hover:text-[#F2C200] px-3 py-1.5 font-vt323 text-lg uppercase cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5CE1FF]"
+            className="flex items-center gap-1.5 border-2 border-border bg-surface hover:bg-canvas rounded-full px-3.5 py-1.5 font-display font-bold text-sm text-text-muted hover:text-text cursor-pointer transition-colors shadow-sm"
           >
             <X className="w-4 h-4" aria-hidden="true" />
-            <span>TUTUP</span>
+            <span>Tutup</span>
           </button>
         </div>
 
         {/* Konten berdasarkan tipe interactable */}
-        <div className="font-instrument text-base leading-relaxed text-[#E9F2E3]/90 space-y-4">
-          <p>{activePanel.description}</p>
+        <div className="font-body text-base leading-relaxed text-text-muted space-y-4">
+          <p className="text-text font-medium">{activePanel.description}</p>
 
           {activePanel.type === 'door' && (
-            <div className="border border-[#E9F2E3]/25 p-4 space-y-2">
-              <div className="font-vt323 text-lg tracking-wider text-[#F2C200] uppercase">
-                STATUS PINTU EKSTERIOR
+            <div className="border-2 border-border/70 rounded-2xl bg-canvas p-4 space-y-2">
+              <div className="font-display font-bold text-sm tracking-wide text-text uppercase">
+                Status Pintu Eksterior
               </div>
-              <p>
+              <p className="text-sm text-text-muted">
                 {activePanel.isLocked
                   ? 'Pintu ini dalam kondisi terkunci. Masuk melalui pintu utama sayap sekolah untuk menjelajah ruang kelas.'
                   : `Daun pintu luar berada pada posisi ${isDoorOpen ? 'terbuka' : 'tertutup'}.`}
@@ -208,29 +208,29 @@ export function InteractionPanel() {
           )}
 
           {activePanel.type === 'mading' && (
-            <div className="border border-[#E9F2E3]/25 p-4 space-y-3">
-              <div className="font-vt323 text-lg tracking-wider text-[#F2C200] uppercase">
-                PAPAN INFORMASI MADING GLOBAL
+            <div className="border-2 border-border/70 rounded-2xl bg-canvas p-4 space-y-3">
+              <div className="font-display font-bold text-sm tracking-wide text-text uppercase">
+                Papan Informasi Mading Global
               </div>
-              <p className="text-sm text-[#E9F2E3]/85">
+              <p className="text-sm text-text-muted">
                 Mading sekolah memuat pengumuman terbaru, diskusi umum antar angkatan, dan voting topik pembelajaran.
               </p>
             </div>
           )}
 
           {activePanel.type === 'library' && (
-            <div className="border border-[#E9F2E3]/25 p-4 space-y-3">
-              <div className="font-vt323 text-lg tracking-wider text-[#F2C200] uppercase">
-                DAFTAR FASILITAS SEKOLAH (SUMBER: REFS)
+            <div className="border-2 border-border/70 rounded-2xl bg-canvas p-4 space-y-3">
+              <div className="font-display font-bold text-sm tracking-wide text-text uppercase">
+                Daftar Fasilitas Sekolah
               </div>
-              <p className="text-sm text-[#E9F2E3]/75">
+              <p className="text-sm text-text-muted">
                 Fasilitas sekolah dapat dijelajahi langsung pada interior Gedung Sekolah 3 lantai.
               </p>
-              <div className="divide-y divide-[#E9F2E3]/15 border-t border-[#E9F2E3]/15">
+              <div className="divide-y divide-border border-t border-border mt-2">
                 {VERIFIED_FACILITIES.map((fac) => (
                   <div key={fac.name} className="py-2.5">
-                    <div className="font-semibold text-[#E9F2E3]">{fac.name}</div>
-                    <div className="text-sm text-[#E9F2E3]/75">
+                    <div className="font-display font-bold text-sm text-text">{fac.name}</div>
+                    <div className="text-xs text-text-muted font-body">
                       {fac.detail}
                     </div>
                   </div>
@@ -240,35 +240,35 @@ export function InteractionPanel() {
           )}
 
           {activePanel.type === 'locker' && (
-            <div className="border border-[#E9F2E3]/25 p-4 space-y-2">
-              <div className="font-vt323 text-lg tracking-wider text-[#F2C200] uppercase">
-                LOKER SISWA & ARSIP BELAJAR
+            <div className="border-2 border-border/70 rounded-2xl bg-canvas p-4 space-y-2">
+              <div className="font-display font-bold text-sm tracking-wide text-text uppercase">
+                Loker Siswa & Arsip Belajar
               </div>
-              <p>
-                Loker siswa menyimpan materi yang diunduh, preferensi tampilan retro VHS, dan riwayat aktivitas pembelajaran.
+              <p className="text-sm text-text-muted">
+                Loker siswa menyimpan materi yang diunduh, preferensi profil, dan riwayat aktivitas pembelajaran.
               </p>
             </div>
           )}
 
           {activePanel.type === 'mirror' && (
-            <div className="border border-[#5CE1FF]/40 p-4 space-y-2">
-              <div className="font-vt323 text-lg tracking-wider text-[#5CE1FF] uppercase">
-                CERMIN PROFIL & KOSMETIK
+            <div className="border-2 border-border/70 rounded-2xl bg-canvas p-4 space-y-2">
+              <div className="font-display font-bold text-sm tracking-wide text-text uppercase">
+                Cermin Profil & Kosmetik
               </div>
-              <p>
-                Gunakan cermin profil untuk mengubah bingkai avatar neon dan efek visual identitas siswa.
+              <p className="text-sm text-text-muted">
+                Gunakan cermin profil untuk mengubah bingkai avatar dan efek visual identitas siswa.
               </p>
             </div>
           )}
 
           {activePanel.details && activePanel.details.length > 0 && (
-            <div className="border border-[#F2C200]/45 bg-[#121620] p-4 space-y-2.5">
-              <div className="font-vt323 text-lg tracking-wider text-[#F2C200] uppercase">
-                DETAIL FASILITAS
+            <div className="border-2 border-border/70 rounded-2xl bg-canvas p-4 space-y-2.5">
+              <div className="font-display font-bold text-sm tracking-wide text-text uppercase">
+                Detail Fasilitas
               </div>
-              <ul className="space-y-1.5 text-sm text-[#E9F2E3]/85">
+              <ul className="space-y-1 text-sm text-text-muted font-body">
                 {activePanel.details.map((line, i) => (
-                  <li key={`detail_${i}`}>{line}</li>
+                  <li key={`detail_${i}`}>• {line}</li>
                 ))}
               </ul>
             </div>
@@ -276,16 +276,16 @@ export function InteractionPanel() {
         </div>
 
         {/* Footer aksi navigasi langsung ke antarmuka 2D */}
-        <div className="mt-6 pt-4 border-t border-[#E9F2E3]/20 flex flex-wrap items-center justify-between gap-3">
+        <div className="pt-4 border-t border-border flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {(activePanel.type === 'ruang_kelas' || activePanel.type === 'door') && (
               <Link href="/kelas">
                 <button
                   type="button"
-                  className="flex items-center gap-1.5 border border-[#F2C200] text-[#F2C200] hover:bg-[#F2C200] hover:text-[#0B0D12] px-3 py-1.5 font-vt323 text-base uppercase cursor-pointer transition-colors"
+                  className="flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-text border border-primary/30 px-4 py-2 rounded-2xl font-display font-bold text-sm cursor-pointer transition-colors"
                 >
-                  <span>BUKA RUANG KELAS 2D</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Buka Ruang Kelas 2D</span>
+                  <ArrowRight className="w-4 h-4 text-primary" />
                 </button>
               </Link>
             )}
@@ -294,10 +294,10 @@ export function InteractionPanel() {
               <Link href="/mading">
                 <button
                   type="button"
-                  className="flex items-center gap-1.5 border border-[#F2C200] text-[#F2C200] hover:bg-[#F2C200] hover:text-[#0B0D12] px-3 py-1.5 font-vt323 text-base uppercase cursor-pointer transition-colors"
+                  className="flex items-center gap-1.5 bg-secondary/20 hover:bg-secondary/30 text-text border border-secondary/40 px-4 py-2 rounded-2xl font-display font-bold text-sm cursor-pointer transition-colors"
                 >
-                  <span>BUKA MADING 2D</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Buka Mading 2D</span>
+                  <ArrowRight className="w-4 h-4 text-secondary-dark" />
                 </button>
               </Link>
             )}
@@ -306,10 +306,10 @@ export function InteractionPanel() {
               <Link href="/perpustakaan">
                 <button
                   type="button"
-                  className="flex items-center gap-1.5 border border-[#F2C200] text-[#F2C200] hover:bg-[#F2C200] hover:text-[#0B0D12] px-3 py-1.5 font-vt323 text-base uppercase cursor-pointer transition-colors"
+                  className="flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-text border border-primary/30 px-4 py-2 rounded-2xl font-display font-bold text-sm cursor-pointer transition-colors"
                 >
-                  <span>BUKA PERPUSTAKAAN 2D</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Buka Perpustakaan 2D</span>
+                  <ArrowRight className="w-4 h-4 text-primary" />
                 </button>
               </Link>
             )}
@@ -318,10 +318,10 @@ export function InteractionPanel() {
               <Link href="/profil">
                 <button
                   type="button"
-                  className="flex items-center gap-1.5 border border-[#5CE1FF] text-[#5CE1FF] hover:bg-[#5CE1FF] hover:text-[#0B0D12] px-3 py-1.5 font-vt323 text-base uppercase cursor-pointer transition-colors"
+                  className="flex items-center gap-1.5 bg-accent/10 hover:bg-accent/20 text-text border border-accent/30 px-4 py-2 rounded-2xl font-display font-bold text-sm cursor-pointer transition-colors"
                 >
-                  <span>BUKA PROFIL 2D</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Buka Profil 2D</span>
+                  <ArrowRight className="w-4 h-4 text-accent" />
                 </button>
               </Link>
             )}
@@ -330,9 +330,9 @@ export function InteractionPanel() {
           <button
             type="button"
             onClick={closePanel}
-            className="bg-[#F2C200] hover:bg-[#ffd426] text-[#0B0D12] font-anton text-base tracking-wider uppercase px-5 py-2 cursor-pointer transition-colors ml-auto"
+            className="bg-primary hover:bg-primary-hover text-surface font-display font-bold text-sm px-5 py-2.5 rounded-2xl shadow-md cursor-pointer transition-transform hover:scale-105 ml-auto"
           >
-            KEMBALI KE KAWASAN
+            Kembali ke Kawasan
           </button>
         </div>
       </div>
