@@ -18,20 +18,47 @@ export function useSmoothScroll() {
   return React.useContext(SmoothScrollContext);
 }
 
+// Komponen terisolasi dalam Suspense agar usePathname() tidak memblokir static prerender pada Root Layout Next.js
+function PathnameListener({
+  onPathChange,
+}: {
+  onPathChange: (path: string) => void;
+}) {
+  const pathname = usePathname();
+
+  React.useEffect(() => {
+    if (pathname) {
+      onPathChange(pathname);
+    }
+  }, [pathname, onPathChange]);
+
+  return null;
+}
+
 export function SmoothScrollProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
+  const [currentPath, setCurrentPath] = React.useState<string>("");
   const [lenisInstance, setLenisInstance] = React.useState<Lenis | null>(null);
+
+  const handlePathChange = React.useCallback((path: string) => {
+    setCurrentPath(path);
+  }, []);
 
   React.useEffect(() => {
     // Jangan aktifkan smooth scroll di halaman dunia 3D (/dunia)
     // agar tidak mengganggu kontrol pointer-lock dan kamera FPS/Orbit
-    if (pathname?.startsWith("/dunia")) {
+    if (currentPath?.startsWith("/dunia")) {
+      if (lenisInstance) {
+        lenisInstance.destroy();
+        setLenisInstance(null);
+      }
       return;
     }
+
+    if (typeof window === "undefined") return;
 
     // Hormati preferensi reduced-motion pengguna
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -76,14 +103,14 @@ export function SmoothScrollProvider({
       lenis.destroy();
       setLenisInstance(null);
     };
-  }, [pathname]);
+  }, [currentPath]);
 
   // Gulir ke atas secara mulus setiap navigasi halaman baru
   React.useEffect(() => {
-    if (lenisInstance) {
+    if (lenisInstance && currentPath) {
       lenisInstance.scrollTo(0, { immediate: true });
     }
-  }, [pathname, lenisInstance]);
+  }, [currentPath, lenisInstance]);
 
   const scrollTo = React.useCallback(
     (target: number | string | HTMLElement, options?: { offset?: number; immediate?: boolean; duration?: number }) => {
@@ -113,6 +140,9 @@ export function SmoothScrollProvider({
 
   return (
     <SmoothScrollContext.Provider value={contextValue}>
+      <React.Suspense fallback={null}>
+        <PathnameListener onPathChange={handlePathChange} />
+      </React.Suspense>
       {children}
     </SmoothScrollContext.Provider>
   );
